@@ -2,10 +2,11 @@
 title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
 format: 
   pdf:
-    # include-in-header: 
+    # include-in-header:
     #   text: |
-    #     \usepackage{bm}
     #     \usepackage{amsmath}
+    #     \usepackage{mathspec}
+    #     \newcommand{\b}[1]{\boldsymbol{#1}}
     mathspec: true
     number-sections: true
 ---
@@ -66,15 +67,39 @@ From this we can see the importance of the matrix $\boldsymbol{G}_h$, and the ch
 
 Wickramasuriya et al. (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from equation @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors. 
 
-The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $W_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of the h-step-ahead base forecast error covariance $W_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
+$$
+\boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
+\boldsymbol{S}' \boldsymbol{W}_h^{-1}
+$$
+
+and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
+
+The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
 
 ### Alternative Covariance Estimators
 
 ***Shrinkage***
 
-Covariance Estimators
+The proposed MinT approach by Wickramasuriya et al. (2019) uses the shrinkage estimator from Schäfer and Strimmer (2005). The shrinkage estimator is given by:
 
--   Shrinkage
+$$
+\hat{\boldsymbol{W}}^{shr}_{1, D} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1
+$$
+
+and $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$ is the unbiased sample covariance of in-sample one-step-ahead base forecast errors.
+
+$\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries of $\hat{\boldsymbol{W}}_1$. This approach will shrink the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal version, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
+
+Schäfer and Strimmer (2005) also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this setting, assuming the variances are constant:
+
+$$
+\hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} {\sum_{i \neq j} \hat{r}_{ij}}
+$$
+
+where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$) to shrink it toward an identity matrix
+
+
+
 -   Novelist
 -   POET
 -   Novelist with PC-adjusted
