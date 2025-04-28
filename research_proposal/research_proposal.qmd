@@ -1,0 +1,49 @@
+---
+title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
+format: 
+  pdf:
+    include-in-header: 
+      text: |
+        \usepackage{bm}
+---
+
+## Objectives
+
+When forecasting sales for items in a cafe, such as matcha latte and mocha, the forecasts for each of these drinks (110 matcha lattes and 90 mochas) are often not consistent with the overall sales forecast for the cafe (180 drinks). This is an example of hierarchical time series, where the individual forecasts do not satisfy the linear constraints of different levels of aggregation. Forecast reconciliation comes in to solve this problem, where the individual forecasts are adjusted to satisfy the linear constraints. Among the various reconciliation methods, the **MinT** (Minimum Trace) is considered the optimal approach. However, this method requires an estimate of the covariance matrix of the base forecast errors. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
+
+## Background
+
+In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical/grouped time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more. (Athanasopolous, 2024)
+
+The hierarchical structure can be represented as a tree, as shown in figure 1. The top level of the tree represents the total forecast, while the lower levels represent the individual forecasts. When there are attributes of interest that are crossed, such as the forecast for electricity demand can be broken down by usage purposes (e.g., residential and commercial), it will become a grouped time series.
+
+![**Fig. 1.** Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png)
+
+Both of these structure can be represented using matrix algebra:
+
+$$
+\bm{y}_t = \bm{S} \bm{b}_t,
+$$
+
+where $\bm{S}$ is a summing matrix of order $n /times n_b$ which aggregates the bottom-level series $\bm{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\bm{y}_t$ contains all observations at time $t$.
+
+## Methodology
+
+Hierarchical Structure
+
+MinT
+
+Covariance Estimators
+
+-   Shrinkage
+-   Novelist
+-   POET
+-   Novelist with PC-adjusted
+
+## Experimental Design
+
+## Timeline & Milestones
+
+## Expected Contributions
+
+## REferences
