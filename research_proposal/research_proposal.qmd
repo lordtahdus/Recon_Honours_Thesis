@@ -25,10 +25,30 @@ The hierarchical structure can be represented as a tree, as shown in figure 1. T
 Both of these structure can be represented using matrix algebra:
 
 $$
-\bm{y}_t = \bm{S} \bm{b}_t,
+\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
+$$ {#eq-1}
+
+where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t$ contains all observations at time $t$.
+
+The example summing matrix $\boldsymbol{S}$ for the tree structure in *Figure 1* is:
+
+$$
+\boldsymbol{S} = 
+\left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I_n}}
+\end{array}
+\right],
 $$
 
-where $\bm{S}$ is a summing matrix of order $n /times n_b$ which aggregates the bottom-level series $\bm{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\bm{y}_t$ contains all observations at time $t$.
+
+
+
+
+The MinT method is a popular choice for estimating $\boldsymbol{G}_h$, as it minimizes the trace of the covariance matrix of the forecast errors, which is a measure of the uncertainty in the forecasts. The MinT method requires an estimate of the covariance matrix of the base forecast errors, which is typically obtained using a shrinkage estimator. However, this approach has limitations, as it may not fully capture the structure of the data.
 
 ## Methodology
 
