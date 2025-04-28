@@ -158,7 +158,9 @@ $$
 
 -   $W_h$ is challenging to estimate, when $h>1$, we need alternative estimates.
 
-For forecast errors $\hat{e}_{t|t-1}$, the unbiased sample covariance of in-sample one-step-ahead base forecast errors is: $$
+For forecast errors $\hat{e}_{t|t-1}$, the unbiased sample covariance of in-sample one-step-ahead base forecast errors is: 
+
+$$
 \hat{W}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{e}_{t|t-1} \hat{e}_{t|t-1}^{\top}.
 $$
 
@@ -177,6 +179,8 @@ They also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this
 $$
 \hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} {\sum_{i \neq j} \hat{r}_{ij}}
 $$
+
+where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$) to shrink it toward an identity matrix
 
 -   (need more explanation on how to obtain optimal param)
 

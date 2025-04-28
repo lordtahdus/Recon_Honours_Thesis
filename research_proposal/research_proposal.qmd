@@ -21,7 +21,7 @@ In time series forecasting, aggregation occurs in a variety of settings. A concr
 
 The hierarchical structure can be represented as a tree, as shown in figure 1. The top level of the tree represents the total forecast, while the lower levels represent the individual forecasts. When there are attributes of interest that are crossed, such as the forecast for electricity demand can be broken down by usage purposes (e.g., residential and commercial), it will become a grouped time series.
 
-![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){width="40%"}
+![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
 Both of these structure can be represented using matrix algebra:
 
@@ -31,7 +31,7 @@ $$ {#eq-1}
 
 where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t$ contains all observations at time $t$.
 
-The example summing matrix $\boldsymbol{S}$ for the tree structure in *Figure 1* is:
+The example summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
 
 $$
 \boldsymbol{S} = 
@@ -45,15 +45,11 @@ $$
 \right],
 $$
 
-
-
-
-
 The MinT method is a popular choice for estimating $\boldsymbol{G}_h$, as it minimizes the trace of the covariance matrix of the forecast errors, which is a measure of the uncertainty in the forecasts. The MinT method requires an estimate of the covariance matrix of the base forecast errors, which is typically obtained using a shrinkage estimator. However, this approach has limitations, as it may not fully capture the structure of the data.
 
 ## Methodology
 
-If we use equation @eq-1 to forecast the time series, we would not be utilising all the information in the data, since we only forecast the bottom-level series $\boldsymbol{b}_t$ then aggregate to the higher-level. Thus, Hyndman et al. (2011) showed that existing methods could be expressed as:
+If we use @eq-1 to forecast the time series, we would not be utilising all the information in the data, since we only forecast the bottom-level series $\boldsymbol{b}_t$ then aggregate to the higher-level. Thus, Hyndman et al. (2011) showed that existing methods could be expressed as:
 
 $$
 \tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h,
@@ -65,7 +61,7 @@ From this we can see the importance of the matrix $\boldsymbol{G}_h$, and the ch
 
 ### Mininum Trace (MinT) Reconciliation
 
-Wickramasuriya et al. (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from equation @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors. 
+Wickramasuriya et al. (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
 \boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
