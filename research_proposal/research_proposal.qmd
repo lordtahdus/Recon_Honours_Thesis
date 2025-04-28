@@ -52,9 +52,25 @@ The MinT method is a popular choice for estimating $\boldsymbol{G}_h$, as it min
 
 ## Methodology
 
-Hierarchical Structure
+If we use equation @eq-1 to forecast the time series, we would not be utilising all the information in the data, since we only forecast the bottom-level series $\boldsymbol{b}_t$ then aggregate to the higher-level. Thus, Hyndman et al. (2011) showed that existing methods could be expressed as:
 
-MinT
+$$
+\tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h,
+$$ {#eq-2}
+
+for a suitably $n_b \times n$ matrix $\boldsymbol{G}_h$ (we can drop the subscript $h$ when $G$ does not depend on the forecast horizon $h$). $\boldsymbol{G}_h$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom series, which is then aggregated to the higher levels by $\boldsymbol{S}$. Note that any method may have been used to produce the base forecasts.
+
+From this we can see the importance of the matrix $\boldsymbol{G}_h$, and the choice of it determines the performance of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}_h$, including the OLS and WLS, proposed by Hyndman et al. (2011) and Hyndman et al. (2016) respectively.
+
+### Mininum Trace (MinT) Reconciliation
+
+Wickramasuriya et al. (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from equation @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors. 
+
+The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $W_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of the h-step-ahead base forecast error covariance $W_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
+
+### Alternative Covariance Estimators
+
+***Shrinkage***
 
 Covariance Estimators
 
