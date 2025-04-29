@@ -70,9 +70,11 @@ $$
 
 and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
 
-The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
+The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we need alternative covariance estimators.
 
 ### Alternative Covariance Estimators
+
+We reconstruct estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h \, g(\hat{\boldsymbol{W}}_1)$, and $g(.)$ is an estimator function of the unbiased sample covariance of in-sample one-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$
 
 ***Shrinkage***
 
@@ -81,8 +83,6 @@ The proposed MinT approach by Wickramasuriya et al. (2019) uses the shrinkage es
 $$
 \hat{\boldsymbol{W}}^{shr}_{1, D} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1
 $$
-
-and $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$ is the unbiased sample covariance of in-sample one-step-ahead base forecast errors.
 
 $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries of $\hat{\boldsymbol{W}}_1$. This approach will shrink the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal version, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
 
