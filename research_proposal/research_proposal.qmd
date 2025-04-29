@@ -151,8 +151,39 @@ and $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the o
 
 ## Experimental Design
 
+The experimental design is to simulate a hierarchical time series data set, then apply the MinT reconciliation method with different covariance estimators. The data set will be split into training and test sets. In case of cross-validation, the training set will be further split into training and validation sets.
+
+
+          --------- put these into appendix -----------
+
+The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
+
+$$
+\boldsymbol{y}_t = \boldsymbol{A} \boldsymbol{y}_{t-1} + \boldsymbol{e}_t,
+$$
+
+where $\boldsymbol{A}$ is a $p \times p$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $p_i \times p_i$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
+
+The model is added with a Gaussian innovation process $\boldsymbol{e}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
+
+1. A compound symmetric correlation matrix is used for each block of size $p_i$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution.
+
+2. The correlations between different blocks are imposed using the Algorithm 1 in Hardin, Garcia & Golan (2013).
+
+3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations for all $p$ series.
+
+We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This is also to simulate the real-world scenario where the observed covariance matrix is not necessarily positive definite.
+
+              ----------------------------------------
+
+- Put some graphs here
+
 ## Timeline & Milestones
 
 ## Expected Contributions
 
-## REferences
+## References
+
+## Appendix
+
+Algorithm 1
