@@ -6,18 +6,23 @@ format:
       text: |
         <!-- \usepackage{amsmath} -->
         <!-- \usepackage{mathspec} -->
-        <!-- \newcommand{\b}[1]{\boldsymbol{#1}} -->
-        \usepackage{algorithm}
-        \usepackage{algpseudocode}
+        <!-- \usepackage{algorithm} -->
+        <!-- \usepackage{algpseudocode} -->
+        \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
     mathspec: true
     number-sections: true
+execute:
+  cache: true
+bibliography: D:/Github/Recon_Honours_Thesis/references.bib
+# bibliographystyle: apa
+csl: D:/Github/Recon_Honours_Thesis/apa.csl
 ---
 
-## Objectives
+# Objectives
 
 When forecasting sales for items in a cafe, such as matcha latte and mocha, the forecasts for each of these drinks (110 matcha lattes and 90 mochas) are often not consistent with the overall sales forecast for the cafe (180 drinks). This is a problem of forecasting hierarchical time series, where the individual forecasts do not satisfy the linear constraints of different levels of aggregation. Forecast reconciliation comes in to solve this problem, where the individual forecasts are adjusted to satisfy the given constraints. Among the various reconciliation methods, the **MinT** (Minimum Trace) is considered the optimal approach. However, this method requires an estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might neglect the prominent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
 
-## Background
+# Background
 
 In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical/grouped time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more. (Athanasopolous, 2024)
 
@@ -47,9 +52,7 @@ $$
 \right],
 $$
 
-The MinT method is a popular choice for estimating $\boldsymbol{G}_h$, as it minimizes the trace of the covariance matrix of the forecast errors, which is a measure of the uncertainty in the forecasts. The MinT method requires an estimate of the covariance matrix of the base forecast errors, which is typically obtained using a shrinkage estimator. However, this approach has limitations, as it may not fully capture the structure of the data.
-
-## Methodology
+# Methodology
 
 If we use @eq-1 to forecast the time series, we would not be utilising all the information in the data, since we only forecast the bottom-level series $\boldsymbol{b}_t$ then aggregate to the higher-level. Thus, Hyndman et al. (2011) showed that existing methods could be expressed as:
 
@@ -59,11 +62,11 @@ $$ {#eq-2}
 
 for a suitable $n_b \times n$ matrix $\boldsymbol{G}_h$ (we can drop the subscript $h$ when $G$ does not depend on the forecast horizon $h$). $\boldsymbol{G}_h$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom series, which is then aggregated to the higher levels by $\boldsymbol{S}$. Note that any method may have been used to produce the base forecasts.
 
-From this we can see the importance of the matrix $\boldsymbol{G}_h$, and the choice of it determines the performance of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}_h$, including the OLS and WLS, proposed by Hyndman et al. (2011) and Hyndman et al. (2016) respectively.
+The choice of $\boldsymbol{G}_h$ determines the performance of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}_h$, including the OLS and WLS, proposed by Hyndman et al. (2011) and Hyndman et al. (2016) respectively.
 
-### Mininum Trace (MinT) Reconciliation
+## Mininum Trace (MinT) Reconciliation
 
-Wickramasuriya et al. (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
+@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
 \boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
@@ -72,9 +75,9 @@ $$
 
 and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
 
-The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we need alternative covariance estimators.
+Wickramasuriya et al. (2019) also showed that MinT is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we need alternative covariance estimators.
 
-### Alternative Covariance Estimators
+## Alternative Covariance Estimators
 
 We reconstruct estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h \, g(\hat{\boldsymbol{W}}_1)$, and $g(.)$ is an estimator function of the unbiased sample covariance of in-sample one-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$
 
@@ -151,12 +154,59 @@ $$
 and $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$.
 
 
-## Experimental Design
+# Experimental Design
 
-The experimental design is to simulate a hierarchical time series data set, then apply the MinT reconciliation method with different covariance estimators. The data set will be split into training and test sets. In case of cross-validation, the training set will be further split into training and validation sets.
+The experimental design is to simulate a hierarchical time series data set, then apply the MinT reconciliation method with different covariance estimators. The data set will be split into training and test sets. In case of cross-validation, the training set will be further split into training and validation sets. The data generating process is described in @sec-dgp Appendix.
+
+- Put some graphs here
+
+# Timeline & Milestones
+
+```{r timeline}
+#| echo: false
+#| message: false
+#| warning: false
+library(tibble)
+library(knitr)
+
+tibble(
+  Period = c(
+    "March - April", 
+    "May", 
+    "June - July", 
+    "August",
+    "September - October"
+  ),
+  Task = c(
+    "Literature review, methods implementation (shrinkage, NOVELIST) + simulation framework",
+    "Simulation + NOVELIST assessment",
+    "Experiments with POET and PC-adjusted NOVELIST",
+    "Real-world application + evaluation",
+    "Final writing + submission"
+  ),
+  Deliverable = c(
+    "Main codes + paper draft",
+    "Results: NOVELIST",
+    "Results: POET & PC-adjusted NOVELIST",
+    "Application completed",
+    "Thesis manuscript"
+  )
+) %>%
+  kable(caption = "Project Timeline and Key Milestones")
+```
 
 
-          --------- put these into appendix -----------
+# Expected Contributions
+
+\pagebreak
+
+# Appendix {#sec-appendix} 
+
+## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
+
+![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%}
+
+## Data generating progress design {#sec-dgp}
 
 The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
@@ -174,27 +224,9 @@ The model is added with a Gaussian innovation process $\boldsymbol{e}_t$, with c
 
 3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations for all $p$ series.
 
-We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This is also to simulate the real-world scenario where the observed covariance matrix is not necessarily positive definite.
+We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process.
 
-              ----------------------------------------
 
-- Put some graphs here
-
-## Timeline & Milestones
-
-## Expected Contributions
-
-## References
-
-\pagebreak
-
-## Appendix {#sec-appendix} 
-
-### Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
-
-![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%}
-
-### Data generating progress design {#sec-dgp}
 
 <!-- ```{=latex} -->
 <!-- \begin{algorithm} -->
@@ -218,6 +250,10 @@ We have an option to randomly flip the signs of the covariance elements, which w
 <!-- \end{algorithm} -->
 <!-- ``` -->
 
+
+\pagebreak
+
+# References
 
 
 
