@@ -2,11 +2,13 @@
 title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
 format: 
   pdf:
-    # include-in-header:
-    #   text: |
-    #     \usepackage{amsmath}
-    #     \usepackage{mathspec}
-    #     \newcommand{\b}[1]{\boldsymbol{#1}}
+    include-in-header:
+      text: |
+        <!-- \usepackage{amsmath} -->
+        <!-- \usepackage{mathspec} -->
+        <!-- \newcommand{\b}[1]{\boldsymbol{#1}} -->
+        \usepackage{algorithm}
+        \usepackage{algpseudocode}
     mathspec: true
     number-sections: true
 ---
@@ -126,7 +128,7 @@ $$
 }
 $$
 
-On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors. Although it is not required to fit forecasting models multiple time, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value. The formal algorithm is given in @pseudo_novelist_cv, in the Appendix section.
+On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors. Although it is not required to fit forecasting models multiple time, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value. The formal algorithm is given in @fig-novelist_cv, in the @sec-appendix Appendix.
 
 ***(c) POET***
 
@@ -184,6 +186,42 @@ We have an option to randomly flip the signs of the covariance elements, which w
 
 ## References
 
-## Appendix
+\pagebreak
 
-Algorithm 1
+## Appendix {#sec-appendix} 
+
+#### Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {-}
+
+![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%}
+
+#### Data generating progress design {-}
+
+<!-- ```{=latex} -->
+<!-- \begin{algorithm} -->
+<!-- \caption{Cross-validation procedure to select optimal threshold $\delta^*$ for NOVELIST} -->
+<!-- \begin{algorithmic}[1] -->
+<!-- \State \textbf{Input:} Residual matrix $E$ of dimension $T \times p$, grid of threshold candidates $\{\delta_j\}$, window size $n$ -->
+<!-- \For{each threshold candidate $\delta_j$} -->
+<!--     \For{$t = n+1$ to $T$} -->
+<!--         \State Define in-sample window: $E_{1:n} = \{e_{t-n}, ..., e_{t-1}\}$ -->
+<!--         \State Compute sample covariance $\hat{\Sigma}_t = \frac{1}{n} E_{1:n}^\top E_{1:n}$ -->
+<!--         \State Compute thresholded covariance: $\hat{\Sigma}^{\text{thr}}_t = \text{Threshold}(\hat{\Sigma}_t, \delta_j)$ -->
+<!--         \State Compute NOVELIST: $\hat{\Sigma}^{\text{nov}}_t = (1 - \lambda) \hat{\Sigma}_t + \lambda \hat{\Sigma}^{\text{thr}}_t$ -->
+<!--         \State Compute inverse: $W_t = (\hat{\Sigma}^{\text{nov}}_t)^{-1}$ -->
+<!--         \State Compute MinT reconciliation matrix: $P_t = (S^\top W_t S)^{-1} S^\top W_t$ -->
+<!--         \State Compute forecast error: $e_t = y_t - S P_t \hat{y}_t$ -->
+<!--     \EndFor -->
+<!--     \State Compute total CV loss $L_j = \sum_t \|e_t\|^2$ -->
+<!-- \EndFor -->
+<!-- \State \textbf{Output:} $\delta^* = \arg\min_{\delta_j} L_j$ -->
+<!-- \end{algorithmic} -->
+<!-- \end{algorithm} -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
