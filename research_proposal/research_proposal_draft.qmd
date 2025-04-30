@@ -128,7 +128,7 @@ $$
 }
 $$
 
-On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors. Although it is not required to fit forecasting models multiple time, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value. The formal algorithm is given in @fig-novelist_cv, in the @sec-appendix Appendix.
+On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors. Although it is not required to fit forecasting models multiple time, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value. The formal algorithm is given in the @sec-novelist_cv Appendix.
 
 ***(c) POET***
 
@@ -190,11 +190,11 @@ We have an option to randomly flip the signs of the covariance elements, which w
 
 ## Appendix {#sec-appendix} 
 
-#### Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {-}
+### Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
 ![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%}
 
-#### Data generating progress design {-}
+### Data generating progress design {#sec-dgp}
 
 <!-- ```{=latex} -->
 <!-- \begin{algorithm} -->
