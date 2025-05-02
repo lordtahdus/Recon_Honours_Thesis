@@ -20,17 +20,17 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 
 # Objectives
 
-When forecasting sales for items in a cafe, such as matcha latte and mocha, the forecasts for each of these drinks (110 matcha lattes and 90 mochas) are often not consistent with the overall sales forecast for the cafe (180 drinks). This is a problem of forecasting hierarchical time series, where the individual forecasts do not satisfy the linear constraints of different levels of aggregation. Forecast reconciliation comes in to solve this problem, where the individual forecasts are adjusted to satisfy the given constraints. Among the various reconciliation methods, the **MinT** (Minimum Trace) is considered the optimal approach. However, this method requires an estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might neglect the prominent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
+\textcolor{red}{Globally, Starbucks manages thousands of outlets across dozens of countries, each projecting sales for dozens of beverages. Yet when regional, national, and brand-wide forecasts are aggregated, discrepancies of millions of dollars emerge simply because individual outlet forecasts fail to respect the hierarchical nature. Forecast reconciliation comes in to solve this huge problem, where the individual forecasts are adjusted to satisfy the aggregation constraints.} Among the various reconciliation methods, the **MinT** (Minimum Trace) is considered the optimal approach, however, it requires a good estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might neglect the prominent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
 
 # Background
 
-In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical/grouped time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more. (Athanasopolous, 2024)
+In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-The hierarchical structure can be represented as a tree, as shown in figure 1. The top level of the tree represents the total forecast, while the lower levels represent the individual forecasts. When there are attributes of interest that are crossed, such as the forecast for electricity demand can be broken down by usage purposes (e.g., residential and commercial), it will become a grouped time series.
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the individual series. When there are attributes of interest that are crossed, such as the electricity demand of any aggregation level (national, state, or regional) can be further broken down by usage purposes (e.g., residential, commercial), it will become a grouped time series.
 
 ![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
-Both of these structure can be represented using matrix algebra:
+We refer to both of these structures as hierarchical time series, and can be represented using matrix algebra:
 
 $$
 \boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
@@ -49,33 +49,35 @@ $$
 0 & 0 & 1 & 1 \\
 \multicolumn{4}{c}{\boldsymbol{I_n}}
 \end{array}
-\right],
+\right]
 $$
 
 # Methodology
 
-If we use @eq-1 to forecast the time series, we would not be utilising all the information in the data, since we only forecast the bottom-level series $\boldsymbol{b}_t$ then aggregate to the higher-level. Thus, Hyndman et al. (2011) showed that existing methods could be expressed as:
+\textcolor{red}{If we produce base forecasts for the bottom-level series $\hat{\boldsymbol{b}}_h$ (any method may have been used to produce the base forecasts) and then reconcile them to all aggregated levels $\tilde{\boldsymbol{y}}_h$, we would not be utilising the information from those higher levels. This is similar to the top-down and middle-out approaches, with appropriate summing matrix $\boldsymbol{S}$. Another issue with expressing this way is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing reconciled methods, which also provides a framework for new methods to be developed:}
 
 $$
-\tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_h,
+\tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h,
 $$ {#eq-2}
 
-for a suitable $n_b \times n$ matrix $\boldsymbol{G}_h$ (we can drop the subscript $h$ when $G$ does not depend on the forecast horizon $h$). $\boldsymbol{G}_h$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom series, which is then aggregated to the higher levels by $\boldsymbol{S}$. Note that any method may have been used to produce the base forecasts.
+for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom series, which is then aggregated to the higher levels by $\boldsymbol{S}$.
 
-The choice of $\boldsymbol{G}_h$ determines the performance of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}_h$, including the OLS and WLS, proposed by Hyndman et al. (2011) and Hyndman et al. (2016) respectively.
+The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}$, including the OLS and WLS, proposed by @Hyndman2011-jv and @Hyndman2016-ic respectively.
+
+- expand on about OLS and WLS
 
 ## Mininum Trace (MinT) Reconciliation
 
-@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
+@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
-\boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
+\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
 \boldsymbol{S}' \boldsymbol{W}_h^{-1}
 $$
 
 and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
 
-Wickramasuriya et al. (2019) also showed that MinT is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we need alternative covariance estimators.
+@Wickramasuriya2019-xq also showed that MinT is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we will be exploring alternative covariance estimators.
 
 ## Alternative Covariance Estimators
 
@@ -85,7 +87,7 @@ We reconstruct estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h 
 
 ***(a) Shrinkage***
 
-The proposed MinT approach by Wickramasuriya et al. (2019) uses the shrinkage estimator from Schäfer and Strimmer (2005). The shrinkage estimator is given by:
+The proposed MinT approach by @Wickramasuriya2019-xq uses the shrinkage estimator from @Schafer2005-yw. \textcolor{red}{It guarantees positive definiteness and huge variance reduction when $p>T$}. The shrinkage estimator is given by:
 
 $$
 \hat{\boldsymbol{W}}^{shr}_{1, D} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1
@@ -93,7 +95,7 @@ $$
 
 $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries of $\hat{\boldsymbol{W}}_1$. This approach will shrink the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal version, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
 
-Schäfer and Strimmer (2005) also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this setting, assuming the variances are constant:
+@Schafer2005-yw also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this setting, assuming the variances are constant:
 
 $$
 \hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} {\sum_{i \neq j} \hat{r}_{ij}}
@@ -107,7 +109,9 @@ The optimal lambda is obtained by minimising the $MSE(\hat{\boldsymbol{W}}_1) = 
 
 ***(b) NOVELIST***
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by Huang & Fryzlewicz (2019), is currently the main focus of this research project. It is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding, offering more flexibility. The NOVELIST estimator is given by:
+The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. \textcolor{red}{It introduces adaptive sparsity, retaining strong correlations while discarding weak, noisy links. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee positive definiteness.}
+
+The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
 
 $$
 \hat{\boldsymbol{W}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{W}}_{1, \delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{W}}_1
@@ -125,7 +129,7 @@ $$
 \hat{r}_{1,ij}^\delta = \operatorname{sign}(\hat{r}_{1,ij}) \, (|\hat{r}_{1,ij}| - \delta)_+.
 $$
 
-For a given threshold $\delta$, Huang & Fryzlewicz derived the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma (Ledoit and Wolf, 2003). It can be computed as:
+For a given threshold $\delta$, @Huang2019-ua derived the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma [@Ledoit2003-qv]. It can be computed as:
 
 $$
 \hat{\lambda}(\delta) = \frac{
@@ -137,11 +141,15 @@ $$
 
 On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors. Although it is not required to fit forecasting models multiple time, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value. The formal algorithm is given in the @sec-novelist_cv Appendix.
 
+\textcolor{red}{Note that when $\delta \in \bigl[ \text{max}_{ij}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.}
+
 \vspace{1em}
 
 ***(c) POET***
 
-The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by Fan et al. (2013), is another "sparse" + "non-sparse" covariance estimator. It starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$ (the correlation matrix after removing the first $K$ principal components). Then it applies thresholding to $\hat{\boldsymbol{R}}_{1, K}$. The POET estimator is given by:
+The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. \textcolor{red}{It takes the latent factors into account, and is appealing when there are common drivers in the time series within the hierarchy.}
+
+The POET method starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$ (the correlation matrix after removing the first $K$ principal components). Then it applies thresholding to $\hat{\boldsymbol{R}}_{1, K}$. The POET estimator is given by:
 
 $$
 \hat{\boldsymbol{R}}^{K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + T(\hat{\boldsymbol{R}}_{1, K})
@@ -151,15 +159,16 @@ where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th eigenvalue a
 
 \vspace{1em}
 
-***(d) NOVELIST with PC-adjusted***
+***(d) PC-adjusted NOVELIST***
 
-This approach is similar to the POET estimator. The difference is that POET apply thresholding to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, meanwhile we apply NOVELIST. It can be formulated as:
+\textcolor{red}{This approach is best of both worlds, leveraging the strengths of both NOVELIST and POET. The PC-adjusted NOVELIST overcomes the shortcomings of the current shrinkage estimator, taking prominent PCs into account while also offers extra flexibility.} The idea is to apply the NOVELIST estimator to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, and then add the principal components part back. The PC-adjusted NOVELIST estimator is formulated as:
 
 $$
 \hat{\boldsymbol{R}}^{N, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + \hat{\boldsymbol{R}}^{N}_{1, K}
+\; ,
 $$
 
-and $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$.
+and $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{N, K}_{1}$ is not guaranteed to be positive definite.
 
 
 # Experimental Design
@@ -228,7 +237,7 @@ The model is added with a Gaussian innovation process $\boldsymbol{e}_t$, with c
 
 1. A compound symmetric correlation matrix is used for each block of size $p_i$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution.
 
-2. The correlations between different blocks are imposed using the Algorithm 1 in Hardin, Garcia & Golan (2013).
+2. The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
 
 3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations for all $p$ series.
 
