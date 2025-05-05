@@ -96,13 +96,14 @@ and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecas
 
 @Wickramasuriya2019-xq also showed that MinT is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity and a diagonal matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we will be exploring alternative covariance estimators.
 
+
+
 ## Alternative Covariance Estimators
 
 We reconstruct estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h \, g(\hat{\boldsymbol{W}}_1)$, and $g(.)$ is an estimator function of the unbiased sample covariance of in-sample one-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$
 
-\vspace{1em}
 
-***(a) Shrinkage***
+### (a) Shrinkage {-}
 
 The proposed MinT approach by @Wickramasuriya2019-xq uses the shrinkage estimator from @Schafer2005-yw. \textcolor{red}{It guarantees positive definiteness and variance reduction for the covariance matrix, especially when $p>T$}. The shrinkage estimator is given by:
 
@@ -122,9 +123,8 @@ where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-st
 
 The optimal lambda is obtained by minimising the $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. The objective function itself does not take into account any possible principal components structure in the data, and is not flexible enough since it shrinks all off-diagonal elements equally towards zeros.
 
-\vspace{1em}
 
-***(b) NOVELIST***
+### (b) NOVELIST {-}
 
 The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. \textcolor{red}{It introduces adaptive sparsity, retaining strong correlations while discarding weak, noisy links. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee positive definiteness.}
 
@@ -160,9 +160,8 @@ On the other hand, the optimal threshold $\delta^*$ does not have a closed-form 
 
 \textcolor{red}{Note that when $\delta \in \bigl[ \text{max}_{ij}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.}
 
-\vspace{1em}
 
-***(c) POET***
+### (c) POET {-}
 
 The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. \textcolor{red}{It takes the latent factors into account, and is appealing when there are common drivers in the time series within the hierarchy.}
 
@@ -174,9 +173,8 @@ $$
 
 where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th eigenvalue and eigenvector of the sample covariance matrix. $T(.)$ is the thresholding function, which can be either soft-thresholding, hard-thresholding, or others.
 
-\vspace{1em}
 
-***(d) PC-adjusted NOVELIST***
+### (d) PC-adjusted NOVELIST {-}
 
 \textcolor{red}{This approach is best of both worlds, leveraging the strengths of both NOVELIST and POET. The PC-adjusted NOVELIST overcomes the shortcomings of the current shrinkage estimator, taking prominent PCs into account while also offers extra flexibility.} The idea is to apply the NOVELIST estimator to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, and then add the principal components part back. The PC-adjusted NOVELIST estimator is formulated as:
 
