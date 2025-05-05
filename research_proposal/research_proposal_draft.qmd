@@ -26,9 +26,12 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 
 In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the individual series. When there are attributes of interest that are crossed, such as the electricity demand of any aggregation level (national, state, or regional) can be further broken down by usage purposes (e.g., residential, commercial), it will become a grouped time series.
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the individual series. When there are attributes of interest that are crossed, such as the electricity demand of any aggregation level (national, state, or regional) can be further broken down by usage purposes (e.g., residential, commercial), it will become a grouped time series (illustrated in @fig-grouped).
 
-![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
+![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
+
+![Diagram of 2-level grouped structure, and can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
+
 
 We refer to both of these structures as hierarchical time series, and can be represented using matrix algebra:
 
@@ -101,7 +104,7 @@ We reconstruct estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h 
 
 ***(a) Shrinkage***
 
-The proposed MinT approach by @Wickramasuriya2019-xq uses the shrinkage estimator from @Schafer2005-yw. \textcolor{red}{It guarantees positive definiteness and huge variance reduction when $p>T$}. The shrinkage estimator is given by:
+The proposed MinT approach by @Wickramasuriya2019-xq uses the shrinkage estimator from @Schafer2005-yw. \textcolor{red}{It guarantees positive definiteness and variance reduction for the covariance matrix, especially when $p>T$}. The shrinkage estimator is given by:
 
 $$
 \hat{\boldsymbol{W}}^{shr}_{1, D} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1
