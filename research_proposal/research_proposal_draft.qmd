@@ -227,14 +227,16 @@ tibble(
   Period = c(
     "March - April", 
     "May", 
-    "June - July", 
-    "August",
-    "September - October"
+    "June",
+    "July", 
+    "August - September",
+    "October"
   ),
   Task = c(
     "Literature review, methods implementation (shrinkage, NOVELIST) + simulation framework",
     "Simulation + NOVELIST assessment",
     "Experiments with POET and PC-adjusted NOVELIST",
+    "Exploration of other high-dimensional covariance estimators",
     "Real-world application + evaluation",
     "Final writing + submission"
   ),
@@ -242,6 +244,7 @@ tibble(
     "Main codes + paper draft",
     "Results: NOVELIST",
     "Results: POET & PC-adjusted NOVELIST",
+    "Results: other estimators",
     "Application completed",
     "Thesis manuscript"
   )
@@ -265,20 +268,20 @@ tibble(
 The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
 $$
-\boldsymbol{y}_t = \boldsymbol{A} \boldsymbol{y}_{t-1} + \boldsymbol{e}_t,
+\boldsymbol{b}_t = \boldsymbol{A} \boldsymbol{b}_{t-1} + \boldsymbol{\epsilon}_t,
 $$
 
-where $\boldsymbol{A}$ is a $p \times p$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $p_i \times p_i$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
+where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
 
-The model is added with a Gaussian innovation process $\boldsymbol{e}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
+The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
 
-1. A compound symmetric correlation matrix is used for each block of size $p_i$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution.
+1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
 
 2. The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
 
-3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations for all $p$ series.
+3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
 
-We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process.
+We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $V$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma' = V \Sigma V$.
 
 
 
