@@ -102,7 +102,9 @@ $$
 
 and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
 
-@Wickramasuriya2019-xq also showed that MinT is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity and a diagonal matrix, respectively. However, the MinT solution hinges on a reliable estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we will be exploring alternative covariance estimators.
+@Wickramasuriya2019-xq also showed that MinT is an algebraic generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity and a diagonal matrix, respectively. 
+
+The MinT solution hinges on a reliable, positive-definite estimate of $\boldsymbol{W}_h$, which is challenging to estimate in high-dimensional setting. Therefore, we will be exploring alternative covariance estimators.
 
 
 
@@ -124,7 +126,8 @@ $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entri
 @Schafer2005-yw also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this setting, assuming the variances are constant:
 
 $$
-\hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} {\sum_{i \neq j} \hat{r}_{ij}}
+\hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} 
+{\sum_{i \neq j} \hat{r}_{ij}^2}
 $$
 
 where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$) to shrink it toward an identity matrix
