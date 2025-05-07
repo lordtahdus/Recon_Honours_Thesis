@@ -20,28 +20,28 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 
 # Objectives
 
-\textcolor{red}{Globally, Starbucks manages thousands of outlets across dozens of countries, each projecting sales for dozens of beverages. Yet when regional, national, and brand-wide forecasts are aggregated, discrepancies of millions of dollars emerge simply because individual outlet forecasts fail to respect the hierarchical nature. Forecast reconciliation comes in to solve this huge problem, where the individual forecasts are adjusted to satisfy the aggregation constraints.} Among the various reconciliation methods, the **MinT** (Minimum Trace) is considered the optimal approach, however, it requires a good estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might neglect the prominent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
+Globally, Starbucks manages thousands of outlets across dozens of countries, each projecting sales for dozens of beverages. Yet when regional, national, and brand-wide forecasts are generated, discrepancies of millions of dollars emerge simply because individual outlet forecasts fail to respect the hierarchical nature of the data. Forecast reconciliation comes in to solve this huge problem, where the individual forecasts are adjusted to satisfy the aggregation constraints. Among the various reconciliation methods, **MinT** (Minimum Trace) is considered the optimal approach, however, it requires a good estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might neglect the prominent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
 
 # Background
 
 In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the individual series. When there are attributes of interest that are crossed, such as the electricity demand of any aggregation level (national, state, or regional) can be further broken down by usage purposes (e.g., residential, commercial), it will become a grouped time series (illustrated in @fig-grouped).
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the electricity demand at any aggregation level (national, state, or regional) is also considered by usage purposes (e.g., residential, commercial), the structure is described as a grouped time series (illustrated in @fig-grouped).
 
 ![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
 
-![Diagram of 2-level grouped structure, and can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
+![Diagram of 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
 
 
-We refer to both of these structures as hierarchical time series, and can be represented using matrix algebra:
+For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
 
 $$
 \boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
-$$ {#eq-1}
+$$
 
 where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t$ contains all observations at time $t$.
 
-The example summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
+The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
 
 $$
 \boldsymbol{S} = 
@@ -52,40 +52,48 @@ $$
 0 & 0 & 1 & 1 \\
 \multicolumn{4}{c}{\boldsymbol{I_n}}
 \end{array}
-\right]
+\right].
 $$
 
 # Methodology
 
-\textcolor{red}{If we produce base forecasts for the bottom-level series $\hat{\boldsymbol{b}}_h$ (any method may have been used to produce the base forecasts) and then reconcile them to all aggregated levels $\tilde{\boldsymbol{y}}_h$, we would not be utilising the information from those higher levels. This is similar to the top-down and middle-out approaches, with appropriate summing matrix $\boldsymbol{S}$. Another issue with expressing this way is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing reconciled methods, which also provides a framework for new methods to be developed:}
+\color{red}
+
+Assume we produce h-step-ahead base forecasts $\hat{\boldsymbol{b}}_h$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
+
+$$
+\tilde{\boldsymbol{y}}_h = \boldsymbol{S} \hat{\boldsymbol{b}}_h .
+$$ {#eq-sb}
+
+We refer to $\tilde{\boldsymbol{y}}_h$ as coherent forecasts, as they respect the aggregation structure. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. 
+
+Another issue with expressing reconciled methods as in @eq-sb is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing methods, which also provides a framework for new methods to be developed:
+
+\color{black}
 
 $$
 \tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h,
-$$ {#eq-2}
+$$ {#eq-sgy}
 
-for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom series, which is then aggregated to the higher levels by $\boldsymbol{S}$.
-
-\color{red}
+for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$.
 
 The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}$, the first attempts at least squares forecast reconciliation were made by @Hyndman2011-jv.
 
-The proposed the optimal $\boldsymbol{G}$ based on the regression model:
+They proposed the optimal $\boldsymbol{G}$ based on the regression model:
 
 $$
 \hat{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{\beta}_h + \boldsymbol{\epsilon}_h,
 $$
 
-where $\boldsymbol{\epsilon}_h = \tilde{\boldsymbol{y}}_h - \hat{\boldsymbol{y}}_h$ is the coherency error with variance $\boldsymbol{V}_h$. This led to the GLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{V}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{V}_h^{-1}$
+where $\boldsymbol{\epsilon}_h = \tilde{\boldsymbol{y}}_h - \hat{\boldsymbol{y}}_h$ is the coherency error with variance $\boldsymbol{V}_h$. This led to the GLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{V}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{V}_h^{-1}$.
 
 However, the covariance matrix $\boldsymbol{V}_h$ is unknown (and later shown by @Wickramasuriya2019-xq to be unidentifiable), and replaced by an identity matrix. The method then collapses into an OLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{S})^{-1} \boldsymbol{S}'$.
 
-An obvious drawback of the OLS solution is that it weights all series in any level equally. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecasts. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
+An obvious drawback of the OLS solution is that it weights all series in any level equally, regardless of its scale or forecast error variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
 
-\color{black}
+## Minimum Trace (MinT) Reconciliation
 
-## Mininum Trace (MinT) Reconciliation
-
-@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-2, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
+@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-sgy. They showed that this is equivalent to minimising the trace of the base forecast error covariance matrix (sum of the diagonal elements - the variances). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
 \boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
