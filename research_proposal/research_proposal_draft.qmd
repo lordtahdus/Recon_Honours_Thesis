@@ -6,8 +6,8 @@ format:
       text: |
         <!-- \usepackage{amsmath} -->
         <!-- \usepackage{mathspec} -->
-        <!-- \usepackage{algorithm} -->
-        <!-- \usepackage{algpseudocode} -->
+        \usepackage{algorithm}
+        \usepackage{algpseudocode}
         \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
     mathspec: true
     number-sections: true
@@ -110,8 +110,9 @@ The MinT solution hinges on a reliable, positive-definite estimate of $\boldsymb
 
 ## Alternative Covariance Estimators
 
-We reconstruct the estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h \, g(\hat{\boldsymbol{W}}_1)$, where $k_h > 0$. The function $g(.)$ is an estimator of the unbiased sample covariance matrix of the in-sample one-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t|t-1} \hat{\boldsymbol{e}}_{t|t-1}'$, and $T$ is the length of series' time dimension.
+We reconstruct the estimator of $\boldsymbol{W}_h$ as $\hat{\boldsymbol{W}}_h = k_h \, g(\hat{\boldsymbol{W}}_1)$, where $k_h > 0$. The function $g(.)$ is an estimator of the unbiased sample covariance matrix of the in-sample one-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{\boldsymbol{e}}_{t} \hat{\boldsymbol{e}}_{t}'$, and $T$ is the length of series' time dimension.
 
+<!-- $\boldsymbol{e}}_{t|t-1}$ we keep things simplified without the conditional subscript -->
 
 ### (a) Shrinkage {-}
 
@@ -144,20 +145,20 @@ The method is based on the idea of soft-thresholding the sample covariance matri
 
 $$
 \hat{\boldsymbol{W}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{W}}_{1, \delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{W}}_1,
-$$
+$$ {#eq-novelist-cov}
 
 where $\hat{\boldsymbol{W}}_{1, \delta}$ is the thresholded version of $\hat{\boldsymbol{W}}_{1}$. By convenient setting, we can rewrite it in terms of correlation:
 
 $$
 \hat{\boldsymbol{R}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{R}}_{1,\delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{R}}_1,
-$$
+$$ {#eq-novelist-cor}
 
 In this setting, $\hat{\boldsymbol{R}}_{1,\delta}$ is the thresholded correlation matrix, where each element is regularised by:
 
 $$
 \hat{r}_{1,ij}^\delta = \text{sign}(\hat{r}_{1,ij}) \, 
 \text{max}(|\hat{r}_{1,ij}| - \delta, \; 0),
-$$
+$$ {#eq-soft-thr}
 
 where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma [@Ledoit2003-qv]. It can be computed as:
 
@@ -169,7 +170,7 @@ $$
 } {
   \sum_{i \neq j} (\hat{r}_{1,ij} - \hat{r}_{1,ij}^\delta)^2
 },
-$$
+$$ {#eq-lambda-thr}
 
 where $\boldsymbol{1}(.)$ is the indicator function.
 
@@ -261,7 +262,43 @@ tibble(
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
-![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%}
+```{=latex}
+\begin{algorithm}
+\caption{Cross-validation procedure}
+\begin{algorithmic}[1]
+
+\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$, set of threshold candidates $\Delta$, window size $v$.
+
+\State $\hat{\boldsymbol{e}}_t = \boldsymbol{y}_t - \hat{\boldsymbol{y}}_t$ for $t = 1,\dots,T$
+
+\For{$i = v:T-1$ do}
+    \State $j = i - v +1$
+    \State $\hat{\boldsymbol{W}}_j = \frac{1}{v} \sum_{t=j}^{i} \hat{\boldsymbol{e}}_{t} \hat{\boldsymbol{e}}_{t}'$
+    \State $\hat{\boldsymbol{D}}_j = \text{diag}(\hat{\boldsymbol{W}}_j)$
+    \State $\hat{\boldsymbol{R}}_j = \hat{\boldsymbol{D}}_j^{-1/2} \hat{\boldsymbol{W}}_j \hat{\boldsymbol{D}}_j^{-1/2}$
+    \For{$\delta \in \Delta$}
+        \State Compute thresholded correlation $\hat{\boldsymbol{R}}_{j,\delta}$ using Equation 5
+        \State Compute $\hat{\lambda}_{j,\delta}$ using Equation 6
+        \State Compute $\hat{\boldsymbol{R}}^{N}_{j,\delta}$ using Equation 4
+        \State $\hat{\boldsymbol{W}}^{N}_{j,\delta} = \hat{\boldsymbol{D}}_j^{1/2} \hat{\boldsymbol{R}}^{N}_{j,\delta} \hat{\boldsymbol{D}}_j^{1/2}$
+        \State $\boldsymbol{G} = (\boldsymbol{S}' \hat{\boldsymbol{W}}^{N^{-1}}_{j,\delta} \boldsymbol{S})^{-1} \boldsymbol{S}' \hat{\boldsymbol{W}}^{N^{-1}}_{j,\delta}$
+        \State Reconciled forecasts $\tilde{\boldsymbol{y}}_{i+1 | \delta} = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_{i+1}$
+        \State $\tilde{\boldsymbol{e}}_{i+1 | \delta} = \boldsymbol{y}_{i+1} - \tilde{\boldsymbol{y}}_{i+1 | \delta}$
+    \EndFor
+\EndFor
+
+\State $\text{MSE}_{\delta} = \frac{1}{T-v} \sum_{i=v}^{T-1} (\tilde{\boldsymbol{e}}_{i+1 | \delta})^2$ for each $\delta \in \Delta$
+\State $\hat{\delta}^* = \arg\min_{\delta \in \Delta} \text{MSE}_{\delta}$
+\State Compute $\hat{\lambda}^*$ on all training data using $\hat{\delta}^*$
+\State Compute $\hat{\boldsymbol{R}}_1^*$ using $\hat{\delta}^*$ and $\hat{\lambda}^*$ on all training data, using Equation 3
+
+\State \textbf{Output:} Estimate of optimal $\hat{\delta}^*$
+
+\end{algorithmic}
+\end{algorithm}
+```
+
+<!-- ![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%} -->
 
 ## Data generating progress design {#sec-dgp}
 
@@ -284,28 +321,6 @@ The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$,
 We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $V$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma' = V \Sigma V$.
 
 
-
-<!-- ```{=latex} -->
-<!-- \begin{algorithm} -->
-<!-- \caption{Cross-validation procedure to select optimal threshold $\delta^*$ for NOVELIST} -->
-<!-- \begin{algorithmic}[1] -->
-<!-- \State \textbf{Input:} Residual matrix $E$ of dimension $T \times p$, grid of threshold candidates $\{\delta_j\}$, window size $n$ -->
-<!-- \For{each threshold candidate $\delta_j$} -->
-<!--     \For{$t = n+1$ to $T$} -->
-<!--         \State Define in-sample window: $E_{1:n} = \{e_{t-n}, ..., e_{t-1}\}$ -->
-<!--         \State Compute sample covariance $\hat{\Sigma}_t = \frac{1}{n} E_{1:n}^\top E_{1:n}$ -->
-<!--         \State Compute thresholded covariance: $\hat{\Sigma}^{\text{thr}}_t = \text{Threshold}(\hat{\Sigma}_t, \delta_j)$ -->
-<!--         \State Compute NOVELIST: $\hat{\Sigma}^{\text{nov}}_t = (1 - \lambda) \hat{\Sigma}_t + \lambda \hat{\Sigma}^{\text{thr}}_t$ -->
-<!--         \State Compute inverse: $W_t = (\hat{\Sigma}^{\text{nov}}_t)^{-1}$ -->
-<!--         \State Compute MinT reconciliation matrix: $P_t = (S^\top W_t S)^{-1} S^\top W_t$ -->
-<!--         \State Compute forecast error: $e_t = y_t - S P_t \hat{y}_t$ -->
-<!--     \EndFor -->
-<!--     \State Compute total CV loss $L_j = \sum_t \|e_t\|^2$ -->
-<!-- \EndFor -->
-<!-- \State \textbf{Output:} $\delta^* = \arg\min_{\delta_j} L_j$ -->
-<!-- \end{algorithmic} -->
-<!-- \end{algorithm} -->
-<!-- ``` -->
 
 
 \pagebreak
