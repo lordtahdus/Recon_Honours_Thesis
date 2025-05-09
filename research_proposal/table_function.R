@@ -5,7 +5,7 @@ library(dplyr)
 library(purrr)
 library(kableExtra)
 library(knitr)
-
+library(webshot2)
 
 
 sim1 <- readRDS("D:/Github/Recon_Honours_Thesis/research_proposal/sim_results/S36-6-2-1_T100_M500_par.rds")
@@ -128,3 +128,9 @@ my_kable <- MSE_display %>%
   }
 
 my_kable
+
+save_kable(
+  my_kable,
+  file = "D:/Github/Recon_Honours_Thesis/research_proposal/my_kable.png",
+  keep_tex = TRUE
+)
