@@ -9,6 +9,7 @@ format:
         \usepackage{algorithm}
         \usepackage{algpseudocode}
         \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+        \usepackage{array}
     mathspec: true
     number-sections: true
 execute:
@@ -355,7 +356,8 @@ In this preliminary experiment, the observations are generated from a different 
 
 Regarding other covariance estimators, we will implement the POET and PC-adjusted NOVELIST estimators, and experiment whether the prominent principal component structure can be exploited to improve the out-of-sample forecast performance. The project will continue to explore other high-dimensional covariance estimators, and their compatibility with the MinT reconciliation method.
 
-- Put some graphs here
+
+\pagebreak
 
 # Timeline & Milestones
 
@@ -369,35 +371,48 @@ library(kableExtra)
 
 tibble(
   Period = c(
-    "March - April", 
+    "March",
+    "April", 
     "May", 
     "June",
-    "July", 
-    "August - September",
+    "July-August", 
+    "September",
     "October"
   ),
   Task = c(
-    "Literature review, methods implementation (shrinkage, NOVELIST) + simulation framework",
-    "Simulation + NOVELIST assessment",
-    "Experiments with POET and PC-adjusted NOVELIST",
-    "Exploration of other high-dimensional covariance estimators",
-    "Real-world application + evaluation",
+    "Initial setup and understanding the research scope. Preliminary knowledge and Literature review",
+    "Implementing the Min Trace approach with the shrinkage and NOVELIST estimator. Implementing rolling-window cross-validation for choosing NOVELIST threshold parameter. Exploring simulation framework.",
+    "Executing simulation on different settings, in order to assess the performance and behaviours of NOVELIST under different conditions. Writing research proposal and presenting research project.",
+    "Implementing POET and PC-adjusted NOVELIST estimators. Assessing whether prominent principal components structure can be exploited to improve the out-of-sample forecast performance.",
+    "Exploring other high-dimensional covariance estimators",
+    "Real-world application + evaluation (e.g. company sales data or Australia tourism data)",
     "Final writing + submission"
   ),
   Deliverable = c(
-    "Main codes + paper draft",
-    "Results: NOVELIST",
-    "Results: POET & PC-adjusted NOVELIST",
-    "Results: other estimators",
-    "Application completed",
+    "Literature review + paper draft",
+    "Main codes for estimators + simulation framework + cross-validation",
+    "NOVELIST simulation results + research proposal + presentation",
+    "POET & PC-adjusted NOVELIST simulation results",
+    "Other estimators simulation results",
+    "Application",
     "Thesis manuscript"
   )
 ) %>%
-  kable(caption = "Project Timeline and Key Milestones")
+  kable(
+    format = "latex",
+    booktabs = TRUE,
+    longtable = TRUE,
+    caption = "Project Timeline and Key Milestones",
+    escape = TRUE
+  ) %>%
+  column_spec(1, width = "1.9cm") %>%
+  column_spec(2, width = "8cm") %>%
+  column_spec(3, width = "4.8cm") %>%
+  kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 
 
-# Expected Contributions
+<!-- # Expected Contributions -->
 
 \pagebreak
 
