@@ -76,19 +76,8 @@ $$ {#eq-sgy}
 
 for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_h$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$.
 
-The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}$, the first attempts at least squares forecast reconciliation were made by @Hyndman2011-jv.
+The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_h$. Methods are developed to estimate $\boldsymbol{G}$, including the OLS and WLS developed by @Hyndman2011-jv and @Hyndman2016-ic, respectively. A more detailed explanation of these methods can be found in the @sec-ols-wls Appendix.
 
-They proposed the optimal $\boldsymbol{G}$ based on the regression model:
-
-$$
-\hat{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{\beta}_h + \boldsymbol{\epsilon}_h,
-$$
-
-where $\boldsymbol{\epsilon}_h = \tilde{\boldsymbol{y}}_h - \hat{\boldsymbol{y}}_h$ is the coherency error with variance $\boldsymbol{V}_h$. This led to the GLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{V}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{V}_h^{-1}$.
-
-However, the covariance matrix $\boldsymbol{V}_h$ is unknown (and later shown by @Wickramasuriya2019-xq to be unidentifiable), and replaced by an identity matrix. The method then collapses into an OLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{S})^{-1} \boldsymbol{S}'$.
-
-An obvious drawback of the OLS solution is that it weights all series in any level equally, regardless of its scale or forecast error variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
 
 ## Minimum Trace (MinT) Reconciliation
 
@@ -417,6 +406,21 @@ tibble(
 \pagebreak
 
 # Appendix {#sec-appendix} 
+
+## OLS and WLS Reconciliation {#sec-ols-wls}
+
+The first attempts at least squares forecast reconciliation were made by @Hyndman2011-jv. They proposed the optimal $\boldsymbol{G}$ based on the regression model:
+
+$$
+\hat{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{\beta}_h + \boldsymbol{\epsilon}_h,
+$$
+
+where $\boldsymbol{\epsilon}_h = \tilde{\boldsymbol{y}}_h - \hat{\boldsymbol{y}}_h$ is the coherency error with variance $\boldsymbol{V}_h$. This led to the GLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{V}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{V}_h^{-1}$.
+
+However, the covariance matrix $\boldsymbol{V}_h$ is unknown (and later shown by @Wickramasuriya2019-xq to be unidentifiable), and replaced by an identity matrix. The method then collapses into an OLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{S})^{-1} \boldsymbol{S}'$.
+
+An obvious drawback of the OLS solution is that it weights all series in any level equally, regardless of its scale or forecast error variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
+
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
