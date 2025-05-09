@@ -28,9 +28,9 @@ In time series forecasting, aggregation occurs in a variety of settings. A concr
 
 The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the electricity demand at any aggregation level (national, state, or regional) is also considered by usage purposes (e.g., residential, commercial), the structure is described as a grouped time series (illustrated in @fig-grouped).
 
-![Diagram of 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
 
-![Diagram of 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
 
 
 For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
@@ -39,7 +39,7 @@ $$
 \boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
 $$
 
-where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n_b$-vector) to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t$ contains all observations at time $t$.
+where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t \in \mathbb{R}^n$ contains all observations at time $t$.
 
 The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
 
@@ -50,7 +50,7 @@ $$
 1 & 1 & 1 & 1 \\
 1 & 1 & 0 & 0 \\
 0 & 0 & 1 & 1 \\
-\multicolumn{4}{c}{\boldsymbol{I_n}}
+\multicolumn{4}{c}{\boldsymbol{I_4}}
 \end{array}
 \right].
 $$
@@ -68,8 +68,6 @@ $$ {#eq-sb}
 We refer to $\tilde{\boldsymbol{y}}_h$ as coherent forecasts, as they respect the aggregation structure. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. 
 
 Another issue with expressing reconciled methods as in @eq-sb is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing methods, which also provides a framework for new methods to be developed:
-
-\color{black}
 
 $$
 \tilde{\boldsymbol{y}}_h = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_h,
@@ -93,7 +91,7 @@ An obvious drawback of the OLS solution is that it weights all series in any lev
 
 ## Minimum Trace (MinT) Reconciliation
 
-@Wickramasuriya2019-xq reframed the problem by taking an optimisation approach. They formulated the problem as minimising the variances of all reconciled forecasts from @eq-sgy. They showed that this is equivalent to minimising the trace of the base forecast error covariance matrix (sum of the diagonal elements - the variances). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
+@Wickramasuriya2019-xq reframed the problem as minimising the variances of all reconciled forecasts from @eq-sgy. They showed that this is equivalent to minimising the trace of the base forecast error covariance matrix (sum of the diagonal elements - the variances). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
 \boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
@@ -139,7 +137,7 @@ The optimal $\lambda_D$ is obtained by minimising the mean squared error of $\ha
 
 ### (b) NOVELIST {-}
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. \textcolor{red}{It introduces adaptive sparsity, retaining strong correlations while discarding weak, noisy correlations. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee to be positive definite.}
+The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. \textcolor{red}{It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy correlations. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee to be positive definite.}
 
 The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
 
@@ -160,9 +158,9 @@ $$
 \text{max}(|\hat{r}_{1,ij}| - \delta, \; 0),
 $$ {#eq-soft-thr}
 
-where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma [@Ledoit2003-qv]. It can be computed as:
+where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma [@Ledoit2003-qv], following similar logic to @Schafer2005-yw. It can be computed as:
 
-- \textcolor{red}{@Huang2019-ua mentioned Ledoit-Wolf's lemma}
+<!-- - \textcolor{red}{@Huang2019-ua mentioned Ledoit-Wolf's lemma} -->
 
 $$
 \hat{\lambda}(\delta) = \frac{
@@ -174,9 +172,7 @@ $$ {#eq-lambda-thr}
 
 where $\boldsymbol{1}(.)$ is the indicator function.
 
-On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The formal algorithm is given in the @sec-novelist_cv Appendix. Although it is not required to fit forecasting models multiple times, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value.
-
-<!-- The idea is to, for each rolling-window set, loop through a range of threshold values, compute the corresponding $\hat{\lambda}(\delta)$ and $\hat{\boldsymbol{R}}^{N}_{1}$. Then we select the one that minimises the average out-of-sample reconciled forecast errors -->
+On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to find the threshold $\hat{\delta^*}$, with the corresponding $\hat{\lambda}^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\hat{\delta^*}, \hat{\lambda}^*)$, that minimises the average out-of-sample reconciled forecast errors. The formal algorithm is given in the @sec-novelist_cv Appendix. Although it is not required to fit forecasting models multiple times, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value.
 
 Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.
 
