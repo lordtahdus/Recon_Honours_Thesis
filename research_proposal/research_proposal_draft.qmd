@@ -365,6 +365,7 @@ Regarding other covariance estimators, we will implement the POET and PC-adjuste
 #| warning: false
 library(tibble)
 library(knitr)
+library(kableExtra)
 
 tibble(
   Period = c(
