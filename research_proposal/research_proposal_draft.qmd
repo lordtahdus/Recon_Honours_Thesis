@@ -347,6 +347,13 @@ my_kable
 }
 ```
 
+In this experiment, where the series are contemporaneously correlated, the Minimum Trace approach improves the out-of-sample forecast accuracy tremendously, especially for the levels closer to the aggregated top level. Both MinT(Shrink) and MinT(N) consistently outperform the MinT(Sample) at any level and forecasting horizon in terms of accuracy. 
+
+The results also show that the MinT(Shrink) and MinT(N) methods are comparable, and almost identical in terms of accuracy. The MinT(Shrink) forecasts are slightly more accurate, but again, the difference is negligible. This suggests that the NOVELIST estimator might be shrinking the same way as the shrinkage estimator, and a more thorough investigation is needed to understand the differences between them.
+
+In this preliminary experiment, the observations are generated from a different data generating process for each simulation, attempting to assess the predictive accuracy between methods. In future experiments, we will consider a fixed data generating process, in order to assess the behaviors of NOVELIST's shrinkage intensity parameter $\lambda_{\delta}$ and threshold $\delta$. We will also explore the the effect of correlations and larger hierarchical structures, where the in-sample one-step-ahead base forecast error variance $\hat{\boldsymbol{W}}_1$ is not positive definite.
+
+Regarding other covariance estimators, we will implement the POET and PC-adjusted NOVELIST estimators, and experiment whether the prominent principal component structure can be exploited to improve the out-of-sample forecast performance. The project will continue to explore other high-dimensional covariance estimators, and their compatibility with the MinT reconciliation method.
 
 - Put some graphs here
 
