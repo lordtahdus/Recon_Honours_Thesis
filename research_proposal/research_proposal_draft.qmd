@@ -434,7 +434,7 @@ An obvious drawback of the OLS solution is that it weights all series in any lev
 
 \State $\hat{\boldsymbol{e}}_t = \boldsymbol{y}_t - \hat{\boldsymbol{y}}_t$ for $t = 1,\dots,T$
 
-\For{$i = v:T-1$ do}
+\For{$i = v:T-1$}
     \State $j = i - v +1$
     \State $\hat{\boldsymbol{W}}_j = \frac{1}{v} \sum_{t=j}^{i} \hat{\boldsymbol{e}}_{t} \hat{\boldsymbol{e}}_{t}'$
     \State $\hat{\boldsymbol{D}}_j = \text{diag}(\hat{\boldsymbol{W}}_j)$
