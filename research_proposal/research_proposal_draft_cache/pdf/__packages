@@ -1,9 +1,8 @@
-base
-methods
-datasets
-utils
-grDevices
-graphics
-stats
 tibble
 knitr
+tidyr
+ggplot2
+tsibble
+dplyr
+purrr
+kableExtra
