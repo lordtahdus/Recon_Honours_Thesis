@@ -58,8 +58,6 @@ $$
 
 # Methodology
 
-\color{red}
-
 Assume we produce h-step-ahead base forecasts $\hat{\boldsymbol{b}}_h$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
 
 $$
@@ -119,15 +117,17 @@ $$
 {\sum_{i \neq j} \hat{r}_{ij}^2}
 $$
 
-where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$).
+where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$). The optimal estimate is obtained by minimising $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. 
 
-The optimal $\lambda_D$ is obtained by minimising the mean squared error of $\hat{\boldsymbol{W}}_1$: $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. The objective function itself does not take into account any possible principal components structure in the data, and is not flexible enough since it shrinks all off-diagonal elements equally towards zeros.
+However, the hierarchical time series data often exhibit a prominent principal components structure, which is not taken into account by the shrinkage estimator. Taking an example of the Australian domestic overnight trips data set [@tourismau-jk], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@fabletools-fa], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix, which we scale by logarithm, are plotted in @fig-eigen. We can see that the first 4 eigenvalues are significantly larger than the others, indicating a prominent principal components structure.
 
-- Screeplot of eigenvalues
+![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/tourism_eigen.png){#fig-eigen width="70%"}
+
+Additionally, the shrinkage estimator shrinks all off-diagonal elements towards zeros but not completely discard small, noisy correlations. This results in a covariance matrix that is not sparse. In the next sections, we will explore several options that can take the prominent structure into account, and/or also discard small correlations.
 
 ### (b) NOVELIST {-}
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. \textcolor{red}{It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy correlations. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee to be positive definite.}
+The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy correlations. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee to be positive definite.
 
 The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
 
@@ -201,7 +201,7 @@ The experiment starts from simulating a hierarchical time series data set, then 
 
 In this preliminary experiment, we consider a slightly large hierarchical structure. The structure consists of 3 levels with a total of 45 series. The bottom level has 36 series and are aggregated in groups of size six to form six level-1 series. The level-1 series are then aggregated in groups of size three to form two level-2 series, which are finally aggregated to form the top level. The observations at bottom level is generated from a VAR(1) process. A more detailed data generating process is described in @sec-dgp Appendix.
 
-For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated 500 times, in which the parameters for data generating process is also randomly generated. The results are presented in @tbl-sim-summary.
+For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated 500 times, in which the parameters for data generating process is also randomly generated. The results are presented in @tbl-sim-summary.
 
 ```{r tbl-sim-summary}
 #| echo: false
@@ -421,6 +421,7 @@ However, the covariance matrix $\boldsymbol{V}_h$ is unknown (and later shown by
 
 An obvious drawback of the OLS solution is that it weights all series in any level equally, regardless of its scale or forecast error variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
 
+\pagebreak
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
@@ -461,6 +462,7 @@ An obvious drawback of the OLS solution is that it weights all series in any lev
 ```
 
 <!-- ![NOVELIST cross-validation procedure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/novelist_cv_algo.png){#fig-novelist_cv height=70%} -->
+
 
 ## Data generating progress design {#sec-dgp}
 
