@@ -1,5 +1,6 @@
 ---
 title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
+author: Vincent Su
 format: 
   pdf:
     include-in-header:
@@ -119,9 +120,9 @@ $$
 
 where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$). The optimal estimate is obtained by minimising $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. 
 
-However, the hierarchical time series data often exhibit a prominent principal components structure, which is not taken into account by the shrinkage estimator. Taking an example of the Australian domestic overnight trips data set [@tourismau-jk], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@fabletools-fa], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix, which we scale by logarithm, are plotted in @fig-eigen. We can see that the first 4 eigenvalues are significantly larger than the others, indicating a prominent principal components structure.
+However, the hierarchical time series data often exhibit a prominent principal components structure, which is not taken into account by the shrinkage estimator. Taking an example of the Australian domestic overnight trips data set [@tourismau-jk], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@fabletools-fa], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix are plotted in @fig-eigen. We can see that the point of inflexion occurs at the component with 5th largest eigenvalue, indicating a prominent principal components structure.
 
-![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/tourism_eigen.png){#fig-eigen width="70%"}
+![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/eigen_tourism.png){#fig-eigen width="70%"}
 
 Additionally, the shrinkage estimator shrinks all off-diagonal elements towards zeros but not completely discard small, noisy correlations. This results in a covariance matrix that is not sparse. In the next sections, we will explore several options that can take the prominent structure into account, and/or also discard small correlations.
 

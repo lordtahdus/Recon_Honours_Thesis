@@ -61,8 +61,9 @@ eigen(temp)$value[1:20] |>
 
 eigen(temp)$value[1:20] |>
   plot(
-    ylab = "Log of Eigenvalue",
-    xlab = " ",
-    ylim = c(0, 1e4)
+    ylab = "Eigenvalue",
+    xlab = "Component",
+    ylim = c(0, 1e5),
+    type = "b"
     # log = "y",
-  ); abline(v=4.5, lty=2, col="purple")
+  ); abline(v=5, lty=2, lwd=1.5, col="purple")
