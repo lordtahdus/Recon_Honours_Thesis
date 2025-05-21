@@ -26,9 +26,9 @@ Globally, Starbucks manages thousands of outlets across dozens of countries, eac
 
 # Background
 
-In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be electricity demand forecasting, where the national demand is the sum of the demands for each state, and demand for each state comes from many regions within the states. Forecasting national tourism or Gross Domestic Product (GDP) is another example of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be the Starbucks sales data, where their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, and the sales for each city come from many outlets. Data on national tourism, electricity demand, or Gross Domestic Product (GDP) are similar examples of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the electricity demand at any aggregation level (national, state, or regional) is also considered by usage purposes (e.g., residential, commercial), the structure is described as a grouped time series (illustrated in @fig-grouped).
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series (illustrated in @fig-grouped).
 
 ![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
 
@@ -57,9 +57,21 @@ $$
 \right].
 $$
 
+<!-- \left[ -->
+<!-- \begin{array}{cccc} -->
+<!-- 1 & 1 & 1 & 1 \\ -->
+<!-- 1 & 1 & 0 & 0 \\ -->
+<!-- 0 & 0 & 1 & 1 \\ -->
+<!-- 1 & 0 & 0 & 0 \\ -->
+<!-- 0 & 1 & 0 & 0 \\ -->
+<!-- 0 & 0 & 1 & 0 \\ -->
+<!-- 0 & 0 & 0 & 1 \\ -->
+<!-- \end{array} -->
+<!-- \right] -->
+
 # Methodology
 
-Assume we produce h-step-ahead base forecasts $\hat{\boldsymbol{b}}_h$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
+Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_h$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
 
 $$
 \tilde{\boldsymbol{y}}_h = \boldsymbol{S} \hat{\boldsymbol{b}}_h .
@@ -80,14 +92,14 @@ The choice of $\boldsymbol{G}$ determines the composition of reconciled forecast
 
 ## Minimum Trace (MinT) Reconciliation
 
-@Wickramasuriya2019-xq reframed the problem as minimising the variances of all reconciled forecasts from @eq-sgy. They showed that this is equivalent to minimising the trace of the base forecast error covariance matrix (sum of the diagonal elements - the variances). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
+@Wickramasuriya2019-xq reframed the problem as minimising the variances of all reconciled forecast errors. They showed that this is equivalent to minimising the trace of the reconciled forecast error covariance matrix (sum of the diagonal elements - the variances). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by
 
 $$
 \boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
 \boldsymbol{S}' \boldsymbol{W}_h^{-1}
 $$
 
-and $\boldsymbol{W}_h$ is the covariance matrix of the h-step-ahead base forecast errors.
+and $\boldsymbol{W}_h$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors.
 
 @Wickramasuriya2019-xq also showed that MinT is an algebraic generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity and a diagonal matrix, respectively. 
 
@@ -124,11 +136,11 @@ However, the hierarchical time series data often exhibit a prominent principal c
 
 ![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/eigen_tourism.png){#fig-eigen width="70%"}
 
-Additionally, the shrinkage estimator shrinks all off-diagonal elements towards zeros but not completely discard small, noisy correlations. This results in a covariance matrix that is not sparse. In the next sections, we will explore several options that can take the prominent structure into account, and/or also discard small correlations.
+Additionally, the shrinkage estimator shrinks all off-diagonal elements towards zeros with equal weights. We might prefer to better preserve strong signals, and largely discard the effects small, noisy correlations. In the next sections, we will explore several options that can take the prominent structure into account, and/or also largely discard the effects of small correlations.
 
 ### (b) NOVELIST {-}
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy correlations. NOVELIST offers more flexibility than the shrinkage estimator, however, it does not guarantee to be positive definite.
+The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy effects. NOVELIST offers more flexibility than the shrinkage estimator, which is useful when we believe that only a few variables are truly correlated. However, it does not guarantee to be positive definite.
 
 The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
 
@@ -170,7 +182,7 @@ Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \b
 
 ### (c) POET {-}
 
-The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. It takes the latent factors into account, and is appealing when there are common drivers in the time series within the hierarchy.
+The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. It takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example.
 
 The POET method starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$ (the correlation matrix after removing the first $K$ principal components). Then it applies thresholding to $\hat{\boldsymbol{R}}_{1, K}$. The POET estimator is given by:
 
@@ -420,7 +432,7 @@ where $\boldsymbol{\epsilon}_h = \tilde{\boldsymbol{y}}_h - \hat{\boldsymbol{y}}
 
 However, the covariance matrix $\boldsymbol{V}_h$ is unknown (and later shown by @Wickramasuriya2019-xq to be unidentifiable), and replaced by an identity matrix. The method then collapses into an OLS solution: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{S})^{-1} \boldsymbol{S}'$.
 
-An obvious drawback of the OLS solution is that it weights all series in any level equally, regardless of its scale or forecast error variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
+An obvious drawback of the OLS solution is that it assumes an identity matrix for the covariance, ignoring information on the errors' scale and variance. The issue prompted @Hyndman2016-ic to propose a WLS solution, where the series are weighted by the inverse variances of the base forecast errors. The WLS solution is $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{\Lambda}_h^{-1}$. $\boldsymbol{\Lambda}_h = \text{diag} (\boldsymbol{W}_h)$ and $\boldsymbol{W}_h = Var(\boldsymbol{y}_h - \hat{\boldsymbol{y}}_h)$.
 
 \pagebreak
 
