@@ -1,8 +1,8 @@
-tibble
-knitr
 tidyr
 ggplot2
 tsibble
 dplyr
 purrr
 kableExtra
+knitr
+tibble
