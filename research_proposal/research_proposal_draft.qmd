@@ -30,9 +30,9 @@ In time series forecasting, aggregation occurs in a variety of settings. A concr
 
 The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series (illustrated in @fig-grouped).
 
-![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%" height="40%"}
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
-![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%" height="40%"}
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
 
 
 For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
