@@ -329,21 +329,22 @@ Others:
 The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
 $$
-\bm{y}_t = \bm{A} \bm{y}_{t-1} + \bm{e}_t,
+\boldsymbol{b}_t = \boldsymbol{A} \boldsymbol{b}_{t-1} + \boldsymbol{\epsilon}_t,
 $$
 
-where $\bm{A}$ is a $p \times p$ block diagonal matrix of autoregressive coefficients $\bm{A} = diag(\bm{A}_1, \ldots, \bm{A}_m)$, with each $\bm{A}_i$ being a $p_i \times p_i$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
+where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
 
-The model is added with a Gaussian innovation process $\bm{e}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
+The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
 
-1. A compound symmetric correlation matrix is used for each block of size $p_i$ in $\bm{A}_i$, where the coefficients are sampled from a uniform distribution.
+1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
 
-2. The correlations between different blocks are imposed using the Algorithm 1 in Hardin, Garcia & Golan (2013).
+2. The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
 
-3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations for all $p$ series.
+3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
 
-We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This is also to simulate the real-world scenario where the observed covariance matrix is not necessarily positive definite.
+We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $\boldsymbol{V}$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma^* = \boldsymbol{V} \Sigma \boldsymbol{V}$.
 
+For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated $M = 10000$ times, in which the parameters for data generating process is fixed.
 
 # 5. Empirical Analysis
 
