@@ -1,0 +1,404 @@
+---
+title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
+author: Vincent Su
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        <!-- \usepackage{amsmath} -->
+        <!-- \usepackage{mathspec} -->
+        \usepackage{algorithm}
+        \usepackage{algpseudocode}
+        \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+        \usepackage{array}
+    mathspec: true
+    number-sections: true
+execute:
+  cache: true
+bibliography: D:/Github/Recon_Honours_Thesis/references.bib
+# bibliographystyle: apa
+csl: D:/Github/Recon_Honours_Thesis/apa.csl
+---
+
+
+# Notation
+
+-   Scalar $y_t$
+
+-   Vector $\boldsymbol{y}_t$
+
+-   Matrix $\boldsymbol{S}$
+
+-   Covariance matrix of in-sample 1-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1$
+
+-   Its shrinkage estimator with diagonal target $\hat{\boldsymbol{W}}^{shr}_{1, D}$
+
+-   Its NOVELIST estimator $\hat{\boldsymbol{W}}^{shr}_{1, thr}$
+
+# Abstract
+
+[ This is pasted from the Project Description ]{style="color:red;"}
+
+A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these structures is challenging because the individual forecasts do not satisfy the linear constraints present in the data. To mitigate this issue, various forecast reconciliation approaches have been proposed in the literature, where the individual forecasts are adjusted by minimizing the mean squared reconciliation errors. Among these, the MinT (Minimum Trace) approach is widely used, and this method requires an estimate of the covariance matrix of the base forecast errors. 
+
+<!-- Although the sample covariance matrix is a natural choice, its performance is greatly impacted by the high-dimensional nature of hierarchical time series encountered in practice. Most published research uses shrinkage-type estimators that shrink the sample covariance matrix toward a diagonal matrix. -->
+
+In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, and compare with the proposed estimators from published paper. with a primary focus on the NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, which shrinks the sample covariance toward its thresholded version. A thorough literature review will also identify other high-dimensional covariance estimators relevant to this project.
+
+# Introduction
+
+-   **Context & Motivation:**
+
+    Hierarchical (and grouped) time series are collections of time series data connected via linear constraints (linear combinations?). Forecast reconciliation ensures that forecasts satisfy these constraints.
+
+    One of the widely used appoarch is the MinT approach. It minimises the trace of reconciled forecast errors covariance matrix (minimum variance) and depends critically on the covariance matrix of h-step ahead base forecast errors $W_h$.
+
+## Background
+
+In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be the Starbucks sales data, where their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, and the sales for each city come from many outlets. Data on national tourism, electricity demand, or Gross Domestic Product (GDP) are similar examples of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series (illustrated in @fig-grouped).
+
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
+
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
+
+
+For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
+
+$$
+\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
+$$
+
+where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t \in \mathbb{R}^n$ contains all observations at time $t$.
+
+The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
+
+$$
+\boldsymbol{S} = 
+\left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I_4}}
+\end{array}
+\right].
+$$
+
+-   **Problem Statement:**
+
+    The sample covariance matrix, although natural, suffers in high-dimensional settings. Especially when the number of series $p$ is huge and larger than the time dimension $T$, the sample covariance matrix is non-positive definite (rank T if p\>T).
+
+    The shrinkage estimators come in to tackle this issue. The shrinkage estimator with diagonal target (often shrinking toward a diagonal matrix) is proven to produce a guaranteed PD matrix (Schäfer & Strimmer, 2005). However, as it shrinks the covariance matrix toward a diagonal one, it does not have flexibility and might neglect the prominent structure presented in the covariance matrix.
+
+    An alternative approach is to perform shrinkage of the sample covariance towards its thresholded version, instead of a diagonal matrix. This is the NOVELIST (NOVEL Integration of the Sample and Thresholded covariance estimators) method proposed by Huang & Fryzlewicz (2019). They introduced thresholding functions applied only to off-diagonal elements, allowing for more flexibility in the estimation.
+
+    [ ... can include more estimators ... ]{style="color:red;"}
+
+-   **Research Aim:**
+
+    This paper assesses the reconciled forecasting performance of MinT approach using various covariance estimators, with a focus on the NOVELIST estimator.
+
+-   **Paper Outline:**
+
+    The paper is structured as follows:
+
+    -   A literature review of forecast reconciliation and covariance estimation.
+    -   A description of the methodology, including the NOVELIST estimator and its principal-component-adjusted variant.
+    -   An experimental design using both synthetic and real hierarchical time series.
+    -   Empirical results and discussion.
+    -   Conclusions and suggestions for future work.
+
+# Literature Review
+
+## Forecast Reconciliation in Hierarchical and Grouped Time Series
+
+Forecast reconciliation converts a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system. Early work focused on heuristic single-level strategies, including bottom-up, top-down, and middle-out (...), each of which exploits only part of the information in the hierarchy and can induce bias or high variance. 
+
+- Cite the single level approach
+- Athanasopoulos et al., 2024
+
+Hyndman et al. (2011) first showed that all single-level methods can be written as $\tilde{y} = SG\hat{y}$, where $S$ is the summing matrix and $G$ is a matrix that maps base forecasts $\hat{y}$ to into the bottom level. Treating reconciliation as a GLS regression problem, Hyndman et al. (2011) found that it yields a solution for $G$, but the required covariance matrix of reconcilation error is not identifiable in practice (Wickramasuriya et al., 2019).
+
+- (Talk more about how others transform it to OLS, WLS,..)
+- Di Fonzo and Marini (2011)
+- Athanasopoulos et al. (2009)
+
+Wickramasuriya, Athanasopoulos & Hyndman (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors. 
+
+The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $W_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of the h-step-ahead base forecast error covariance $W_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
+
+- Structural Scaling, based only on the struc- ture of the hierarchy (Athanasopoulos et al., 2017)
+- Shrinkage estimators (Schäfer & Strimmer, 2005; Ledoit & Wolf, 2004)
+
+Empirical evaluations have demonstrated that MinT with an appropriate covariance estimate often outperforms earlier methods in both simulation and real data studies.
+
+
+<!-- Wickramasuriya et al. (2019) adopt the diagonal-target Ledoit–Wolf approach and show analytically that any scalar multiple $k_h$ from $W_h = k_hW_1$ suffices for point-forecast reconciliation.  However, simulation and empirical evidence suggest that ignoring cross-series error correlation can leave accuracy untapped, especially in highly-coupled systems (energy, retail SKUs).  Their subsequent work imposes non-negativity constraints via quadratic programming citeturn0file2 and studies bias-robust variants (MinT-U). -->
+
+<!-- Empirical findings to date   -->
+<!-- Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates single-level baselines in most studies; WLS or diagonal-shrinkage MinT is the current industry default; but gains plateau when off-diagonals are weak citeturn0file9.  Only a handful of papers explore richer covariance structures (e.g., block or factor shrinkage), and none benchmark them systematically against NOVELIST-type estimators. -->
+
+
+
+
+## Covariance Estimation in High Dimensions
+
+-   Limitations of the sample covariance matrix.
+-   Estimators used by Wickramasuriya et al. (2019).
+-   Shrinkage estimators:
+    -   Diagonal shrinkage (e.g., Schäfer & Strimmer, Ledoit & Wolf).
+    -   NOVELIST estimator and its Cross-validation & PC-adjusted variant.
+    -   ...
+
+## Relevance to Forecast Reconciliation
+
+-   Discuss how covariance estimation affects MinT performance.
+-   Identify research gaps.
+
+# Methodology
+
+## Theoretical Framework
+
+### Hierarchical and Grouped Time Series Structure
+
+Hierarchical/Grouped time series satisfy a set of linear constraints, often represented as: 
+$$
+\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
+$$ 
+where $\boldsymbol{S}$ is a summing matrix of order $m x n$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n$-vector) to the series at aggregation levels above. The $m$-vector $\boldsymbol{y}_t$ contains all observations at time $t$
+
+Let $\hat{y}_t(h)$ be a vector of h-step-ahead base forecasts for each time series in the collection, using information up to and including time $t$, and stacked in the same order as $y_t$. Then we can rewrite the linear reconciliation forecast equation as:
+
+$$
+\tilde{y}_t(h) = SP\hat{y}_t(h)
+$$ where $P$ is an $n$x$p$ matrix that maps the base forecasts into bottom-level disaggregated forecasts $\hat{b}_t$.
+
+-   Expand on this, include graphs, examples...
+
+### The Minimum Trace (MinT) Reconciliation
+
+*Lemma 1*: ... the covariance matrix of the h-step-ahead reconciled forecast errors is given by
+
+$$
+Var[y_{t+h} - \tilde{y}_t(h) | F_t] = SPW_hP'S'
+$$ 
+
+where $W_h = E[\hat{e}_t(h) \hat{e}'_t(h) | F_t]$ is the covariance matrix of the h-step-ahead base forecast errors.
+
+The MinT reconciled forecast is obtained by minimizing the trace of the above covariance matrix: $$
+\min \; tr(SPW_hP'S') \quad \text{subject to } PS = I.
+$$
+
+which gives the optimal reconciliation matrix: $$
+P = (S' W_h^{-1} S)^{-1} S' W_h^{-1}
+$$
+
+## Covariance Estimation Approaches
+
+-   $W_h$ is challenging to estimate, when $h>1$, we need alternative estimates.
+
+For forecast errors $\hat{e}_{t|t-1}$, the unbiased sample covariance of in-sample one-step-ahead base forecast errors is: 
+
+$$
+\hat{W}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{e}_{t|t-1} \hat{e}_{t|t-1}^{\top}.
+$$
+
+We reconstruct estimator of $W_h$ as $\hat{W}_h = k_h \, g(\hat{W}_1)$, where $k_h > 0$ simplifying the computation.
+
+We will look into a few "sparse" + "non-sparse" approaches that apply on $\hat{W}_1$.
+
+### The Shrinkage Estimator
+
+$$
+g(\hat{W}_1) = \hat{W}^{shr}_{1, D} = \lambda_D \hat{W}_{1, D} + (1 - \lambda_D) \hat{W}_1
+$$ is the shrinkage estimator with diagonal target, proposed by Schäfer & Strimmer (2005). $\hat{W}_{1, D}$ is a diagonal matrix comprising the diagonal entries of $\hat{W}_1$. This approach will shrink the covariance matrix $\hat{W}_1$ towards its diagonal version, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
+
+They also proposed an optimal shrinkage intensity parameter $\lambda_D$ for this setting, assuming the variances are constant:
+
+$$
+\hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} {\sum_{i \neq j} \hat{r}_{ij}}
+$$
+
+where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$) to shrink it toward an identity matrix
+
+-   (need more explanation on how to obtain optimal param)
+
+-   Walkthrough the shrinkage estimator method
+
+### The NOVELIST Estimator
+
+$$
+g(\hat{W}_1) = \hat{W}^{shr}_{1, thr} = \lambda_{\delta} \hat{W}_{1, \delta} + (1 - \lambda_{\delta}) \hat{W}_1
+$$
+
+is the NOVELIST shrinkage estimator, proposed by Huang & Fryzlewicz (2019). By convenient setting, we rewrite as sample correlation:
+
+$$
+\hat{R}^{shr}_{1, thr} = \lambda_{\delta} \hat{R}_{1,\delta} + (1 - \lambda_{\delta}) \hat{R}_1,
+$$
+
+$\hat{R}_{1, \delta}$ is a thresholded correlation matrix, in which thresholding is applied only to each off-diagonal element. This approach will shrink the sample correlation matrix $\hat{R}_1$ towards its thresholded version. There are various choices for the thresholding function, in this work, we use the soft-thresholding operator, defined as:
+
+$$
+\hat{r}_{1,ij}^\delta = \operatorname{sign}(\hat{r}_{1,ij}) \, (|\hat{r}_{1,ij}| - \delta)_+.
+$$
+
+After calculated the NOVELIST correlation matrix, we can re-obtain the covariance matrix $\hat{W}^{shr}_{1, thr} = \hat{D}_1^{1/2} \hat{R}^{shr}_{1, thr} \; \hat{D}_1^{1/2}$, where $\hat{D}_1 = diag(\hat{W}_1)$ is the diagonal matrix and the elements are given by the variances of the 1-step-ahead base forecast errors.
+
+For a given threshold $\delta$, the optimal shrinkage intensity parameter $\lambda(\delta)$ can be estimated as:
+
+$$
+\hat{\lambda}(\delta) = \frac{
+  \sum_{i \neq j} \widehat{Var}(\hat{r}_{1,ij}) \; I(|\hat{r}_{1,ij}| \leq \delta)
+} {
+  \sum_{i \neq j} (\hat{r}_{1,ij} - \hat{r}_{1,ij}^\delta)^2
+}
+$$
+
+The formula derived using Ledoit-Wolf's lemma (Ledoit and Wolf, 2003) by Huang & Fryzlewicz. For the threshold parameter $\delta$, we use a cross-validation to select the optimal value
+
+-   ALGORITHM WALKTHROUGH
+
+**Principal-Component Adjustment**
+
+When a factor structure is present, the procedure is:
+
+<!-- 1. *Standardize Forecast Errors:* -->
+
+<!-- $$ -->
+
+<!-- \hat{z}_{t|t-1} = D_1^{-1/2} \hat{e}_{t|t-1}. -->
+
+<!-- $$ -->
+
+<!-- 2. *Construct the Data Matrix:* -->
+
+<!-- $$ -->
+
+<!-- \hat{Z} = [\hat{z}_{1|0}, \hat{z}_{2|1}, \dots, \hat{z}_{T|T-1}] -->
+
+<!-- $$ -->
+
+<!-- 3. *Extract Principal Components:* -->
+
+<!-- Compute the top K eigenvectors to form: -->
+
+<!-- $$ -->
+
+<!-- \hat{B} = T^{-1} \hat{Z} \hat{V}_K, -->
+
+<!-- $$ -->
+
+<!-- where $\hat{V}_K$ contains the K largest eigenvectors. -->
+
+<!-- 4. *Residual Component:* -->
+
+<!-- $$ -->
+
+<!-- \hat{Z}_{\text{rem}} = \hat{Z} - \hat{B}\hat{V}_K^\top. -->
+
+<!-- $$ -->
+
+<!-- Then compute the residual correlation: -->
+
+<!-- $$ -->
+
+<!-- \tilde{R}_1 = T^{-1\prime} (\hat{Z} - \hat{B}\hat{V}_K^\top)(\hat{Z} - \hat{B}\hat{V}_K^\top)^\top. -->
+
+<!-- $$ -->
+
+<!-- 5. *Apply NOVELIST to Residuals:* -->
+
+<!-- $$ -->
+
+<!-- \hat{R}_{K,\text{shr}}^{1,\text{thresh}} = \lambda \tilde{R}_\delta^1 + (1 - \lambda) \tilde{R}_1. -->
+
+<!-- $$ -->
+
+<!-- 6. *Reconstruct Full Estimator:* -->
+
+<!-- $$ -->
+
+<!-- \hat{R}_{1,K} = \hat{B}\hat{B}^\top + \hat{R}_{K,\text{shr}}^{1,\text{thresh}}. -->
+
+<!-- $$ -->
+
+<!-- **Shrinkage Intensity \(\lambda\):**   -->
+
+<!-- Estimated as -->
+
+<!-- $$ -->
+
+<!-- \hat{\lambda} = \max\Big(0, \min\Big(1, \frac{\sum_{i \neq j} \operatorname{Var}(\hat{r}_{1,ij})}{\sum_{i \neq j} \hat{r}_{1,ij}^2}\Big)\Big). -->
+
+<!-- $$ -->
+
+<!-- **Threshold \(\delta\):**   -->
+
+<!-- Selected via grid search or cross-validation. -->
+
+### Alternative Covariance Estimators
+
+Brief overview of other high-dimensional estimators used in the literature for benchmarking.
+
+Others:
+
+-   Principal Orthogonal complEment Thresholding (POET) by Fan et al. (2013)
+
+    A Low-rank + Sparse method.\
+    It decompose the covariance matrix into a prominent principle components part (Low-rank) and a orthogonal complement part $R_K$. Then apply thresholding to $R_K$.\
+    This is similar to the NOVELIST estimator with PC-adjusted, but the difference is that POET apply thresholding to $R_K$, not a NOVELIST function.
+
+
+
+# Simulation
+
+-   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data).
+-   Characteristics such as dimensionality, frequency, and hierarchical structure.
+
+**Experimental Design**
+
+-   Design different cases of simulation studies and real-data experiments.
+-   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability...
+-   Visualisation...
+
+
+**General Set-up I'm currently working on**
+
+The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
+
+$$
+\boldsymbol{b}_t = \boldsymbol{A} \boldsymbol{b}_{t-1} + \boldsymbol{\epsilon}_t,
+$$
+
+where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
+
+The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
+
+1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
+
+2. The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
+
+3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+
+We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $\boldsymbol{V}$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma^* = \boldsymbol{V} \Sigma \boldsymbol{V}$.
+
+For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated $M = 10000$ times, in which the parameters for data generating process is fixed.
+
+# Empirical Analysis
+
+-   Comparative analysis of forecast performance using different covariance estimators on real-life dataset.
+
+# Discussion and Conclusion
+
+-   Evaluate how covariance estimation impacts the MinT reconciliation.
+
+-   Advantages and limitations of the NOVELIST estimator (with different ways of choosing threshold parameter).
+
+-   Practical considerations: Computational efficiency, robustness, and ease of implementation.
+
+-   Limitations of the research
+
+# References
