@@ -20,8 +20,7 @@ bibliography: D:/Github/Recon_Honours_Thesis/references.bib
 csl: D:/Github/Recon_Honours_Thesis/apa.csl
 ---
 
-
-# Notation
+# Notation {-}
 
 -   Scalar $y_t$
 
@@ -35,9 +34,9 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 
 -   Its NOVELIST estimator $\hat{\boldsymbol{W}}^{shr}_{1, thr}$
 
-# Abstract
+# Abstract {-}
 
-[ This is pasted from the Project Description ]{style="color:red;"}
+[This is pasted from the Project Description]{style="color:red;"}
 
 A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these structures is challenging because the individual forecasts do not satisfy the linear constraints present in the data. To mitigate this issue, various forecast reconciliation approaches have been proposed in the literature, where the individual forecasts are adjusted by minimizing the mean squared reconciliation errors. Among these, the MinT (Minimum Trace) approach is widely used, and this method requires an estimate of the covariance matrix of the base forecast errors. 
 
@@ -62,7 +61,6 @@ The hierarchical structure can be represented as a tree, as shown in @fig-hierar
 ![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
 ![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
-
 
 For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
 
@@ -94,7 +92,7 @@ $$
 
     An alternative approach is to perform shrinkage of the sample covariance towards its thresholded version, instead of a diagonal matrix. This is the NOVELIST (NOVEL Integration of the Sample and Thresholded covariance estimators) method proposed by Huang & Fryzlewicz (2019). They introduced thresholding functions applied only to off-diagonal elements, allowing for more flexibility in the estimation.
 
-    [ ... can include more estimators ... ]{style="color:red;"}
+    [... can include more estimators ...]{style="color:red;"}
 
 -   **Research Aim:**
 
@@ -114,34 +112,31 @@ $$
 
 ## Forecast Reconciliation in Hierarchical and Grouped Time Series
 
-Forecast reconciliation converts a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system. Early work focused on heuristic single-level strategies, including bottom-up, top-down, and middle-out (...), each of which exploits only part of the information in the hierarchy and can induce bias or high variance. 
+Forecast reconciliation converts a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system. Early work focused on heuristic single-level strategies, including bottom-up, top-down, and middle-out (...), each of which exploits only part of the information in the hierarchy and can induce bias or high variance.
 
-- Cite the single level approach
-- Athanasopoulos et al., 2024
+-   Cite the single level approach
+-   Athanasopoulos et al., 2024
 
 Hyndman et al. (2011) first showed that all single-level methods can be written as $\tilde{y} = SG\hat{y}$, where $S$ is the summing matrix and $G$ is a matrix that maps base forecasts $\hat{y}$ to into the bottom level. Treating reconciliation as a GLS regression problem, Hyndman et al. (2011) found that it yields a solution for $G$, but the required covariance matrix of reconcilation error is not identifiable in practice (Wickramasuriya et al., 2019).
 
-- (Talk more about how others transform it to OLS, WLS,..)
-- Di Fonzo and Marini (2011)
-- Athanasopoulos et al. (2009)
+-   (Talk more about how others transform it to OLS, WLS,..)
+-   Di Fonzo and Marini (2011)
+-   Athanasopoulos et al. (2009)
 
-Wickramasuriya, Athanasopoulos & Hyndman (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors. 
+Wickramasuriya, Athanasopoulos & Hyndman (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors.
 
 The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $W_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of the h-step-ahead base forecast error covariance $W_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
 
-- Structural Scaling, based only on the struc- ture of the hierarchy (Athanasopoulos et al., 2017)
-- Shrinkage estimators (Schäfer & Strimmer, 2005; Ledoit & Wolf, 2004)
+-   Structural Scaling, based only on the struc- ture of the hierarchy (Athanasopoulos et al., 2017)
+-   Shrinkage estimators (Schäfer & Strimmer, 2005; Ledoit & Wolf, 2004)
 
 Empirical evaluations have demonstrated that MinT with an appropriate covariance estimate often outperforms earlier methods in both simulation and real data studies.
-
 
 <!-- Wickramasuriya et al. (2019) adopt the diagonal-target Ledoit–Wolf approach and show analytically that any scalar multiple $k_h$ from $W_h = k_hW_1$ suffices for point-forecast reconciliation.  However, simulation and empirical evidence suggest that ignoring cross-series error correlation can leave accuracy untapped, especially in highly-coupled systems (energy, retail SKUs).  Their subsequent work imposes non-negativity constraints via quadratic programming citeturn0file2 and studies bias-robust variants (MinT-U). -->
 
 <!-- Empirical findings to date   -->
+
 <!-- Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates single-level baselines in most studies; WLS or diagonal-shrinkage MinT is the current industry default; but gains plateau when off-diagonals are weak citeturn0file9.  Only a handful of papers explore richer covariance structures (e.g., block or factor shrinkage), and none benchmark them systematically against NOVELIST-type estimators. -->
-
-
-
 
 ## Covariance Estimation in High Dimensions
 
@@ -163,11 +158,9 @@ Empirical evaluations have demonstrated that MinT with an appropriate covariance
 
 ### Hierarchical and Grouped Time Series Structure
 
-Hierarchical/Grouped time series satisfy a set of linear constraints, often represented as: 
-$$
+Hierarchical/Grouped time series satisfy a set of linear constraints, often represented as: $$
 \boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
-$$ 
-where $\boldsymbol{S}$ is a summing matrix of order $m x n$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n$-vector) to the series at aggregation levels above. The $m$-vector $\boldsymbol{y}_t$ contains all observations at time $t$
+$$ where $\boldsymbol{S}$ is a summing matrix of order $m x n$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n$-vector) to the series at aggregation levels above. The $m$-vector $\boldsymbol{y}_t$ contains all observations at time $t$
 
 Let $\hat{y}_t(h)$ be a vector of h-step-ahead base forecasts for each time series in the collection, using information up to and including time $t$, and stacked in the same order as $y_t$. Then we can rewrite the linear reconciliation forecast equation as:
 
@@ -183,7 +176,7 @@ $$ where $P$ is an $n$x$p$ matrix that maps the base forecasts into bottom-level
 
 $$
 Var[y_{t+h} - \tilde{y}_t(h) | F_t] = SPW_hP'S'
-$$ 
+$$
 
 where $W_h = E[\hat{e}_t(h) \hat{e}'_t(h) | F_t]$ is the covariance matrix of the h-step-ahead base forecast errors.
 
@@ -199,7 +192,7 @@ $$
 
 -   $W_h$ is challenging to estimate, when $h>1$, we need alternative estimates.
 
-For forecast errors $\hat{e}_{t|t-1}$, the unbiased sample covariance of in-sample one-step-ahead base forecast errors is: 
+For forecast errors $\hat{e}_{t|t-1}$, the unbiased sample covariance of in-sample one-step-ahead base forecast errors is:
 
 $$
 \hat{W}_1 = \frac{1}{T} \sum_{t=1}^{T} \hat{e}_{t|t-1} \hat{e}_{t|t-1}^{\top}.
@@ -351,8 +344,6 @@ Others:
     It decompose the covariance matrix into a prominent principle components part (Low-rank) and a orthogonal complement part $R_K$. Then apply thresholding to $R_K$.\
     This is similar to the NOVELIST estimator with PC-adjusted, but the difference is that POET apply thresholding to $R_K$, not a NOVELIST function.
 
-
-
 # Simulation
 
 -   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data).
@@ -363,7 +354,6 @@ Others:
 -   Design different cases of simulation studies and real-data experiments.
 -   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability...
 -   Visualisation...
-
 
 **General Set-up I'm currently working on**
 
@@ -377,11 +367,11 @@ where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregres
 
 The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
 
-1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
+1.  A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
 
-2. The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
+2.  The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
 
-3. The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+3.  The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
 
 We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $\boldsymbol{V}$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma^* = \boldsymbol{V} \Sigma \boldsymbol{V}$.
 
