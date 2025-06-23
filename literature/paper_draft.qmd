@@ -42,43 +42,11 @@ A collection of time series connected via a set of linear constraints is known a
 
 # Introduction
 
--   **Context & Motivation:**
-
-    Hierarchical (and grouped) time series are collections of time series data connected via linear constraints (linear combinations?). Forecast reconciliation ensures that forecasts satisfy these constraints.
-
-    One of the widely used appoarch is the MinT approach. It minimises the trace of reconciled forecast errors covariance matrix (minimum variance) and depends critically on the covariance matrix of h-step ahead base forecast errors $W_h$.
-
-## Background
+<!-- ############  Background  ############ -->
 
 In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be the Starbucks sales data, where their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, and the sales for each city come from many outlets. Data on national tourism, electricity demand, or Gross Domestic Product (GDP) are similar examples of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series (illustrated in @fig-grouped).
 
-![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
-
-![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
-
-For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
-
-$$
-\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
-$$
-
-where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ to the series at aggregation levels above. The $n$-vector $\boldsymbol{y}_t \in \mathbb{R}^n$ contains all observations at time $t$.
-
-The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
-
-$$
-\boldsymbol{S} = 
-\left[
-\begin{array}{cccc}
-1 & 1 & 1 & 1 \\
-1 & 1 & 0 & 0 \\
-0 & 0 & 1 & 1 \\
-\multicolumn{4}{c}{\boldsymbol{I_4}}
-\end{array}
-\right].
-$$
 
 -   **Problem Statement:**
 
@@ -148,25 +116,60 @@ Empirical evaluations have demonstrated that MinT with an appropriate covariance
 -   Discuss how covariance estimation affects MinT performance.
 -   Identify research gaps.
 
-# Methodology
 
-## Theoretical Framework
 
-### Hierarchical and Grouped Time Series Structure
+# Theoretical Framework
 
-Hierarchical/Grouped time series satisfy a set of linear constraints, often represented as: $$
-\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
-$$ where $\boldsymbol{S}$ is a summing matrix of order $m x n$ which aggregates the bottom-level series $\boldsymbol{b}_t$ ($n$-vector) to the series at aggregation levels above. The $m$-vector $\boldsymbol{y}_t$ contains all observations at time $t$
+## Hierarchical tructure
 
-Let $\hat{y}_t(h)$ be a vector of h-step-ahead base forecasts for each time series in the collection, using information up to and including time $t$, and stacked in the same order as $y_t$. Then we can rewrite the linear reconciliation forecast equation as:
+The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series (illustrated in @fig-grouped).
+
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
+
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
+
+For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
 
 $$
-\tilde{y}_t(h) = SP\hat{y}_t(h)
-$$ where $P$ is an $n$x$p$ matrix that maps the base forecasts into bottom-level disaggregated forecasts $\hat{b}_t$.
+\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
+$$
 
--   Expand on this, include graphs, examples...
+where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ to the series at aggregation levels above. The vector $\boldsymbol{y}_t \in \mathbb{R}^n$ contains all observations at time $t$. The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
 
-### The Minimum Trace (MinT) Reconciliation
+$$
+\boldsymbol{S} = 
+\left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I_4}}
+\end{array}
+\right].
+$$
+
+Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
+
+$$
+\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \hat{\boldsymbol{b}}_{t+h|t} .
+$$ {#eq-sb}
+
+We refer to $\tilde{\boldsymbol{y}}_{t+h|t}$ as coherent forecasts, as they respect the aggregation structure. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. 
+
+Another issue with expressing reconciled methods as in @eq-sb is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing methods, which also provides a framework for new methods to be developed:
+
+$$
+\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_{t+h|t},
+$$ {#eq-sgy}
+
+for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_{t+h|t}$, and modern methods are developed to estimate $\boldsymbol{G}$. 
+
+<!-- including the OLS and WLS developed by @Hyndman2011-jv and @Hyndman2016-ic, respectively. A more detailed explanation of these methods can be found in the @sec-ols-wls Appendix. -->
+
+
+
+
+## The Minimum Trace (MinT) Reconciliation
 
 *Lemma 1*: ... the covariance matrix of the h-step-ahead reconciled forecast errors is given by
 
@@ -184,7 +187,8 @@ which gives the optimal reconciliation matrix: $$
 P = (S' W_h^{-1} S)^{-1} S' W_h^{-1}
 $$
 
-## Covariance Estimation Approaches
+
+# Covariance Estimation Approaches
 
 -   $W_h$ is challenging to estimate, when $h>1$, we need alternative estimates.
 
@@ -198,7 +202,7 @@ We reconstruct estimator of $W_h$ as $\hat{W}_h = k_h \, g(\hat{W}_1)$, where $k
 
 We will look into a few "sparse" + "non-sparse" approaches that apply on $\hat{W}_1$.
 
-### The Shrinkage Estimator
+## The Shrinkage Estimator
 
 $$
 g(\hat{W}_1) = \hat{W}^{shr}_{1, D} = \lambda_D \hat{W}_{1, D} + (1 - \lambda_D) \hat{W}_1
@@ -216,7 +220,7 @@ where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-st
 
 -   Walkthrough the shrinkage estimator method
 
-### The NOVELIST Estimator
+## The NOVELIST Estimator
 
 $$
 g(\hat{W}_1) = \hat{W}^{shr}_{1, thr} = \lambda_{\delta} \hat{W}_{1, \delta} + (1 - \lambda_{\delta}) \hat{W}_1
@@ -328,7 +332,7 @@ When a factor structure is present, the procedure is:
 
 <!-- Selected via grid search or cross-validation. -->
 
-### Alternative Covariance Estimators
+## Alternative Covariance Estimators
 
 Brief overview of other high-dimensional estimators used in the literature for benchmarking.
 
