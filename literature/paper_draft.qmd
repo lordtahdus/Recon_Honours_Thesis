@@ -44,7 +44,12 @@ A collection of time series connected via a set of linear constraints is known a
 
 <!-- ############  Background  ############ -->
 
-In time series forecasting, aggregation occurs in a variety of settings. A concrete example of a hierarchy would be the Starbucks sales data, where their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, and the sales for each city come from many outlets. Data on national tourism, electricity demand, or Gross Domestic Product (GDP) are similar examples of hierarchical time series. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+In time series forecasting, aggregation occurs in a variety of settings. While a formal definition of hierarchical time series can be found in @sec-hierarchy, we can think of Starbucks sales data as an illustrative example. Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is structured hierarchically: the top level is the total sales across all countries, followed by national sales for each country, then city sales for each city within a country, and finally outlet sales for each outlet in a city. As a result, there are over 40,000 individual outlet sales to forecast, plus additional series at higher levels of aggregation such as city and country. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level.
+
+
+This hierarchical structure is not unique to the Starbucks sales data; it can be found in many other domains, such as national tourism, electricity demand, or Gross Domestic Product (GDP). The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+
+
 <!-- ##########  Literature Review  ########## -->
 
 - Talk about the history and evolution of forecasting hierarchical time series, starting from the early heuristic methods to the modern statistical approaches.
