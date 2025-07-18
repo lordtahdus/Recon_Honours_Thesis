@@ -46,7 +46,6 @@ A collection of time series connected via a set of linear constraints is known a
 
 In time series forecasting, aggregation occurs in a variety of settings. While a formal definition of hierarchical time series can be found in @sec-hierarchy, we can think of Starbucks sales data as an illustrative example. Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is structured hierarchically: the top level is the total sales across all countries, followed by national sales for each country, then city sales for each city within a country, and finally outlet sales for each outlet in a city. As a result, there are over 40,000 individual outlet sales to forecast, plus additional series at higher levels of aggregation such as city and country. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level.
 
-
 This hierarchical structure is not unique to the Starbucks sales data; it can be found in many other domains, such as national tourism, electricity demand, or Gross Domestic Product (GDP). The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
 
@@ -60,8 +59,11 @@ This hierarchical structure is not unique to the Starbucks sales data; it can be
   - Bayesian, Machine learning
   - Probabilistic methods
   
-Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top level and disaggregate them down. Middle-out methods combine both approaches by forecasting a middle level and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique.
-  
+Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top-level series and disaggregate them down. Middle-out methods combine both approaches by forecasting middle-level series and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Additionally, the most disaggregated series often are very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique. Consequently, these single-level methods tend to give poor results across other levels of the hierarchy.
+
+To mitigate these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Hyndman2016-ic, @Wickramasuriya2019-xq, and ... to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
+
+
 <!-- Include more details on the gaps for each of these methods, such as bias, high variance? -->
   
 
@@ -367,36 +369,66 @@ Others:
 
 # Simulation
 
--   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data).
--   Characteristics such as dimensionality, frequency, and hierarchical structure.
+<!-- -   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data). -->
+<!-- -   Characteristics such as dimensionality, frequency, and hierarchical structure. -->
 
-**Experimental Design**
+<!-- **Experimental Design** -->
 
--   Design different cases of simulation studies and real-data experiments.
--   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability...
--   Visualisation...
+<!-- -   Design different cases of simulation studies and real-data experiments. -->
+<!-- -   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability... -->
+<!-- -   Visualisation... -->
 
-**General Set-up I'm currently working on**
 
-The designed data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
+The general design of data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
 $$
 \boldsymbol{b}_t = \boldsymbol{A} \boldsymbol{b}_{t-1} + \boldsymbol{\epsilon}_t,
 $$
 
-where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be better performed than the usual base forecasts.
+where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be expected to better performed than the usual base forecasts.
 
-The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\Sigma$. The covariance matrix $\Sigma$ is generated specifically in the following way:
+The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\boldsymbol{\Sigma}$. The covariance matrix $\boldsymbol{\Sigma}$ is generated specifically using the Algorithm 1 in @Hardin2013-wu:
 
-1.  A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the coefficients are sampled from a uniform distribution between 0 and 1.
+1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the entries $\rho_i$ for each block $i$ are sampled from a uniform distribution between 0 and 1. They are baseline correlations within group.
 
-2.  The correlations between different blocks are imposed using the Algorithm 1 in @Hardin2013-wu.
+2. A constant correlation, which is smaller than $\text{min} \{\rho_1, \rho_2, \dots, \rho_m \}$, is imposed on the entries between different blocks. It serves as baseline correlations between group.
 
-3.  The covariance matrix $\Sigma$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+3. The entry-wise random noise is added on top of the entire correlation matrix.
 
-We have an option to randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\Sigma$ by a random diagonal matrix $\boldsymbol{V}$ with entries sampled from $\{-1, 1\}$, yielding $\Sigma^* = \boldsymbol{V} \Sigma \boldsymbol{V}$.
+4. The covariance matrix $\boldsymbol{\Sigma}$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+
+We will randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$, yielding $\boldsymbol{\Sigma}^* = \boldsymbol{V} \boldsymbol{\Sigma} \boldsymbol{V}$.
 
 For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated $M = 10000$ times, in which the parameters for data generating process is fixed.
+
+## Exploring Effects of Hierarchy's Size
+
+- 2x2, 6x6, 50x2
+
+- Finding: Larger size MinT_n performs well
+
+## Exploring Effects of Hierarchy's Aggregation
+
+- 50x2 with usual path and weird path
+
+- Finding: Complex aggregation MinT_n performs well
+
+## Exploring h-step-ahead forecast error metric in NOVELIST Cross-validation
+
+Instead of forecasting t+1 for each rolling window iteration, I forecast t+1 to t+h for each iteration and compute the MSE for each threshold value delta. 
+
+Results barely show any difference with the original method.
+
+## Exploring the sparsity of the DGP covariance matrix
+
+Not much diff
+
+## Exploring Grouped Structure
+
+- small vs big
+
+- Finding: NOVELIST performs well in both cases
+
 
 # Empirical Analysis
 
