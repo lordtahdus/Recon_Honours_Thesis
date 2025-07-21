@@ -15,6 +15,8 @@ format:
     number-sections: true
 execute:
   cache: true
+  echo: false
+  warning: false
 bibliography: D:/Github/Recon_Honours_Thesis/references.bib
 # bibliographystyle: apa
 csl: D:/Github/Recon_Honours_Thesis/apa.csl
@@ -36,7 +38,7 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 
 # Abstract {-}
 
-[This is pasted from the Project Description]{style="color:red;"}
+<!-- [This is pasted from the Project Description]{style="color:red;"} -->
 
 A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these series without respecting the hierarchical nature of the data can lead to incoherent forecasts across aggregation levels and lower accuracy. To mitigate this issue, various forecast reconciliation approaches have been proposed in the literature, where the individual forecasts are adjusted to satisfy the aggregation constraints. Among these, **MinT** (Minimum Trace) is widely used, however, it requires a good estimate of the covariance matrix of the base forecast errors. The current practice is to use the shrinkage estimator (often shrinking toward a diagonal matrix), but it lacks flexibility and might not fully utilise the prominent latent structure presented. In this project, we aim to assess the forecasting performance of MinT when different covariance estimators are used, namely NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance), POET (Principal Orthogonal complEment Thresholding), and others.
 
@@ -61,7 +63,7 @@ This hierarchical structure is not unique to the Starbucks sales data; it can be
   
 Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top-level series and disaggregate them down. Middle-out methods combine both approaches by forecasting middle-level series and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Additionally, the most disaggregated series often are very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique. Consequently, these single-level methods tend to give poor results across other levels of the hierarchy.
 
-To mitigate these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Hyndman2016-ic, @Wickramasuriya2019-xq, and ... to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
+To overcome these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Hyndman2016-ic, @Wickramasuriya2019-xq, and ... to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
 
 
 <!-- Include more details on the gaps for each of these methods, such as bias, high variance? -->
@@ -405,6 +407,77 @@ For each series, $T = 116$ or $316$ observations are generated. The first 100 or
 
 - 2x2, 6x6, 50x2
 
+Using the data generating process described above, we consider three different 2-level hierarchical structures, with the bottom-level series $n_b$ being 2 groups of 2 (4 series), 6 groups of 6 (36 series), and 2 groups of 50 (100 series), respectively. The first structure is exactly the same as the one in @fig-hierarchy, with 2 series at the level 1. The second structure has 36 bottom series and are aggregated in groups of size 6 to form 6 level-1 series, which are finally aggregated to form the top level. The third structure is larger, having 100 bottom series aggregated in groups of size 50 to form 2 level-1 series, then aggregated to get the top level. Because of this structure, the VAR(1) coefficients matrix would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the first and third structure is similar.
+
+```{r load results}
+#| include: false
+library(ggplot2)
+library(patchwork)
+library(ReconCov)
+
+setwd(getwd())
+
+# sim1_1 <- readRDS("./lib/S4-2-1_T100_M10000_par.rds")
+# sim1_2 <- readRDS("./lib/S4-2-1_T300_M10000.rds")
+# 
+sim2_1 <- readRDS("./lib/S36-6-1_T100_M100_run1.rds")
+sim2_2 <- readRDS("./lib/S36-6-1_T300_M100_run2.rds")
+
+# sim3_1 <- readRDS("./lib/S100-2-1_T50_M200_run1.rds")
+# sim3_2 <- readRDS("./lib/S100-2-1_T100_M200_run1.rds")
+```
+
+```{r generate plots for A and Sigma}
+# p1_A <- plot_heatmap(sim1_1$A, T) + 
+#   ggtitle("2x2 VAR(1) Coefficients Matrix")
+# 
+# p1_Sigma <- plot_heatmap(cov2cor(sim1_1$Sigma), T) + 
+#   ggtitle("2x2 Correlation Matrix")
+# 
+p2_A <- plot_heatmap(sim2_1$A) +
+  ggtitle("VAR(1) Coefficients Matrix") + theme_void()
+
+p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
+  ggtitle("Correlation Matrix") + theme_void()
+
+# p3_A <- plot_heatmap(sim3_1$A) +
+#   ggtitle("50x2 VAR(1) Coefficients Matrix")
+# 
+# p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
+#   ggtitle("50x2 Correlation Matrix")
+```
+
+```{r}
+#| out.width: "30%"
+#| fig.align: "center"
+# (p1_A | p1_Sigma) +
+#   plot_layout(guides = "collect") & theme(legend.position = "right")
+```
+
+```{r}
+#| out.width: "60%"
+#| fig.align: "center"
+# (p2_A | p2_Sigma) +
+#   plot_layout(guides = "collect") & theme(legend.position = "right")
+```
+
+```{r}
+#| out.width: "100%"
+#| fig.align: "center"
+# (p3_A | p3_Sigma) +
+#   plot_layout(guides = "collect") & theme(legend.position = "right")
+```
+
+```{r fig-settings-6x6}
+#| label: fig-settings-6x6
+#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 6×6 structure."
+#| out.width: "85%"
+#| fig.align: "center"
+
+p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
+```
+
+
 - Finding: Larger size MinT_n performs well
 
 ## Exploring Effects of Hierarchy's Aggregation
@@ -413,7 +486,7 @@ For each series, $T = 116$ or $316$ observations are generated. The first 100 or
 
 - Finding: Complex aggregation MinT_n performs well
 
-## Exploring h-step-ahead forecast error metric in NOVELIST Cross-validation
+## h-step-ahead forecast error metric in NOVELIST Cross-validation
 
 Instead of forecasting t+1 for each rolling window iteration, I forecast t+1 to t+h for each iteration and compute the MSE for each threshold value delta. 
 
