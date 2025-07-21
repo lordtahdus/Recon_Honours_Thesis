@@ -20,6 +20,8 @@ execute:
 bibliography: D:/Github/Recon_Honours_Thesis/references.bib
 # bibliographystyle: apa
 csl: D:/Github/Recon_Honours_Thesis/apa.csl
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Notation {-}
@@ -401,7 +403,6 @@ The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$,
 
 We will randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$, yielding $\boldsymbol{\Sigma}^* = \boldsymbol{V} \boldsymbol{\Sigma} \boldsymbol{V}$.
 
-For each series, $T = 116$ or $316$ observations are generated. The first 100 or 300 observations are used for training, and the last 16 observations are used for testing. The remaining data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - MinT(Sample), the shrinkage estimator - MinT(Shrink), and the NOVELIST estimator - MinT(N). The Monte Carlo simulation is repeated $M = 10000$ times, in which the parameters for data generating process is fixed.
 
 ## Exploring Effects of Hierarchy's Size
 
@@ -414,17 +415,27 @@ Using the data generating process described above, we consider three different 2
 library(ggplot2)
 library(patchwork)
 library(ReconCov)
+library(dplyr)
 
-setwd(getwd())
+setwd("D:/Github/Recon_Honours_Thesis")
 
-# sim1_1 <- readRDS("./lib/S4-2-1_T100_M10000_par.rds")
-# sim1_2 <- readRDS("./lib/S4-2-1_T300_M10000.rds")
-# 
-sim2_1 <- readRDS("./lib/S36-6-1_T100_M100_run1.rds")
-sim2_2 <- readRDS("./lib/S36-6-1_T300_M100_run2.rds")
+sim1_1 <- readRDS("./literature/lib/S4-2-1_T100_M10000_par.rds")
+sim1_2 <- readRDS("./literature/lib/S4-2-1_T300_M10000.rds")
 
-# sim3_1 <- readRDS("./lib/S100-2-1_T50_M200_run1.rds")
-# sim3_2 <- readRDS("./lib/S100-2-1_T100_M200_run1.rds")
+sim2_1 <- readRDS("./literature/lib/S36-6-1_T100_M100_run1.rds")
+sim2_2 <- readRDS("./literature/lib/S36-6-1_T300_M100_run2.rds")
+
+sim3_1 <- readRDS("./literature/lib/S100-2-1_T50_M200_run1.rds")
+sim3_2 <- readRDS("./literature/lib/S100-2-1_T100_M200_run1.rds")
+
+MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F)
+MSE1_2 <- transform_sim_MSE(sim1_2$MSE, F)
+
+MSE2_1 <- transform_sim_MSE(sim2_1$MSE, F)
+MSE2_2 <- transform_sim_MSE(sim2_2$MSE, F)
+
+MSE3_1 <- transform_sim_MSE(sim3_1$MSE, F)
+MSE3_2 <- transform_sim_MSE(sim3_2$MSE, F)
 ```
 
 ```{r generate plots for A and Sigma}
@@ -477,8 +488,70 @@ p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
 
+For each series, $T = 54$ and $304$ observations are generated. The first 50 and 300 observations are used for training, and the last 4 observations are used for testing. The training data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - mint_sample, the shrinkage estimator - mint_shr, and the NOVELIST estimator - mint_n. The Monte Carlo simulation is repeated $M = 200$ times, in which the parameters for data generating process is fixed.
 
-- Finding: Larger size MinT_n performs well
+```{r}
+plot_relative_improvement <- function(MSE_data) {
+  MSE_data |>
+    filter(
+      .model != "mint_true",
+      h <= 4
+    ) |>
+    group_by(series, h) |>
+    mutate(
+      base_MSE = MSE[.model == "base"]
+    ) |>
+    ungroup() |>
+    group_by(.model, h) |>
+    summarise(
+      MSE = mean(MSE),
+      base_MSE = mean(base_MSE),
+      pct_change = (MSE - base_MSE) / base_MSE * 100
+    ) |>
+    ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(
+      x = "Forecast Horizon (h)",
+      y = "Percentage Change (%)"
+    ) +
+    # labs(x = element_blank(), y = element_blank()) +
+    theme_minimal()
+}
+```
+
+```{r fig-sim-results-1}
+#| label: fig-sim-results-1
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 2x2, 6x6, and 50x2 hierarchical structures, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
+#| fig.width: 8
+#| fig.height: 6
+#| out.width: "100%"
+#| fig.align: "center"
+
+p_MSE1_1 <- MSE1_1 |> 
+  plot_relative_improvement() +
+    labs(title = "2x2 Hierarchy", subtitle = "T = 54")
+p_MSE2_1 <- MSE2_1 |> 
+  plot_relative_improvement() +
+    labs(title = "6x6 Hierarchy")
+p_MSE3_1 <- MSE3_1 |> 
+  plot_relative_improvement() +
+    labs(title = "50x2 Hierarchy")
+
+p_MSE1_2 <- MSE1_2 |> 
+  plot_relative_improvement() +
+    labs(subtitle = "T = 304")
+p_MSE2_2 <- MSE2_2 |> 
+  plot_relative_improvement()
+p_MSE3_2 <- MSE3_2 |> 
+  plot_relative_improvement()
+
+p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
+  plot_layout(ncol = 3, guides = "collect", axis_titles = "collect") &
+  theme(legend.position = "right")
+```
+
+In this setting, we aim to assess the performance of MinT with NOVELIST when the size of the hierarchy becomes larger. As shown in @fig-sim-results-1, ...
+
 
 ## Exploring Effects of Hierarchy's Aggregation
 
