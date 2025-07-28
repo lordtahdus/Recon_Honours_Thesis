@@ -548,6 +548,16 @@ Not much diff
   - Incorporate tourism setting into current DGP
   - Explore how to tackle structural change in MinT
 
+Domestic tourism flows in any country naturally form a hierarchical structure. They are typically aggregated from the bottom level of individual regions to higher levels including zones, states, and the entire country. Our empirical analysis draws on the Australian domestic overnight tourism, a country with 7 states and territories, which are further divided into 27 zones and 77 regions. The data set also consider tourism flows by purposes of travel -- holiday, business, visiting friends and relatives, and other reason -- which can highlight the patterns of traveling and spending behaviours across these groups. Grouping the Australian domestic tourism by geographical divisions and purposes of travel forms a grouped structure comprising of 560 individual series in total (both aggregated and disaggregated).
+
+We measure the tourism demand using “visitor nights,” the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourismau-jk]. The data are monthly time series spanning from January 1998 to December 2019, resulting in 264 observations per series, producing a canonical "$n \ll p$" setting for which high-dimensional covariance estimators were designed. This is particularly well-suited to evaluate forecast reconciliation methods, because the extreme dimensionality over sample size mirrors many comptemporary business problems, for instance, Starbucks drink sales.
+
+<!-- This dataset is particularly well‑suited to evaluating forecast‑reconciliation methods for three reasons. First, tourism demand is economically important and notoriously volatile; the heterogeneous regional and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Second, the clear structural shift towards stronger growth after 2016—visible in most aggregates—necessitates techniques capable of handling possible breaks or time‑varying error structures, making the exercise practically relevant. Third, the extreme dimensionality relative to sample size mirrors many contemporary business problems (e.g., SKU‑level retail sales), allowing insights to generalise beyond tourism. Using this panel therefore provides both a compelling policy context and a stringent statistical laboratory for comparing alternative reconciliation strategies, especially those that rely on regularised covariance estimation or exploit cross‑sectional information to stabilise forecasts when historical data are scant. -->
+
+
+
+
+
 
 # Discussion and Conclusion
 
