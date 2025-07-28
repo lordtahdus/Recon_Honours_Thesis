@@ -537,9 +537,17 @@ Not much diff
 - Finding: NOVELIST performs well in both cases
 
 
-# Empirical Analysis
+# Forecasting Australian Domestics Tourism
 
--   Comparative analysis of forecast performance using different covariance estimators on real-life dataset.
+- Description
+- Hierarchy Description
+- Models and Cross-validation 
+- Structural change after 2016 (slight upward trend)
+- Results over entire data set and excluding 2016 onwards
+- Next steps:
+  - Incorporate tourism setting into current DGP
+  - Explore how to tackle structural change in MinT
+
 
 # Discussion and Conclusion
 
