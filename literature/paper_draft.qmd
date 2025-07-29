@@ -617,7 +617,7 @@ visnights_full %>%
     theme_bw()
 ```
 
-Additionally, we notice a structural change in the tourism data after 2016, which is characterised by a slight upward trend in demand, as illustrated in @fig-STL-tourism. This trend only happened in New South Wales, Victoria, Queensland, and Western Australia. Our empirical results show that the base forecasts produced by the ARIMA models are not able to capture this trend, leading to even poorer performance of reconciliation methods. To account for this, we will also evaluate the performance of reconciliation methods on the data set excluding the period after 2016, which is from January 1998 to December 2016 (the last training window ends on December 2015).
+Additionally, we notice a structural change in the tourism data after 2016, which is characterised by a slight upward trend in demand, as illustrated in @fig-STL-tourism. The trend component is extracted using STL decomposition [@??] on the monthly domestic overnight tourism nights in Australia by state. This trend only happened in New South Wales, Victoria, Queensland, and Western Australia, which is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. Our empirical analysis show that the base forecasts produced by the ARIMA models are not able to capture this trend, leading to even poorer performance of reconciliation methods. To account for this, we will also evaluate the performance of reconciliation methods on the data set excluding the period after 2016, which is from January 1998 to December 2016 (the last training window ends on December 2015).
 
 
 
