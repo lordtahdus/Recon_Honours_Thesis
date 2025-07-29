@@ -572,6 +572,51 @@ We evaluate the performance of reconcilation methods using a rolling window cros
 
 Regarding reconciliation strategies, we consider OLS, mint_shr (MinT with Shrinkage estimator), and mint_n (MinT with NOVELIST estimator). Note that the number of series is larger than the number of observations (560 compared to 96), hence the sample covariance matrix is not positive definite and will not be used.
 
+```{r}
+visnights_full <- readRDS("literature/lib/visnights_full.rds")
+```
+
+```{r}
+#| label: fig-STL-tourism
+#| fig-cap: "Monthly domestic overnight tourism nights in Australia by state, with STL decomposition to extract trend component"
+#| fig.width: 8
+#| fig.height: 6
+#| out.width: "100%"
+#| fig.align: "center"
+visnights_full %>% 
+  filter(
+    is_aggregated(Purpose) & is_aggregated(Zone) & is_aggregated(Region),
+    !is_aggregated(State)
+  ) %>% 
+  model(
+    STL(Nights)
+  ) %>% 
+  components() %>% 
+  pivot_longer(
+    cols = c(Nights, trend, season_year, remainder, season_adjust),
+    names_to = "component",
+    values_to = "value"
+  ) %>%
+  filter(
+    component == c("Nights", "trend"),
+    year(Month) >= 2000
+  ) %>%
+  as_tibble() %>%
+  mutate(component = recode(component,                     # give them nicer names
+                            Nights = "Observed Nights",
+                            trend  = "STL Decomposed Trend")) %>% 
+  ggplot(aes(Month, value, color = as.character(State))) +
+    geom_line() +
+    facet_wrap(~ component, ncol=1, scales = "free_y") +
+    labs(
+      x = "Month",
+      y = "Visitor Nights (in thousands)",
+      color = "State"
+    ) +
+    theme_bw()
+```
+
+Additionally, we notice a structural change in the tourism data after 2016, which is characterised by a slight upward trend in demand, as illustrated in @fig-STL-tourism. This trend only happened in New South Wales, Victoria, Queensland, and Western Australia. Our empirical results show that the base forecasts produced by the ARIMA models are not able to capture this trend, leading to even poorer performance of reconciliation methods. To account for this, we will also evaluate the performance of reconciliation methods on the data set excluding the period after 2016, which is from January 1998 to December 2016 (the last training window ends on December 2015).
 
 
 
