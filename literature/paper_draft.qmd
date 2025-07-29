@@ -619,6 +619,97 @@ visnights_full %>%
 
 Additionally, we notice a structural change in the tourism data after 2016, which is characterised by a slight upward trend in demand, as illustrated in @fig-STL-tourism. The trend component is extracted using STL decomposition [@??] on the monthly domestic overnight tourism nights in Australia by state. This trend only happened in New South Wales, Victoria, Queensland, and Western Australia, which is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. Our empirical analysis show that the base forecasts produced by the ARIMA models are not able to capture this trend, leading to even poorer performance of reconciliation methods. To account for this, we will also evaluate the performance of reconciliation methods on the data set excluding the period after 2016, which is from January 1998 to December 2016 (the last training window ends on December 2015).
 
+```{r}
+library(stringr)
+
+desired_order <- c(
+  "Australia", "Australia_by_Purpose",
+  "State",     "State_by_Purpose",
+  "Zone",      "Zone_by_Purpose",
+  "Region",    "Region_by_Purpose"
+)
+```
+
+
+```{r}
+#| label: fig-tourism-results
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows"
+#| fig.width: 8
+#| fig.height: 10
+#| out.width: "100%"
+
+tourism_MSE <- readRDS("./literature/lib/tourism_MSE.rds")
+
+# % improv plot by level
+tourism_MSE |>
+  group_by(series, h) |>
+  mutate(
+    base_MSE = MSE[.model == "base"]
+  ) |>
+  ungroup() |>
+  group_by(.model, level, h) |>
+  summarise(
+    MSE = mean(MSE),
+    base_MSE = mean(base_MSE),
+    pct_change = (MSE - base_MSE) / base_MSE * 100
+  ) |>
+  filter(.model != "mint_sample") %>%
+  # Reorder the levels according to the desired order
+  mutate(
+    level = factor(
+      level,
+      levels = desired_order,
+      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
+    )
+  ) %>% 
+  ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(x = "Horizon", y = "% improvements") +
+    facet_wrap(~ level, ncol=2, scales = "free_y") +
+    theme_bw() +
+    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
+    theme(legend.position = "bottom", legend.title = element_blank())
+```
+
+```{r}
+#| label: fig-tourism-results-ex1026
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows, excluding the period after 2016"
+#| fig.width: 8
+#| fig.height: 10
+#| out.width: "100%"
+
+tourism_MSE_ex2016 <- readRDS("literature/lib/tourism_MSE_ex2016.rds")
+
+# % improv plot by level
+tourism_MSE_ex2016 |>
+  group_by(series, h) |>
+  mutate(
+    base_MSE = MSE[.model == "base"]
+  ) |>
+  ungroup() |>
+  group_by(.model, level, h) |>
+  summarise(
+    MSE = mean(MSE),
+    base_MSE = mean(base_MSE),
+    pct_change = (MSE - base_MSE) / base_MSE * 100
+  ) |>
+  filter(.model != "mint_sample") %>%
+  # Reorder the levels according to the desired order
+  mutate(
+    level = factor(
+      level,
+      levels = desired_order,
+      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
+    )
+  ) %>%
+  ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(x = "Horizon", y = "% improvements") +
+    facet_wrap(~ level, ncol=2, scales = "free_y") +
+    theme_bw() +
+    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
+    theme(legend.position = "bottom", legend.title = element_blank())
+```
 
 
 # Discussion and Conclusion
