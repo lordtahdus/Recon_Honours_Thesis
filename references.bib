@@ -1,27 +1,199 @@
-@MISC{fabletools-fa,
+@ARTICLE{Bandara2022-og,
+  title         = "{MSTL}: A seasonal-Trend decomposition algorithm for time
+                   series with Multiple Seasonal patterns",
+  author        = "Bandara, Kasun and Hyndman, Rob J and Bergmeir, Christoph",
+  journal       = "arXiv [stat.AP]",
+  abstract      = "The decomposition of time series into components is an
+                   important task that helps to understand time series and can
+                   enable better forecasting. Nowadays, with high sampling rates
+                   leading to high-frequency data (such as daily, hourly, or
+                   minutely data), many real-world datasets contain time series
+                   data that can exhibit multiple seasonal patterns. Although
+                   several methods have been proposed to decompose time series
+                   better under these circumstances, they are often
+                   computationally inefficient or inaccurate. In this study, we
+                   propose Multiple Seasonal-Trend decomposition using Loess
+                   (MSTL), an extension to the traditional Seasonal-Trend
+                   decomposition using Loess (STL) procedure, allowing the
+                   decomposition of time series with multiple seasonal patterns.
+                   In our evaluation on synthetic and a perturbed real-world
+                   time series dataset, compared to other decomposition
+                   benchmarks, MSTL demonstrates competitive results with lower
+                   computational cost. The implementation of MSTL is available
+                   in the R package forecast.",
+  year          =  2022,
+  url           = "http://arxiv.org/abs/2107.13462",
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.AP"
+}
+
+@ARTICLE{Wickramasuriya2021-jh,
+  title         = "Probabilistic forecast reconciliation under the Gaussian
+                   framework",
+  author        = "Wickramasuriya, Shanika L",
+  journal       = "arXiv [stat.ME]",
+  abstract      = "Forecast reconciliation of multivariate time series is the
+                   process of mapping a set of incoherent forecasts into
+                   coherent forecasts to satisfy a given set of linear
+                   constraints. Commonly used projection matrix based approaches
+                   for point forecast reconciliation are OLS (ordinary least
+                   squares), WLS (weighted least squares), and MinT (minimum
+                   trace). Even though point forecast reconciliation is a
+                   well-established field of research, the literature on
+                   generating probabilistic forecasts subject to linear
+                   constraints is somewhat limited. Available methods follow a
+                   two-step procedure. Firstly, it draws future sample paths
+                   from the univariate models fitted to each series in the
+                   collection (which are incoherent). Secondly, it uses a
+                   projection matrix based approach or empirical copula based
+                   reordering approach to account for contemporaneous
+                   correlations and linear constraints. The projection matrices
+                   are estimated either by optimizing a scoring rule such as
+                   energy or variogram score, or simply using a projection
+                   matrix derived for point forecast reconciliation. This paper
+                   proves that (a) if the incoherent predictive distribution is
+                   Gaussian then MinT minimizes the logarithmic scoring rule;
+                   and (b) the logarithmic score of MinT for each marginal
+                   predictive density is smaller than that of OLS. We show these
+                   theoretical results using a set of simulation studies. We
+                   also evaluate them using the Australian domestic tourism data
+                   set.",
+  month         =  "20~" # mar,
+  year          =  2021,
+  url           = "http://arxiv.org/abs/2103.11128",
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.ME"
+}
+
+@INCOLLECTION{Carrara2025-rz,
+  title     = "A novel shrinkage estimator of the covariance matrix for
+               hierarchical time series",
+  author    = "Carrara, Chiara and Zambon, Lorenzo and Azzimonti, Dario and
+               Corani, Giorgio",
+  booktitle = "Italian Statistical Society Series on Advances in Statistics",
+  publisher = "Springer Nature Switzerland",
+  address   = "Cham",
+  pages     = "140--145",
+  year      =  2025,
+  url       = "http://dx.doi.org/10.1007/978-3-031-96736-8_24",
+  doi       = "10.1007/978-3-031-96736-8\_24",
+  language  = "en"
+}
+
+@ARTICLE{Spiliotis2020-ue,
+  title         = "Hierarchical forecast reconciliation with machine learning",
+  author        = "Spiliotis, Evangelos and Abolghasemi, Mahdi and Hyndman, Rob
+                   J and Petropoulos, Fotios and Assimakopoulos, Vassilios",
+  journal       = "arXiv [cs.LG]",
+  abstract      = "Hierarchical forecasting methods have been widely used to
+                   support aligned decision-making by providing coherent
+                   forecasts at different aggregation levels. Traditional
+                   hierarchical forecasting approaches, such as the bottom-up
+                   and top-down methods, focus on a particular aggregation level
+                   to anchor the forecasts. During the past decades, these have
+                   been replaced by a variety of linear combination approaches
+                   that exploit information from the complete hierarchy to
+                   produce more accurate forecasts. However, the performance of
+                   these combination methods depends on the particularities of
+                   the examined series and their relationships. This paper
+                   proposes a novel hierarchical forecasting approach based on
+                   machine learning that deals with these limitations in three
+                   important ways. First, the proposed method allows for a
+                   non-linear combination of the base forecasts, thus being more
+                   general than the linear approaches. Second, it structurally
+                   combines the objectives of improved post-sample empirical
+                   forecasting accuracy and coherence. Finally, due to its
+                   non-linear nature, our approach selectively combines the base
+                   forecasts in a direct and automated way without requiring
+                   that the complete information must be used for producing
+                   reconciled forecasts for each series and level. The proposed
+                   method is evaluated both in terms of accuracy and bias using
+                   two different data sets coming from the tourism and retail
+                   industries. Our results suggest that the proposed method
+                   gives superior point forecasts than existing approaches,
+                   especially when the series comprising the hierarchy are not
+                   characterized by the same patterns.",
+  month         =  "3~" # jun,
+  year          =  2020,
+  url           = "http://arxiv.org/abs/2006.02043",
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG"
+}
+
+
+@ARTICLE{Vaswani2017-gm,
+  title         = "Attention is all you need",
+  author        = "Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and
+                   Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and
+                   Kaiser, Lukasz and Polosukhin, Illia",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "The dominant sequence transduction models are based on
+                   complex recurrent or convolutional neural networks in an
+                   encoder-decoder configuration. The best performing models
+                   also connect the encoder and decoder through an attention
+                   mechanism. We propose a new simple network architecture, the
+                   Transformer, based solely on attention mechanisms, dispensing
+                   with recurrence and convolutions entirely. Experiments on two
+                   machine translation tasks show these models to be superior in
+                   quality while being more parallelizable and requiring
+                   significantly less time to train. Our model achieves 28.4
+                   BLEU on the WMT 2014 English-to-German translation task,
+                   improving over the existing best results, including ensembles
+                   by over 2 BLEU. On the WMT 2014 English-to-French translation
+                   task, our model establishes a new single-model
+                   state-of-the-art BLEU score of 41.8 after training for 3.5
+                   days on eight GPUs, a small fraction of the training costs of
+                   the best models from the literature. We show that the
+                   Transformer generalizes well to other tasks by applying it
+                   successfully to English constituency parsing both with large
+                   and limited training data.",
+  month         =  "12~" # jun,
+  year          =  2017,
+  url           = "http://arxiv.org/abs/1706.03762",
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Wickramasuriya2024-mb,
+  title     = "Probabilistic forecast reconciliation under the Gaussian
+               framework",
+  author    = "Wickramasuriya, Shanika L",
+  journal   = "J. Bus. Econ. Stat.",
+  publisher = "Informa UK Limited",
+  volume    =  42,
+  number    =  1,
+  pages     = "272--285",
+  month     =  "2~" # jan,
+  year      =  2024,
+  url       = "http://dx.doi.org/10.1080/07350015.2023.2181176",
+  doi       = "10.1080/07350015.2023.2181176",
+  language  = "en"
+}
+
+@MISC{O-Hara-Wild2024-we,
   title        = "Fabletools",
   author       = "O'Hara-Wild, M and Hyndman, R J and Wang, E",
   abstract     = "Provides tools, helpers and data structures for developing
                   models and time series functions for fable and extension
                   packages. These tools support a consistent and tidy interface
                   for time series modelling and analysis.",
+  year         =  2024,
   howpublished = "\url{https://fabletools.tidyverts.org/}",
   note         = "Accessed: 2025-5-9",
-  year         =  2024,
   language     = "en"
 }
 
-@MISC{tourismau-jk,
+@MISC{tourism-au,
   title        = "Tourism Research Australia",
   abstract     = "Tourism Research Australia (TRA) is Australia's leading
                   provider of quality tourism intelligence across both
                   international and domestic markets, providing statistics and
                   research to assist the government, the visitor economy and
                   Australian businesses.",
+  year         =  2024,
   howpublished = "\url{https://www.tra.gov.au/}",
   note         = "Accessed: 2025-5-9",
   keywords     = "Data",
-  year         =  2024,
   language     = "en"
 }
 

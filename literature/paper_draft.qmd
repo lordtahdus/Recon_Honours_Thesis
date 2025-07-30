@@ -112,7 +112,7 @@ To overcome these issues, forecast reconciliation was introduced by @Hyndman2011
 - Talk about the paper outline and what will be covered in the following sections.
 
 
-
+<!--
 -   **Problem Statement:**
 
     The sample covariance matrix, although natural, suffers in high-dimensional settings. Especially when the number of series $p$ is huge and larger than the time dimension $T$, the sample covariance matrix is non-positive definite (rank T if p\>T).
@@ -136,7 +136,10 @@ To overcome these issues, forecast reconciliation was introduced by @Hyndman2011
     -   An experimental design using both synthetic and real hierarchical time series.
     -   Empirical results and discussion.
     -   Conclusions and suggestions for future work.
+-->
 
+
+<!--
 # Literature Review
 
 ## Forecast Reconciliation in Hierarchical and Grouped Time Series
@@ -161,11 +164,11 @@ The MinT approach is an algebraical generalisation of the GLS, and the OLS and W
 
 Empirical evaluations have demonstrated that MinT with an appropriate covariance estimate often outperforms earlier methods in both simulation and real data studies.
 
-<!-- Wickramasuriya et al. (2019) adopt the diagonal-target Ledoit–Wolf approach and show analytically that any scalar multiple $k_h$ from $W_h = k_hW_1$ suffices for point-forecast reconciliation.  However, simulation and empirical evidence suggest that ignoring cross-series error correlation can leave accuracy untapped, especially in highly-coupled systems (energy, retail SKUs).  Their subsequent work imposes non-negativity constraints via quadratic programming citeturn0file2 and studies bias-robust variants (MinT-U). -->
+Wickramasuriya et al. (2019) adopt the diagonal-target Ledoit–Wolf approach and show analytically that any scalar multiple $k_h$ from $W_h = k_hW_1$ suffices for point-forecast reconciliation.  However, simulation and empirical evidence suggest that ignoring cross-series error correlation can leave accuracy untapped, especially in highly-coupled systems (energy, retail SKUs).  Their subsequent work imposes non-negativity constraints via quadratic programming citeturn0file2 and studies bias-robust variants (MinT-U).
 
-<!-- Empirical findings to date   -->
+Empirical findings to date
 
-<!-- Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates single-level baselines in most studies; WLS or diagonal-shrinkage MinT is the current industry default; but gains plateau when off-diagonals are weak citeturn0file9.  Only a handful of papers explore richer covariance structures (e.g., block or factor shrinkage), and none benchmark them systematically against NOVELIST-type estimators. -->
+Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates single-level baselines in most studies; WLS or diagonal-shrinkage MinT is the current industry default; but gains plateau when off-diagonals are weak citeturn0file9.  Only a handful of papers explore richer covariance structures (e.g., block or factor shrinkage), and none benchmark them systematically against NOVELIST-type estimators.
 
 ## Covariance Estimation in High Dimensions
 
@@ -180,7 +183,7 @@ Empirical evaluations have demonstrated that MinT with an appropriate covariance
 
 -   Discuss how covariance estimation affects MinT performance.
 -   Identify research gaps.
-
+-->
 
 
 # Theoretical Framework
@@ -262,7 +265,7 @@ $$
 
 where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$). The optimal estimate is obtained by minimising $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. 
 
-However, the hierarchical time series data often exhibit a prominent principal components structure, which is not fully taken advantage. Taking an example of the Australian domestic overnight trips data set [@tourismau-jk], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@fabletools-fa], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix are plotted in @fig-eigen. We can see that the point of inflexion occurs at the component with 5th largest eigenvalue, indicating a prominent principal components structure.
+However, the hierarchical time series data often exhibit a prominent principal components structure, which is not fully taken advantage. Taking an example of the Australian domestic overnight trips data set [@tourism-au], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@O-Hara-Wild2024-we], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix are plotted in @fig-eigen. We can see that the point of inflexion occurs at the component with 5th largest eigenvalue, indicating a prominent principal components structure.
 
 ![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/eigen_tourism.png){#fig-eigen width="70%"}
 
@@ -451,7 +454,7 @@ p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
 
-For each series, $T = 54$ and $304$ observations are generated. The first 50 and 300 observations are used for training, and the last 4 observations are used for testing. The training data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@fabletools-fa]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - mint_sample, the shrinkage estimator - mint_shr, and the NOVELIST estimator - mint_n. The Monte Carlo simulation is repeated $M = 200$ times, in which the parameters for data generating process is fixed.
+For each series, $T = 54$ and $304$ observations are generated. The first 50 and 300 observations are used for training, and the last 4 observations are used for testing. The training data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@O-Hara-Wild2024-we]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - mint_sample, the shrinkage estimator - mint_shr, and the NOVELIST estimator - mint_n. The Monte Carlo simulation is repeated $M = 200$ times, in which the parameters for data generating process is fixed.
 
 ```{r}
 plot_relative_improvement <- function(MSE_data) {
@@ -515,26 +518,13 @@ p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
 
 In this setting, we aim to assess the performance of MinT with NOVELIST when the size of the hierarchy becomes larger. As shown in @fig-sim-results-1, ...
 
-
+<!--
 ## Exploring Effects of Hierarchy's Aggregation
 
 - 50x2 with usual path and weird path
 
 - Finding: Complex aggregation MinT_n performs well
-
-## h-step-ahead forecast error metric in NOVELIST Cross-validation
-
-Instead of forecasting t+1 for each rolling window iteration, I forecast t+1 to t+h for each iteration and compute the MSE for each threshold value delta. 
-
-Results barely show any difference with the original method.
-
-```{r}
-path <- "./literature/lib/hstep_CV_Novelist/"
-
-
-```
-
-
+-->
 
 ## Exploring the sparsity of the DGP covariance matrix
 
@@ -542,27 +532,18 @@ Not much diff
 
 ## Exploring Grouped Structure
 
-- small vs big
+- small vs big 
 
 - Finding: NOVELIST performs well in both cases
 
 
 # Forecasting Australian Domestics Tourism
 
-Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism “zones,” which in turn break down into 77 “regions.” Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate.
+Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate.
 
-<!-- Table to illustrate the hierarchy -->
+- A table/figure to illustrate the hierarchy
 
-We quantify tourism demand via “visitor nights,” the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourismau-jk]. 
-
-The data are monthly time series spanning from January 1998 to December 2019, resulting in 264 observations per series, producing a canonical "$n \ll p$" setting 
-which is ideal for evaluating reconciliation approaches that rely on high-dimensional covariance estimation. The extreme dimensionality over sample size mirrors many contemporary business problems, for instance, Starbucks drink sales. Tourism demand is also economically vital yet highly volatile, with geographical and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Consequently, this panel offers both a rich policy case study and a stringent statistical laboratory for comparing reconciliation strategies that exploit cross-series information to improve forecasts when historical data are scarce.
-
-<!-- This dataset is particularly well‑suited to evaluating forecast‑reconciliation methods for three reasons. First, tourism demand is economically important and notoriously volatile; the heterogeneous regional and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Second, the clear structural shift towards stronger growth after 2016—visible in most aggregates—necessitates techniques capable of handling possible breaks or time‑varying error structures, making the exercise practically relevant. Third, the extreme dimensionality relative to sample size mirrors many contemporary business problems (e.g., SKU‑level retail sales), allowing insights to generalise beyond tourism. Using this panel therefore provides both a compelling policy context and a stringent statistical laboratory for comparing alternative reconciliation strategies, especially those that rely on regularised covariance estimation or exploit cross‑sectional information to stabilise forecasts when historical data are scant. -->
-
-@Wickramasuriya2019-xq also argued that modelling spatial autocorrelations would be challenging as in the case of a large collection of time series. Reconciliation approaches have the advantage to implicitly model this spatial autocorreltion structure, especially when the MinT method is used.
-
-To assess forecasting performance, we adopt a rolling-window cross-validation scheme. Beginning with the first 96 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm in the fabletools package, by minimising AICc [@fabletools-fa]. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models. These incoherent base forecasts are reconciled via OLS, MinT with shrinkage (mint_shr), and MinT with the NOVELIST estimator (mint_n). We then roll the training window forward by one month and refit all models, rebuild reconciliations, and produce another batch of 1- to 12-step-ahead forecasts, repeating until December 2018. In total, this results in 156 out-of-sample windows and an equal number of forecast sets for each series.
+We quantify tourism demand via "visitor nights", the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourism-au]. 
 
 ```{r}
 library(stringr)
@@ -616,6 +597,18 @@ tourism_MSE |>
     theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
+The data are monthly time series spanning from January 1998 to December 2019, resulting in 264 observations per series, producing a canonical "$n \ll p$" setting which is ideal for evaluating reconciliation approaches that rely on high-dimensional covariance estimation. The extreme dimensionality over sample size mirrors many contemporary business problems, for instance, Starbucks drink sales. Tourism demand is also economically vital yet highly volatile, with geographical and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Consequently, this panel offers both a rich policy case study and a stringent statistical laboratory for comparing reconciliation strategies that exploit cross-series information to improve forecasts when historical data are scarce.
+
+<!-- This dataset is particularly well‑suited to evaluating forecast‑reconciliation methods for three reasons. First, tourism demand is economically important and notoriously volatile; the heterogeneous regional and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Second, the clear structural shift towards stronger growth after 2016—visible in most aggregates—necessitates techniques capable of handling possible breaks or time‑varying error structures, making the exercise practically relevant. Third, the extreme dimensionality relative to sample size mirrors many contemporary business problems (e.g., SKU‑level retail sales), allowing insights to generalise beyond tourism. Using this panel therefore provides both a compelling policy context and a stringent statistical laboratory for comparing alternative reconciliation strategies, especially those that rely on regularised covariance estimation or exploit cross‑sectional information to stabilise forecasts when historical data are scant. -->
+
+@Wickramasuriya2019-xq also argued that modelling spatial autocorrelations would be challenging as in the case of a large collection of time series. Reconciliation approaches have the advantage to implicitly model this spatial autocorreltion structure, especially when the MinT method is used.
+
+To assess forecasting performance, we adopt a rolling-window cross-validation scheme. Beginning with the first 96 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm in the fabletools package, by minimising AICc [@O-Hara-Wild2024-we]. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models. These incoherent base forecasts are reconciled via OLS, MinT with shrinkage (mint_shr), and MinT with the NOVELIST estimator (mint_n). We then roll the training window forward by one month and refit all models, rebuild reconciliations, and produce another batch of 1- to 12-step-ahead forecasts, repeating until December 2018. In total, this results in 156 out-of-sample windows and an equal number of forecast sets for each series.
+
+Note that the number of series is larger than the number of observations (560 compared to 96), hence the sample covariance matrix is not positive definite and will not be considered.
+
+The results are presented in @fig-tourism-results, which shows the relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows. The results are grouped by levels of aggregation. MinT variants show improvement over the base ARIMA forecasts for middle to lower aggregation levels. We hardly differentiate the point accuracy performance between mint_shr and mint_n in these level, except at the most disaggregated, where mint_shr slightly edges out mint_n.
+
 ```{r fig STL tourism}
 #| label: fig-STL-tourism
 #| fig-cap: "Monthly domestic overnight tourism nights in Australia by state, with STL decomposition to extract trend component"
@@ -659,11 +652,7 @@ visnights_full %>%
     theme_bw()
 ```
 
-Note that the number of series is larger than the number of observations (560 compared to 96), hence the sample covariance matrix is not positive definite and will not be considered.
-
-The results are presented in @fig-tourism-results, which shows the relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows. The results are grouped by levels of aggregation. MinT variants show improvement over the base ARIMA forecasts for middle to lower aggregation levels. We hardly differentiate the point accuracy performance between mint_shr and mint_n in these level, except at the most disaggregated, where mint_shr slightly edges out mint_n.
-
-Surprisingly, however, MinT underperforms OLS at higher aggregation level and even the base forecasts at country-wise. This contradicts with the canonical results from @Wickramasuriya2019-xq and others, prompting further investigation. Applying STL decomposition to state-aggregated observations reveals a structural change around 2016: four large states (New South Wales, Victoria, Queensland, Western Australia) develop a modest upward trend in visitor nights, as shown in @fig-STL-tourism. The trend is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. 
+Surprisingly, however, MinT underperforms OLS at higher aggregation level and even the base forecasts at country-wise. This contradicts with the canonical results from @Wickramasuriya2019-xq, prompting further investigation. Applying STL decomposition by @Bandara2022-og to state-aggregated observations reveals a structural change around 2016: four large states (New South Wales, Victoria, Queensland, Western Australia) develop a modest upward trend in visitor nights, as shown in @fig-STL-tourism. The trend is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. 
 
 ```{r}
 #| label: fig-tourism-results-ex2016
@@ -711,7 +700,11 @@ The empirical analysis on real, hierarchical Australian domestic tourism shreds 
 
 <!-- perhaps via robust trend adjustment or state-space extensions that jointly model coherence and temporal dynamics. -->
 
+\pagebreak
 
+# Timeline & Milestones
+
+<!--
 # Discussion and Conclusion
 
 -   Evaluate how covariance estimation impacts the MinT reconciliation.
@@ -721,6 +714,7 @@ The empirical analysis on real, hierarchical Australian domestic tourism shreds 
 -   Practical considerations: Computational efficiency, robustness, and ease of implementation.
 
 -   Limitations of the research
+-->
 
 \pagebreak
 
