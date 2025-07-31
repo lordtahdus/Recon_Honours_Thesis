@@ -529,14 +529,81 @@ In this setting, we aim to assess the performance of MinT with NOVELIST when the
 
 ## Exploring the sparsity of the DGP covariance matrix
 
-Not much diff
+```{r}
+sim_dense_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M200_dense.rds")
+sim_dense_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_dense.rds")
 
+sim_sparse_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
+sim_sparse_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
+```
+
+```{r}
+#| label: fig-Sigma-50x2
+#| fig-cap: "Heatmaps of the dense and sparse correlation matrix of the data generating process."
+#| fig.height: 12
+#| fig.width: 8
+#| out.width: "100%"
+#| fig.align: "center"
+p_dense_Sigma <- sim_dense_50$Sigma |>
+  cov2cor() |> 
+  plot_heatmap(T) +
+    labs(title = "Dense")
+
+p_sparse_Sigma <- sim_sparse_50$Sigma |>
+  cov2cor() |> 
+  plot_heatmap(T) +
+    labs(title = "Sparse")
+
+p_dense_Sigma + p_sparse_Sigma + 
+  plot_layout(ncol = 1, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "right")
+```
+
+```{r}
+#| label: fig-sim-results-dsp
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 50x2 hierarchical structure with dense and sparse DGP's correlation matrix, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
+#| fig.height: 10
+#| fig.width: 10
+#| out.width: "90%"
+#| fig.align: "center"
+p_dense_50 <- sim_dense_50$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement() +
+    labs(title = "Dense DGP Covariance Matrix", subtitle = "T = 54")
+p_sparse_50 <- sim_sparse_50$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement() +
+    labs(title = "Dense DGP Covariance Matrix")
+
+p_dense_300 <- sim_dense_300$MSE |>
+  transform_sim_MSE(F) |> 
+  filter(.model != "ols") |> 
+  plot_relative_improvement() +
+    labs(subtitle = "T = 304")
+p_sparse_300 <- sim_sparse_300$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement()
+
+p_dense_50 + p_sparse_50 + p_dense_300 + p_sparse_300 +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") &
+  theme(legend.position = "right")
+```
+
+In this section we explore the effects of "sparse" and "dense" correlation matrix in our data generating process for series at the bottom level. We consider a large structure, having 2 groups of 50 bottom series. The cross-series within-group correlations are strong, and the between-group correlations will be weaker for the "dense" case, and zero for the "sparse" case. The dense and sparse correlation matrices for the DGP of bottom series are illustrated in @fig-Sigma-50x2. Note that these 2 cases have the same VAR(1) structure, only the correlation matrix is different.
+
+However, rather than aggregating series within group to form 2 level-1 series as we did earlier, we combine them in groups of size 10 to obtain 10 level-1 series. These 10 series will be splitted into 3 groups, having 4, 3, and 4 series respectively, and are aggregated into 3 level-2 series. Finally, they are added to obtain the top level. The intention behind this unusual aggregation path is to create a more complex structure for higher levels, in which the level-2 series will correlate with the bottom series in the first or second group, or both.
+
+Results are presented in @fig-sim-results-dsp, with the graphs in the first column being the "dense" case and the ones in second column being "sparse" case. We consider two time series length--54 and 304 observations with the last 4 being the test set--presenting at the first and second row respectively. As shown in the plots, MinT with either Shrinkage (mint_shr) or NOVELIST estimator (mint_n) return significant improvements over the base forecasts, especially in the 1-step-ahead horizon. However, the difference between their accuracy is hardly noticeable, with mint_n slightly outperform at the 1-step-ahead and mint_shr takes over in further forecasting horizons. mint_sample performs worse than base ARIMA models in short time series length, only to improve drastically in longer length. It is due to the sample covariance matrix gets more accurate as sample size gets larger. 
+
+These simulations 
+
+<!--
 ## Exploring Grouped Structure
 
 - small vs big 
 
 - Finding: NOVELIST performs well in both cases
-
+-->
 
 # Forecasting Australian Domestics Tourism
 
