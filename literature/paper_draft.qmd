@@ -381,6 +381,8 @@ We will randomly flip the signs of the covariance elements, which will create a 
 
 For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ and $T=304$, reserving the final four observations as an out-of-sample test set. In each Monte Carlo replication ($M=500$), we fit univariate ARIMA models (base models) to the training observations using an automatic AICc minimization algorithm from the fabletools package [@O-Hara-Wild2024-we], generating incoherent 1–4-step base forecasts. We then reconcile these forecasts under three covariance estimators: the raw sample covariance (mint_sample), the shrinkage estimator (mint_shr), and the NOVELIST estimator (mint_n).
 
+All data generation, covariance estimation, and reconciliation routines were implemented in the ReconCov R package, a package developed solely for this research, and is available under an open‐source license on GitHub [@ReconCov].
+
 ```{r load results}
 sim1_1 <- readRDS("./literature/lib/S4-2-1_T50_M500.rds")
 sim1_2 <- readRDS("./literature/lib/S4-2-1_T300_M500.rds")
@@ -857,6 +859,8 @@ p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 \pagebreak
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
+
+The cross-validation algorithm for NOVELIST is available in the ReconCov package [@ReconCov].
 
 ```{=latex}
 \begin{algorithm}
