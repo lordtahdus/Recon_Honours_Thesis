@@ -1,6 +1,9 @@
 ---
 title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
-author: Vincent Su
+author: 
+  - Vincent Su
+  - Shanika Wickramasuriya (supv.)
+  - George Athanasopoulos (supv.)
 format: 
   pdf:
     include-in-header:
@@ -190,7 +193,7 @@ Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates
 -->
 
 
-# Theoretical Framework
+# Theoretical Framework {#sec-pre-theory}
 
 ## Hierarchical tructure {#sec-hierarchy}
 
@@ -277,8 +280,7 @@ Additionally, the shrinkage estimator shrinks all off-diagonal elements towards 
 
 
 
-# Covariance Estimation Approaches
-
+# Covariance Estimation Approaches {#sec-cov-est}
 
 ## NOVELIST Estimator
 
@@ -347,7 +349,7 @@ where $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the
 
 Methods to ensure positive definiteness of the NOVELIST estimator (and its PC-adjusted variant) will be explored and studied in the project. @Huang2019-ua proposed to diagonalise the NOVELIST estimator and replace any eigenvalues that fall under a certain small positive threshold by the value of that threshold. Alternatively, we can implement the algorithm of @Higham2002-te that computes the nearest positive definite matrix to a given matrix.
 
-# Simulation
+# Simulation Design {#sec-simulation}
 
 <!-- -   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data). -->
 <!-- -   Characteristics such as dimensionality, frequency, and hierarchical structure. -->
@@ -598,7 +600,7 @@ Additional designs (varying block sizes, aggregation paths, correlation configur
 - Finding: NOVELIST performs well in both cases
 -->
 
-# Forecasting Australian Domestics Tourism
+# Forecasting Australian Domestics Tourism {#sec-empirical}
 
 Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate.
 
