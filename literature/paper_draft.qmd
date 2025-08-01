@@ -510,7 +510,9 @@ p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
   theme(legend.position = "right")
 ```
 
-In this setting, we aim to assess the performance of MinT with NOVELIST when the size of the hierarchy becomes larger. As shown in @fig-sim-results-1, ...
+As shown in @fig-sim-results-1, the larger, more complex the hierarchy is, the better reconciliation strategies perform across 1- to 4-step-ahead forecasting horizons. The length of training set gives better-fitted models, but does not affect the relative improvements of the methods over the base forecasts, except MinT with sample covariance (mint_sample). This is evidence that these high-dimensional covariance estimator--shrinkage and NOVELIST--successfully handle "$n \ll p$" data. However, MinT with either estimators rarely differ.
+
+NOVELIST has the flexibility to minimise the effects of weak correlations and retain the stronger ones, as opposed to shrinkage. Thus, this prompts us to give NOVELIST a scenario where the covariance matrix has entries that is noisy while they are, in fact, zeros. We simulate this via a sparse covariance structure of the data generating process for bottom series, which will be discussed next.
 
 <!--
 ## Exploring Effects of Hierarchy's Aggregation
@@ -797,6 +799,8 @@ p1_A + p1_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 
 p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 ```
+
+\pagebreak
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
