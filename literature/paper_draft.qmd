@@ -460,7 +460,7 @@ plot_relative_improvement <- function(MSE_data) {
       y = "Percentage Change (%)"
     ) +
     # labs(x = element_blank(), y = element_blank()) +
-    theme_minimal()
+    theme_bw()
 }
 ```
 
@@ -507,6 +507,11 @@ In this setting, we aim to assess the performance of MinT with NOVELIST when the
 
 ## Exploring the sparsity of the DGP covariance matrix
 
+In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. Specifically, we construct two groups of fifty series each, with strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-50x2. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
+
+Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both.
+<!-- emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. -->
+
 ```{r}
 sim_dense_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M200_dense.rds")
 sim_dense_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_dense.rds")
@@ -540,8 +545,8 @@ p_dense_Sigma + p_sparse_Sigma +
 ```{r}
 #| label: fig-sim-results-dsp
 #| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 50x2 hierarchical structure with dense and sparse DGP's correlation matrix, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
-#| fig.height: 10
-#| fig.width: 10
+#| fig.height: 7
+#| fig.width: 8
 #| out.width: "90%"
 #| fig.align: "center"
 p_dense_50 <- sim_dense_50$MSE |>
@@ -566,11 +571,6 @@ p_dense_50 + p_sparse_50 + p_dense_300 + p_sparse_300 +
   plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") &
   theme(legend.position = "right")
 ```
-
-In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. Specifically, we construct two groups of fifty series each, with strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-50x2. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
-
-Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both.
-<!-- emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. -->
 
 Figure @fig-sim-results-dsp presents out‐of‐sample mean squared error improvements over the base forecasts for each reconciliation strategy under both dense and sparse settings, with two panel lengths--54 and 304 observations--reserving the last four points for testing. In both short and long samples, MinT using either the shrinkage estimator (mint_shr) or the NOVELIST estimator (mint_n) delivers pronounced gains over incoherent ARIMA forecasts, particularly at the one‐step horizon where cross‐series correlations most directly inform the forecast adjustments. Although the two MinT variants perform almost indistinguishably overall, mint_n edges out mint_shr in the immediate horizon, whereas mint_shr slightly outperforms for longer horizons. By contrast, MinT with the raw sample covariance (mint_sample) suffers in small‐sample settings; as expected, its performance improves dramatically with 304 data points, since the sample covariance becomes more reliable with larger $n$. This highlights the practical necessity of regularized estimators in high‐dimensional, low‐sample contexts, a situation common in real applications where histories are short relative to the number of series.
 
