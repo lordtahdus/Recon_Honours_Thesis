@@ -375,13 +375,6 @@ The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$,
 
 We will randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$, yielding $\boldsymbol{\Sigma}^* = \boldsymbol{V} \boldsymbol{\Sigma} \boldsymbol{V}$.
 
-
-## Exploring Effects of Hierarchy's Size
-
-Using the data generating process described above, we consider three different 2-level hierarchical structures, with the bottom-level series $n_b$ being 2 groups of 2 (4 series), 6 groups of 6 (36 series), and 2 groups of 50 (100 series), respectively. The first structure is exactly the same as the one in @fig-hierarchy, with 2 series at the level 1. The second structure has 36 bottom series and are aggregated in groups of size 6 to form 6 level-1 series, which are finally aggregated to form the top level. The third structure is larger, having 100 bottom series aggregated in groups of size 50 to form 2 level-1 series, then aggregated to get the top level. 
-
-Because of this structure, the VAR(1) coefficients matrix would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the illustrations of the first and third structure is attached in @sec-sim-supplement Appendix.
-
 ```{r load results}
 sim1_1 <- readRDS("./literature/lib/S4-2-1_T50_M500.rds")
 sim1_2 <- readRDS("./literature/lib/S4-2-1_T300_M500.rds")
@@ -389,20 +382,42 @@ sim1_2 <- readRDS("./literature/lib/S4-2-1_T300_M500.rds")
 sim2_1 <- readRDS("./literature/lib/S36-6-1_T50_M500.rds")
 sim2_2 <- readRDS("./literature/lib/S36-6-1_T300_M500.rds")
 
-sim3_1 <- readRDS("./literature/lib/S100-2-1_T50_M200_run1.rds")
-sim3_2 <- readRDS("./literature/lib/S100-2-1_T100_M200_run1.rds")
+# sim3_1 <- readRDS("./literature/lib/S100-2-1_T50_M200_run1.rds")
+# sim3_2 <- readRDS("./literature/lib/S100-2-1_T100_M200_run1.rds")
 
-MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F)
-MSE1_2 <- transform_sim_MSE(sim1_2$MSE, F)
+sim_dense_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M200_dense.rds")
+sim_dense_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_dense.rds")
 
-MSE2_1 <- transform_sim_MSE(sim2_1$MSE, F)
-MSE2_2 <- transform_sim_MSE(sim2_2$MSE, F)
+sim_sparse_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
+sim_sparse_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
 
-MSE3_1 <- transform_sim_MSE(sim3_1$MSE, F)
-MSE3_2 <- transform_sim_MSE(sim3_2$MSE, F)
+sim3_1 <- sim_dense_50 # using same with next section simulation
+sim3_2 <- sim_dense_300
 ```
 
+## Exploring Effects of Hierarchy's Size
+
+In this setting, we aim to assess the performance of MinT with NOVELIST when the size of the hierarchy becomes larger. Using the data generating process described above, we consider three different 2-level hierarchical structures, with the bottom-level series $n_b$ being 2 groups of 2 (4 series), 6 groups of 6 (36 series), and 2 groups of 50 (100 series), respectively. The first structure is exactly the same as the one in @fig-hierarchy, with 2 series at the level 1. The second structure has 36 bottom series and are aggregated in groups of size 6 to form 6 level-1 series, which are finally aggregated to form the top level. 
+
+The third structure is larger, we construct two groups of fifty series each for the bottom level. However, rather than collapsing each group into a single aggregate as in previous hierarchies, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories.
+
+The VAR(1) coefficients matrices are block diagonal and would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the illustrations of the first and third structure is attached in @sec-sim-supplement Appendix.
+
 ```{r generate plots for A and Sigma}
+MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F) |> 
+  filter(.model != "ols")
+MSE1_2 <- transform_sim_MSE(sim1_2$MSE, F) |> 
+  filter(.model != "ols")
+
+MSE2_1 <- transform_sim_MSE(sim2_1$MSE, F) |> 
+  filter(! .model %in% c("mint_n_hstep", "ols"))
+MSE2_2 <- transform_sim_MSE(sim2_2$MSE, F) |> 
+  filter(! .model %in% c("mint_n_hstep", "ols"))
+
+MSE3_1 <- transform_sim_MSE(sim3_1$MSE, F)
+MSE3_2 <- transform_sim_MSE(sim3_2$MSE, F) |> 
+  filter(.model != "ols")
+
 p1_A <- plot_heatmap(sim1_1$A, T) + 
   ggtitle("2x2 VAR(1) Coefficients Matrix")
 
@@ -507,18 +522,10 @@ In this setting, we aim to assess the performance of MinT with NOVELIST when the
 
 ## Exploring the sparsity of the DGP covariance matrix
 
-In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. Specifically, we construct two groups of fifty series each, with strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-50x2. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
+In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. We consider the same hierarchical structure of two large groups of 50 bottom series as above. Specifically, the two groups would have strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-50x2. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
 
-Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both.
+<!-- Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both. -->
 <!-- emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. -->
-
-```{r}
-sim_dense_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M200_dense.rds")
-sim_dense_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_dense.rds")
-
-sim_sparse_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
-sim_sparse_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
-```
 
 ```{r}
 #| label: fig-Sigma-50x2
