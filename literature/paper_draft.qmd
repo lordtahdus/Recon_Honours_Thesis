@@ -380,7 +380,7 @@ We will randomly flip the signs of the covariance elements, which will create a 
 
 Using the data generating process described above, we consider three different 2-level hierarchical structures, with the bottom-level series $n_b$ being 2 groups of 2 (4 series), 6 groups of 6 (36 series), and 2 groups of 50 (100 series), respectively. The first structure is exactly the same as the one in @fig-hierarchy, with 2 series at the level 1. The second structure has 36 bottom series and are aggregated in groups of size 6 to form 6 level-1 series, which are finally aggregated to form the top level. The third structure is larger, having 100 bottom series aggregated in groups of size 50 to form 2 level-1 series, then aggregated to get the top level. 
 
-  Because of this structure, the VAR(1) coefficients matrix would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the first and third structure is similar.
+Because of this structure, the VAR(1) coefficients matrix would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the illustrations of the first and third structure is attached in @sec-sim-supplement Appendix.
 
 ```{r load results}
 sim1_1 <- readRDS("./literature/lib/S4-2-1_T50_M500.rds")
@@ -422,17 +422,6 @@ p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
   ggtitle("50x2 Correlation Matrix")
 ```
 
-```{r fig settings 2x2}
-#| label: fig-settings-2x2
-#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 2x2 structure."
-#| fig.height: 4
-#| fig.width: 6
-#| out.width: "55%"
-#| fig.align: "center"
-
-p1_A + p1_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
-```
-
 ```{r fig settings 6x6}
 #| label: fig-settings-6x6
 #| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 50x2 structure."
@@ -442,17 +431,6 @@ p1_A + p1_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 #| fig.align: "center"
 
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
-```
-
-```{r fig settings 50x2}
-#| label: fig-settings-50x2
-#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 6×6 structure."
-#| fig.height: 12
-#| fig.width: 8
-#| out.width: "85%"
-#| fig.align: "center"
-
-p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 ```
 
 For each series, $T = 54$ and $304$ observations are generated. The first 50 and 300 observations are used for training, and the last 4 observations are used for testing. The training data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@O-Hara-Wild2024-we]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - mint_sample, the shrinkage estimator - mint_shr, and the NOVELIST estimator - mint_n. The Monte Carlo simulation is repeated $M = 200$ times, in which the parameters for data generating process is fixed.
@@ -787,6 +765,30 @@ The empirical analysis on real, hierarchical Australian domestic tourism shreds 
 \pagebreak
 
 # Appendix {#sec-appendix} 
+
+## Simulation Settings: Supplementary Figures {#sec-sim-supplement}
+
+```{r fig settings 2x2}
+#| label: fig-settings-2x2
+#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 2x2 structure."
+#| fig.height: 4
+#| fig.width: 6
+#| out.width: "55%"
+#| fig.align: "center"
+
+p1_A + p1_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
+```
+
+```{r fig settings 50x2}
+#| label: fig-settings-50x2
+#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 6×6 structure."
+#| fig.height: 12
+#| fig.width: 8
+#| out.width: "85%"
+#| fig.align: "center"
+
+p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
+```
 
 ## Algorithm: NOVELIST cross-validation for optimal threshold $\delta^*$ {#sec-novelist_cv}
 
