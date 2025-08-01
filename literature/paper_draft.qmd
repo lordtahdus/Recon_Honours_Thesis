@@ -397,11 +397,11 @@ sim3_2 <- sim_dense_300
 
 ## Exploring Effects of Hierarchy's Size
 
-In this setting, we aim to assess the performance of MinT with NOVELIST when the size of the hierarchy becomes larger. Using the data generating process described above, we consider three different 2-level hierarchical structures, with the bottom-level series $n_b$ being 2 groups of 2 (4 series), 6 groups of 6 (36 series), and 2 groups of 50 (100 series), respectively. The first structure is exactly the same as the one in @fig-hierarchy, with 2 series at the level 1. The second structure has 36 bottom series and are aggregated in groups of size 6 to form 6 level-1 series, which are finally aggregated to form the top level. 
+In our first set of experiments, we examine how MinT combined with the NOVELIST estimator scales as the hierarchy expands. We generate synthetic data from the same VAR(1) framework described earlier, but vary the number of bottom‐level series, $n_b$, across three different structures: the smallest with two groups of two ($n_b = 4$), an intermediate case with six groups of six ($n_b = 36$), and a much larger configuration with two clusters of fifty ($n_b = 100$). In the 4‐series hierarchy, each pair collapses into a single level‐1 series, which then sums to the top. In the 36‐series case, each block of six forms a level‐1 aggregate, and those six aggregates form the national total.
 
-The third structure is larger, we construct two groups of fifty series each for the bottom level. However, rather than collapsing each group into a single aggregate as in previous hierarchies, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories.
+The 100‐series design employs a deliberately intricate aggregation path to to stress‐test reconciliation methods. We first sum the one hundred bottom series into ten intermediate series by grouping them in contiguous blocks of ten. These ten series are then organised into three level-2 aggregates—four, three, and four series, respectively—before finally summing to a single top node. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories.
 
-The VAR(1) coefficients matrices are block diagonal and would have entries between groups being zeros. To save space, we will only illustrate the settings of the second structure (6 groups of 6) in @fig-settings-6x6, and the illustrations of the first and third structure is attached in @sec-sim-supplement Appendix.
+Across all designs, the VAR(1) coefficient matrices remain block-diagonal, ensuring that series within a block interact but blocks remain orthogonal to each other. To save space, we illustrate only the six-by-six's VAR(1) and correlation configuration in @fig-settings-6x6; the two-by-two and the one-hundred-series structures appear in Appendix @sec-sim-supplement. 
 
 ```{r generate plots for A and Sigma}
 MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F) |> 
@@ -448,7 +448,8 @@ p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
 
-For each series, $T = 54$ and $304$ observations are generated. The first 50 and 300 observations are used for training, and the last 4 observations are used for testing. The training data is used to compute the best fitted ARIMA models by minimising the AICc criterion, in which we use the automatic algorithm from Fabletools R package [@O-Hara-Wild2024-we]. We refer to them as base models, and their base forecasts are then reconciled using the MinT with different covariance estimators. These include using the unbiased sample covariance matrix - mint_sample, the shrinkage estimator - mint_shr, and the NOVELIST estimator - mint_n. The Monte Carlo simulation is repeated $M = 200$ times, in which the parameters for data generating process is fixed.
+For each hierarchy, we simulate two panel lengths, $T=54$ and $T=304$, reserving the final four observations as an out-of-sample test set. In each Monte Carlo replication ($M=500$), we fit univariate ARIMA models (base models) to the training observations using an automatic AICc minimization algorithm from the fabletools package [@O-Hara-Wild2024-we], generating incoherent 1–4-step base forecasts. We then reconcile these forecasts under three covariance estimators: the raw sample covariance (mint_sample), the shrinkage estimator (mint_shr), and the NOVELIST estimator (mint_n).
+
 
 ```{r}
 plot_relative_improvement <- function(MSE_data) {
@@ -510,10 +511,9 @@ p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
   theme(legend.position = "right")
 ```
 
-As shown in @fig-sim-results-1, the larger, more complex the hierarchy is, the better reconciliation strategies perform across 1- to 4-step-ahead forecasting horizons. The length of training set gives better-fitted models, but does not affect the relative improvements of the methods over the base forecasts, except MinT with sample covariance (mint_sample). This is evidence that these high-dimensional covariance estimator--shrinkage and NOVELIST--successfully handle "$n \ll p$" data. However, MinT with either estimators rarely differ.
+Figure @fig-sim-results-1 illustrates that as hierarchy size and complexity increase, the relative improvements in MSE over the base forecasts from reconciliation amplify, across all 1- to 1-step horizons. While extending the training window (from 50 to 300 in‐sample observations) uniformly improves the accuracy of base ARIMA forecasts, it does not alter the percentage improvements of mint_shr or mint_n. This is evidence that both high-dimensional estimators robustly handle the "large $p \gg T$” regime. By contrast, mint_sample achieves significant accuracy when more data make the sample covariance more reliable. 
 
-NOVELIST has the flexibility to minimise the effects of weak correlations and retain the stronger ones, as opposed to shrinkage. Thus, this prompts us to give NOVELIST a scenario where the covariance matrix has entries that is noisy while they are, in fact, zeros. We simulate this via a sparse covariance structure of the data generating process for bottom series, which will be discussed next.
-
+Despite their theoretical differences, mint_shr and mint_n exhibit nearly identical performance in these canonical settings. Yet NOVELIST’s thresholding ability to minimise effects of weak correlations and retain strong ones suggests it may excel in contexts where correlation matrix has small, noisy entries. This motivates our subsequent exploration of sparse covariance structures, in which many off-diagonals are truly zero.
 <!--
 ## Exploring Effects of Hierarchy's Aggregation
 
