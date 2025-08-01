@@ -317,9 +317,9 @@ $$ {#eq-lambda-thr}
 
 where $\boldsymbol{1}(.)$ is the indicator function.
 
-On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to find the threshold $\hat{\delta^*}$, with the corresponding $\hat{\lambda}^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\hat{\delta^*}, \hat{\lambda}^*)$, that minimises the average out-of-sample reconciled forecast errors. The formal algorithm is given in the @sec-novelist_cv Appendix. Although it is not required to fit forecasting models multiple times, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value.
+On the other hand, the optimal threshold $\delta^*$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to find the threshold $\hat{\delta^*}$, with the corresponding $\hat{\lambda}^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\hat{\delta^*}, \hat{\lambda}^*)$, that minimises the average out-of-sample 1-step-ahead reconciled forecast mean squared error over all windows. The formal algorithm is given in the @sec-novelist_cv Appendix. Although it is not required to fit forecasting models multiple times, the cross-validation procedure is still computationally expensive as it computes the NOVELIST estimator and perform reconciliation for each threshold value.
 
-Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.
+We also tested out minimising 1- to h-step-ahead MSE in the cross-validation procedure. Surprisingly, it returns almost the same best threshold parameter is in the 1-step-ahead case above. Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.
 
 ## POET
 
