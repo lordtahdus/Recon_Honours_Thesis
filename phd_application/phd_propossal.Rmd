@@ -1,0 +1,102 @@
+---
+title: "Decision-Optimal Probabilistic Forecast Reconciliation for Expected Shortfall in Hierarchical Time Series"
+author: 
+  - Vincent Su
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        <!-- \usepackage{amsmath} -->
+        <!-- \usepackage{mathspec} -->
+        \usepackage{algorithm}
+        \usepackage{algpseudocode}
+        \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+        \usepackage{array}
+    mathspec: true
+    number-sections: true
+# crossref:
+#   custom:
+#     - kind: float
+#       key: alg
+#       reference-prefix: Algorithm
+#       caption-prefix: Algorithm
+#       # for PDF output only, tell LaTeX to use the `algorithm` env:
+#       latex-env: algorithm
+execute:
+  cache: false
+  echo: false
+  warning: false
+bibliography: D:/Github/Recon_Honours_Thesis/references.bib
+# bibliographystyle: apa
+csl: D:/Github/Recon_Honours_Thesis/apa.csl
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- # Abstract {-} -->
+
+# Background
+
+<!--
+- Data is hierarchical
+- Decision making requires forecasts at different levels of hierarchy
+- Base forecasts are incoherent and accuracy suffers
+- Reconciliation methods are used to adjust forecasts to be coherent
+- Point forecasts methods are developed
+- Probabilistic forecasts are sometimes the quantity of interest, especially in risk management
+-->
+
+Many operational datasets are naturally hierarchical. For Starbucks, their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, down to many outlets, forming an aggregation constraint. Forecasting such hierarchical time series arises in many decision-making contexts ranging from supply chains and electricity generation planning, to macroeconomic and tourism analysis, where stakeholders need forecasts at several aggregation levels to allocate resources and manage risk.
+
+In practice, when base forecasts are produced independently for all series, they typically fail to satisfy the aggregation constraints. Such forecasts are *incoherent*, which can undermine downstream decisions that require internal consistency. Forecast reconciliation addresses this by adjusting the base forecasts so the final set is *coherent* with the hierarchy. Classical approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings (often projections) so that the adjusted forecasts lie in the coherent subspace.
+
+# Motivation
+
+<!--
+- Recent works mainly focus on point forecasts
+- Existing point forecast reconciliation can be extended to probabilistic forecasts
+- Point forecast reconciliation methods are optimised for scoring rules such as MSE
+- Question: How can probabilistic reconciliation be optimised with respect to different loss functions targeted at the
+downstream decision? 
+- Value-at-risk (VaR) is common risk measure, however, it ignores the tail risk and not coherent risk measure
+- Expected Shortfall (ES) is coherent risk measure and accounts for tail risk, and has recently superseded the Value at Risk as the preferred risk measure in banking regulation.
+- This work investigates the optimal probabilistic forecast reconciliation for Expected Shortfall.
+-->
+
+In the current literature, most reconciliation methodology has been developed for point forecasts, and its benefits for accuracy and coordination across organisation's departments or "silos" are well documented. However, in many applications the quantity of interest is probabilistic forecasts, not just a specific value. Decision makers care about the full distribution of future outcomes to quantify uncertainty, especially in risk management, where tail risks matter (e.g., extreme demand in newsvendor settings or energy generation shortfalls). This motivates moving from point reconciliation to probabilistic reconciliation, so that coherent forecasts also carry coherent uncertainty.
+
+Existing reconciliation methods for point forecasts can be generalised to reconcile probabilistic forecasts. However, these approaches focus on point forecasts and are optimised for scoring rules such as mean squared error (MSE). There is a gap in the literature on how *optimal* this approach is with respect to the downstream decision. As the current expansion of point reconciliation methods no longer guarantee optimality for probabilistic forecasts, such as quantiles or expected shortfall (ES), a more principled approach is needed. This leaves the question: *"How can probabilistic reconciliation be optimised with respect to different loss functions targeted at the downstream decision?"*
+
+Among the risk measures, quantiles, also known as Value-at-Risk (VaR), is a common choice, but it has limitations. VaR ignores the severity of losses beyond that threshold and is not a coherent risk measure, since it does not satisfy the subadditivity property [@Yamai2005-me]. This can lead to inconsistencies in risk assessments across different levels of the hierarchy.
+
+Meanwhile, Expected Shortfall (ES) is a coherent risk measure that accounts for the severity of losses in the tail of the distribution [@Yamai2005-me]. It has recently been adopted as the preferred risk measure in banking regulation since the Basel III regulatory framework [@Basel-iii]. It has ability to capture tail risks more effectively than VaR. ES is also applicable beyond finance, such as quantifying expected economic loss when electricity demand exceeds available capacity. Therefore, we aim to investigate and develop the optimal probabilistic forecast reconciliation under the Expected Shortfall criterion.
+
+<!-- footnote for subadditivity property? -->
+
+# Methodology
+
+## Preliminaries
+
+- Hierarchical time series (HTS) is a collection of time series that are organised in a hierarchy.
+- Coherent subspace and reconciliation definition
+- Reconciliation to probabilistic forecasts
+
+## Optimisation Framework
+
+- ES definition
+- ES is not elicitable, but is jointly elicitable with the quantile function.
+- the quantile and ES jointly minimise in expectation the Fissler-Ziegel class of loss functions
+- utilise the Rockafellar-Uryasev joint characterisation of the quantile and ES
+- thus jointly reconcile the quantile and ES using the following bilevel optimisation problem
+- ...
+
+
+# Applications 
+- Finance: ES is prefered risk measure, hierarchical structure from composite indices and etfs, also accounting for varying weights. Data is publicly available.
+- Energy: ES can be a measure of economic loss accrued if insufficient generation capacity, hierarchical structure from geographical aggregation of service zones, states, and national level. Electricity load data are made available by the Australian Energy Market Operator
+
+# Contributions
+
+- Methodological: cutting-edge techniques from optimisation, econometrics and statistics will be combined to develop new reconciliation methods, new methods will be applied to important problems in energy, retail, and finance thus demonstrating that the research can inform decisions that lower real-world economic costs.
+
+- Economic, environmental and social benefits: the research will improve the accuracy of probabilistic forecasts for decision making in energy, retail, and finance. This will lead to more efficient allocation of resources, reduced economic costs, and improved risk management. 
