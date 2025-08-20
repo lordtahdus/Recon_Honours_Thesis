@@ -76,27 +76,46 @@ Meanwhile, Expected Shortfall (ES) is a coherent risk measure that accounts for 
 # Methodology
 
 ## Preliminaries
-
+<!-- 
 - Hierarchical time series (HTS) is a collection of time series that are organised in a hierarchy.
 - Coherent subspace and reconciliation definition
-- Reconciliation to probabilistic forecasts
+- Reconciliation to probabilistic forecasts\
+-->
+
+Let $\boldsymbol{y}_t \in \mathbb{R}^K$ denote a vector of $K$ time series variables from the hierarchy, at time $t$. These variables are subject to linear aggregation constraints represented by a matrix $\boldsymbol C$, such that $\boldsymbol C \boldsymbol{y}_t = 0$. For example, in a retail setting, the total sales at a warehouse ($y_1$) and two stores ($y_2$ and $y_3$) might satisfy the constraint $y_1 = y_2 + y_3$, leading to $\boldsymbol C = (1, -1, -1)$.
+
+<!-- 
+\tilde{\boldsymbol{y}}_t
+\hat{\boldsymbol{y}}_t
+-->
+
+Base forecasts $\hat{\boldsymbol{y}}_t$, which we generate independently for each series, are typically *incoherent* (i.e. $\boldsymbol C \hat{\boldsymbol{y}}_t \neq 0$), while reconciled forecasts $\tilde{\boldsymbol{y}}_t$ are coherent by construction (i.e. $\boldsymbol C \hat{\boldsymbol{y}}_t = 0$). We obtain coherence via a linear mapping $\tilde{\boldsymbol{y}}_t = \boldsymbol P \hat{\boldsymbol{y}}_t$, where $\boldsymbol P$ maps the full *incoherent* space $\mathbb{R}^K$ to the linear *coherent* subspace $\mathbb{S} \subset \mathbb{R}^K$, where aggregation constraints hold. This mapping $\boldsymbol P$ can be a projection operator $\boldsymbol S (\boldsymbol S' \boldsymbol S)^{-1} \boldsymbol S'$ [@Hyndman2011-jv], where $\boldsymbol S$ is a matrix designed such that $\boldsymbol S \boldsymbol C = 0$. The mapping $\boldsymbol P$ is not unique, and selecting an optimal $\boldsymbol P$ is the core design problem. In this project, we will focus solely on linear reconciliation.
+
+For probabilistic forecasts, let $\hat F_t$ be a multivariate base forecast on $\mathbb{R}^K$. Define the reconciled probabilistic forecast $\tilde F_t$ on $S$ so that probabilities are preserved under the reconciliation map (intuitively, events in the coherent subspace under $\tilde F_t$ correspond to pre-images under $\hat F_t$). This extends point reconciliation to the distributional setting while respecting the aggregation constraints.&#x20;
+
+
 
 ## Optimisation Framework
-
+<!-- 
 - ES definition
 - ES is not elicitable, but is jointly elicitable with the quantile function.
 - the quantile and ES jointly minimise in expectation the Fissler-Ziegel class of loss functions
 - utilise the Rockafellar-Uryasev joint characterisation of the quantile and ES
 - thus jointly reconcile the quantile and ES using the following bilevel optimisation problem
 - ...
-
+-->
 
 # Applications 
+<!-- 
 - Finance: ES is prefered risk measure, hierarchical structure from composite indices and etfs, also accounting for varying weights. Data is publicly available.
 - Energy: ES can be a measure of economic loss accrued if insufficient generation capacity, hierarchical structure from geographical aggregation of service zones, states, and national level. Electricity load data are made available by the Australian Energy Market Operator
+-->
 
 # Contributions
-
+<!-- 
 - Methodological: cutting-edge techniques from optimisation, econometrics and statistics will be combined to develop new reconciliation methods, new methods will be applied to important problems in energy, retail, and finance thus demonstrating that the research can inform decisions that lower real-world economic costs.
 
-- Economic, environmental and social benefits: the research will improve the accuracy of probabilistic forecasts for decision making in energy, retail, and finance. This will lead to more efficient allocation of resources, reduced economic costs, and improved risk management. 
+- Economic, environmental and social benefits: the research will improve the accuracy of probabilistic forecasts for decision making in energy, retail, and finance. This will lead to more efficient allocation of resources, reduced economic costs, and improved risk management.
+-->
+
+
