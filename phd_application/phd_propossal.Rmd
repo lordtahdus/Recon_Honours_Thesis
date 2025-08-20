@@ -1,5 +1,5 @@
 ---
-title: "Decision-Optimal Probabilistic Forecast Reconciliation for Expected Shortfall in Hierarchical Time Series"
+title: "\\LARGE Decision-Optimal Probabilistic Forecast Reconciliation for Expected Shortfall in Hierarchical Time Series"
 author: 
   - Vincent Su
 format: 
@@ -14,14 +14,7 @@ format:
         \usepackage{array}
     mathspec: true
     number-sections: true
-# crossref:
-#   custom:
-#     - kind: float
-#       key: alg
-#       reference-prefix: Algorithm
-#       caption-prefix: Algorithm
-#       # for PDF output only, tell LaTeX to use the `algorithm` env:
-#       latex-env: algorithm
+link-citations: true
 execute:
   cache: false
   echo: false
@@ -46,9 +39,9 @@ editor_options:
 - Probabilistic forecasts are sometimes the quantity of interest, especially in risk management
 -->
 
-Many operational datasets are naturally hierarchical. For Starbucks, their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, down to many outlets, forming an aggregation constraint. Forecasting such hierarchical time series arises in many decision-making contexts ranging from supply chains and electricity generation planning, to macroeconomic and tourism analysis, where stakeholders need forecasts at several aggregation levels to allocate resources and manage risk.
+Many operational datasets are naturally hierarchical. For Starbucks, their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, down to many outlets, forming an aggregation constraint. Forecasting such hierarchical time series arises in many decision-making contexts ranging from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomic [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp], where stakeholders need forecasts at several aggregation levels to allocate resources and manage risk.
 
-In practice, when base forecasts are produced independently for all series, they typically fail to satisfy the aggregation constraints. Such forecasts are *incoherent*, which can undermine downstream decisions that require internal consistency. Forecast reconciliation addresses this by adjusting the base forecasts so the final set is *coherent* with the hierarchy. Classical approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings (often projections) so that the adjusted forecasts lie in the coherent subspace.
+In practice, when base forecasts are produced independently for all series, they typically fail to satisfy the aggregation constraints. Such forecasts are *incoherent*, which can undermine downstream decisions that require internal consistency. Forecast reconciliation addresses this by adjusting the base forecasts so the final set is *coherent* with the hierarchy. Approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings (often projections) so that the adjusted forecasts lie in the coherent subspace; see @Athanasopoulos2024-as for a comprehensive review.
 
 # Motivation
 
@@ -75,27 +68,34 @@ Meanwhile, Expected Shortfall (ES) is a coherent risk measure that accounts for 
 
 # Methodology
 
-## Preliminaries
+### Preliminaries {-}
 <!-- 
 - Hierarchical time series (HTS) is a collection of time series that are organised in a hierarchy.
 - Coherent subspace and reconciliation definition
 - Reconciliation to probabilistic forecasts\
 -->
 
-Let $\boldsymbol{y}_t \in \mathbb{R}^K$ denote a vector of $K$ time series variables from the hierarchy, at time $t$. These variables are subject to linear aggregation constraints represented by a matrix $\boldsymbol C$, such that $\boldsymbol C \boldsymbol{y}_t = 0$. For example, in a retail setting, the total sales at a warehouse ($y_1$) and two stores ($y_2$ and $y_3$) might satisfy the constraint $y_1 = y_2 + y_3$, leading to $\boldsymbol C = (1, -1, -1)$.
+Let $\boldsymbol{y}_t \in \mathbb{R}^K$ denote a vector of $K$ time series variables from the hierarchy, at time $t$. For simplicity, we suppress the subscript $t$ and denote it as $\boldsymbol{y}$. These variables are subject to linear aggregation constraints represented by a matrix $\boldsymbol C$, such that $\boldsymbol C \boldsymbol{y} = 0$. For example, in a retail setting, the total sales at a warehouse ($y_1$) and two stores ($y_2$ and $y_3$) might satisfy the constraint $y_1 = y_2 + y_3$, leading to $\boldsymbol C = (1, -1, -1)$.
 
 <!-- 
-\tilde{\boldsymbol{y}}_t
-\hat{\boldsymbol{y}}_t
+\tilde{\boldsymbol{y}}
+\hat{\boldsymbol{y}}
 -->
 
-Base forecasts $\hat{\boldsymbol{y}}_t$, which we generate independently for each series, are typically *incoherent* (i.e. $\boldsymbol C \hat{\boldsymbol{y}}_t \neq 0$), while reconciled forecasts $\tilde{\boldsymbol{y}}_t$ are coherent by construction (i.e. $\boldsymbol C \hat{\boldsymbol{y}}_t = 0$). We obtain coherence via a linear mapping $\tilde{\boldsymbol{y}}_t = \boldsymbol P \hat{\boldsymbol{y}}_t$, where $\boldsymbol P$ maps the full *incoherent* space $\mathbb{R}^K$ to the linear *coherent* subspace $\mathbb{S} \subset \mathbb{R}^K$, where aggregation constraints hold. This mapping $\boldsymbol P$ can be a projection operator $\boldsymbol S (\boldsymbol S' \boldsymbol S)^{-1} \boldsymbol S'$ [@Hyndman2011-jv], where $\boldsymbol S$ is a matrix designed such that $\boldsymbol S \boldsymbol C = 0$. The mapping $\boldsymbol P$ is not unique, and selecting an optimal $\boldsymbol P$ is the core design problem. In this project, we will focus solely on linear reconciliation.
+Base forecasts $\hat{\boldsymbol{y}}$, which we generate independently for each series, are typically *incoherent* (i.e. $\boldsymbol C \hat{\boldsymbol{y}} \neq 0$), while reconciled forecasts $\tilde{\boldsymbol{y}}$ are coherent by construction (i.e. $\boldsymbol C \hat{\boldsymbol{y}} = 0$). We obtain coherence via a linear mapping $\tilde{\boldsymbol{y}} = \boldsymbol P \hat{\boldsymbol{y}}$, where $\boldsymbol P$ maps the full *incoherent* space $\mathbb{R}^K$ to the linear *coherent* subspace $\mathbb{S} \subset \mathbb{R}^K$, where aggregation constraints hold. This mapping $\boldsymbol P$ can be a projection operator $\boldsymbol S (\boldsymbol S' \boldsymbol S)^{-1} \boldsymbol S'$ [@Hyndman2011-jv], where $\boldsymbol S$ is a matrix designed such that $\boldsymbol S \boldsymbol C = 0$. The mapping $\boldsymbol P$ is not unique, and selecting an optimal $\boldsymbol P$ is the core design problem. In this project, we will focus solely on linear reconciliation.
 
-For probabilistic forecasts, let $\hat F_t$ be a multivariate base forecast on $\mathbb{R}^K$. Define the reconciled probabilistic forecast $\tilde F_t$ on $S$ so that probabilities are preserved under the reconciliation map (intuitively, events in the coherent subspace under $\tilde F_t$ correspond to pre-images under $\hat F_t$). This extends point reconciliation to the distributional setting while respecting the aggregation constraints.&#x20;
+<!-- 
+For probabilistic forecasts, let $\hat F$ be a multivariate base probabilistic forecast on $\mathbb{R}^K$. Define the reconciled probabilistic forecast $\tilde F$ on $\mathbb{S}$ so that probabilities are preserved under the reconciliation map (intuitively, events in the coherent subspace under $\tilde F$ correspond to pre-images under $\hat F$). This extends point reconciliation to the distributional setting while respecting the aggregation constraints.
+-->
+
+\color{red}
+Talk about the probabilistic reconciliation and how it is extended from point reconciliation.
+\color{black}
 
 
 
-## Optimisation Framework
+
+### Optimisation Framework {-}
 <!-- 
 - ES definition
 - ES is not elicitable, but is jointly elicitable with the quantile function.
@@ -104,6 +104,42 @@ For probabilistic forecasts, let $\hat F_t$ be a multivariate base forecast on $
 - thus jointly reconcile the quantile and ES using the following bilevel optimisation problem
 - ...
 -->
+
+For a random variable $Y$, the Expected Shortfall (ES) at level $\alpha \in (0, 1)$ is defined as $\mathrm{ES}_\alpha(Y) = E[Y \mid Y < \mathrm{VaR}_\alpha(Y)]$, where $\mathrm{VaR}_\alpha(Y)$ is the quantile $q$ at level $\alpha$. The ES alone is not elicitable, meaning there is no scoring rule or loss function that can uniquely identify the ES as the optimal optimiser. However, @Fissler2015-uu showed that the quantile function and ES are jointly elicitable, minimising the Fissler-Ziegel class of loss functions in expectation. One of which takes the form:
+
+$$
+L_\alpha^\mathrm{FZ}(y, q, e) = (\mathbb{I}(y \leq q) - \alpha)(q-y) 
++ \frac{1}{\alpha} \mathrm{exp}(e) \mathbb{I}(y \leq q)(q-y) + \mathrm{exp}(e)(e-q-1),
+$$
+
+where $y$ is the realisation of $Y$, $q$ is the quantile, and $e$ is the ES. This loss function is non-convex, thus greatly complicating the optimisation problem. Alternatively, we propose to use the Rockafellar-Uryasev joint characterisation of the quantile and ES [@Rockafellar2000-el]:
+$\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$ 
+and 
+$\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$,
+where
+$H_{\alpha}(y, q) = q - \frac{1}{\alpha}\max\{0, y - q\}$.
+Thus, we jointly reconcile the quantile and ES using the following bilevel optimisation problem:
+
+\vspace{-0.8cm}
+
+\begin{align}
+\min_{\boldsymbol{P}}\;&
+\sum_{k=1}^{K} E_{\boldsymbol y}\!\left[
+  L^{\mathrm{FZ}}_{\alpha}\!\big(y_k,\, \tilde q_k(\boldsymbol{P}),\, \widetilde{\mathrm{ES}}_k(\boldsymbol{P})\big)
+\right]
+\\
+\text{s.t. }&
+\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
+\notag\\
+&
+\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
+\qquad \forall\,k=1,\ldots,K.
+\notag
+\end{align}
+
+\vspace{-0.4cm}
+
+This ensures that the lower-level problem is still convex, however the upper-level objective function with the Fissler-Ziegler loss is non-convex. Irrespective of this non-convexity, smoothing techniques combined with the implicit function and envelope theorems can be used to devise gradient-based methods for locally minimising.
 
 # Applications 
 <!-- 
@@ -119,3 +155,5 @@ For probabilistic forecasts, let $\hat F_t$ be a multivariate base forecast on $
 -->
 
 
+\pagebreak
+# References {-}
