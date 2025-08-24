@@ -26,26 +26,61 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!-- # Abstract {-} -->
+<!--
+========== Tas Advice ==========
+- Start with ES
+  - Talk about VaR and then ES
+  - Take portfolio as example
+  - Walk to hierarchical time series
+  - Motivation is bringing ES and HTS together
+
+- Quantiles are point forecasts
+
+
+
+-->
 
 # Background
 
-<!--
+<!-- 
+========== Old version ==========
+
 - Data is hierarchical
 - Decision making requires forecasts at different levels of hierarchy
 - Base forecasts are incoherent and accuracy suffers
 - Reconciliation methods are used to adjust forecasts to be coherent
 - Point forecasts methods are developed
 - Probabilistic forecasts are sometimes the quantity of interest, especially in risk management
--->
 
 Many operational datasets are naturally hierarchical. For Starbucks, their total sales is the sum of all countries they are operating in, and each national sales is the sum for all cities, down to many outlets, forming an aggregation constraint. Forecasting such hierarchical time series arises in many decision-making contexts ranging from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomic [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp], where stakeholders need forecasts at several aggregation levels to allocate resources and manage risk.
 
-In practice, when base forecasts are produced independently for all series, they typically fail to satisfy the aggregation constraints. Such forecasts are *incoherent*, which can undermine downstream decisions that require internal consistency. Forecast reconciliation addresses this by adjusting the base forecasts so the final set is *coherent* with the hierarchy. Approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings (often projections) so that the adjusted forecasts lie in the coherent subspace; see @Athanasopoulos2024-as for a comprehensive review.
+In practice, when base forecasts are produced independently for all series, they typically fail to satisfy the aggregation constraints. Such forecasts are *incoherent*, which can undermine downstream decisions that require internal consistency. Forecast reconciliation addresses this by adjusting the base forecasts so the final set is *coherent* with the hierarchy. Approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings (often projections) so that the adjusted forecasts lie in the coherent subspace; see @Athanasopoulos2024-as for a comprehensive review. 
+-->
+
+<!-- 
+- Talk about VaR and then ES
+- Take portfolio as example
+- Link to hierarchical time series with previous example
+- Mention HTS arises in many contexts
+- Brief about coherence and reconciliation
+-->
+
+Risk managers and regulators oftenly use quantitative risk measures to quantify and manage potential losses in uncertain environments. Two familiar choices are Value-at-Risk (VaR) and Expected Shortfall (ES). While VaR is conceptually straightforward, it only measures the percentiles of loss distributions and ignores the severity of losses beyond that threshold [@Yamai2005-me]. ES, on the other hand, captures the average loss in the tail beyond the VaR threshold. This makes ES a more reliable metric for assessing and managing "tail risks", and it has been adopted as the preferred regulatory metric since the Basel III framework [@Basel-iii].
+
+These tail risks are, however, not managed in isolation. Consider a bank's trading book, which consists of multiple portfolios across different desks, where each desk manages various asset classes, and then individual securities. This is an example of a hierarchical structure. Risk managers need to assess and forecast the risk quantities at each aggregation level, from the overall trading book down to individual securities Ignoring this naturally-formed hierarchical structure can lead to poor forecasts of uncertainty, resulting in misallocation of capital and suboptimal risk management strategies.
+
+Forecasting such hierarchical time series also arises in many decision-making contexts. From supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomic [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp], stakeholders need forecasts at several aggregation levels to allocate resources and manage risk. These hierarchical structures naturally form aggregation constraints. 
+
+In practice, when forecasts are produced for all series, they typically violate these aggregation constraints observed in the data. Such forecasts are *incoherent*, which often happens when forecasts at lower-level series (e.g. individual securities) do not sum up to the aggregated series (e.g. overall trading book). This can undermine downstream decisions that require internal consistency. Forecast reconciliation, a post-processing step, addresses this by adjusting the so-called base forecasts so the final adjusted set is *coherent* with the aggregation structure. Approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] implement this as linear mappings so that the adjusted forecasts lie in the coherent subspace; see @Athanasopoulos2024-as for a comprehensive review. 
+
+An additional incentive for the rapid adoption of reconciliation methods is that they improve forecast accuracy. For example, the International Monetary Fund reports improvements in liquidity forecasts of $3 million a day in a medium-sized economy, generating economic benefits via more efficient monetary policy operations [@El-Gemayel2022-hx]. This advantage, combined with the need for coherent forecasts, motivates extending reconciliation methods to probabilistic forecasts, especially for tail risk measures such as ES.
+
 
 # Motivation
 
 <!--
+========== Old version ==========
+
 - Recent works mainly focus on point forecasts
 - Existing point forecast reconciliation can be extended to probabilistic forecasts
 - Point forecast reconciliation methods are optimised for scoring rules such as MSE
@@ -54,15 +89,29 @@ downstream decision?
 - Value-at-risk (VaR) is common risk measure, however, it ignores the tail risk and not coherent risk measure
 - Expected Shortfall (ES) is coherent risk measure and accounts for tail risk, and has recently superseded the Value at Risk as the preferred risk measure in banking regulation.
 - This work investigates the optimal probabilistic forecast reconciliation for Expected Shortfall.
--->
+
 
 In the current literature, most reconciliation methodology has been developed for point forecasts, and its benefits for accuracy and coordination across organisation's departments or "silos" are well documented. However, in many applications the quantity of interest is probabilistic forecasts, not just a specific value. Decision makers care about the full distribution of future outcomes to quantify uncertainty, especially in risk management, where tail risks matter (e.g., extreme demand in newsvendor settings or energy generation shortfalls). This motivates moving from point reconciliation to probabilistic reconciliation, so that coherent forecasts also carry coherent uncertainty.
 
 Existing reconciliation methods for point forecasts has recently been generalised to reconcile probabilistic forecasts. However, these approaches originally focus on point forecasts and are optimised for scoring rules such as mean squared error (MSE). There is a gap in the literature on how *optimal* this approach is with respect to the downstream decision. The current expansion of point reconciliation methods no longer guarantee optimality for probabilistic forecasts, such as quantiles or expected shortfall (ES). This leaves the question: *"How can probabilistic reconciliation be optimised with respect to different loss functions targeted at the downstream decision?"*
 
-Although @Panagiotelis2023-fs introduced an score optimisation for reconciliation weights using the energy score or variogram score, they are scoring rules for full multivariate predictive distributions and do not directly address the tail functionals. Among the risk measures, quantiles, also known as Value-at-Risk (VaR), is a common choice, but it has limitations. VaR ignores the severity of losses beyond that threshold and is not a coherent risk measure, since it does not satisfy the subadditivity property [@Yamai2005-me]. This can lead to inconsistencies in risk assessments across different levels of the hierarchy.
+Although @Panagiotelis2023-fs introduced an score optimisation for reconciliation weights using the energy score or variogram score, they are scoring rules for full multivariate predictive distributions and do not directly address the tail functionals. 
+
+Among the risk measures, quantiles, also known as Value-at-Risk (VaR), is a common choice, but it has limitations. VaR ignores the severity of losses beyond that threshold and is not a coherent risk measure, since it does not satisfy the subadditivity property [@Yamai2005-me]. This can lead to inconsistencies in risk assessments across different levels of the hierarchy.
 
 Meanwhile, Expected Shortfall (ES) is a coherent risk measure that accounts for the severity of losses in the tail of the distribution [@Yamai2005-me]. It has recently been adopted as the preferred risk measure in banking regulation since the Basel III regulatory framework [@Basel-iii]. It has ability to capture tail risks more effectively than VaR. ES is also applicable beyond finance, such as quantifying expected economic loss when electricity demand exceeds available capacity. Therefore, we aim to investigate and develop the optimal probabilistic forecast reconciliation under the Expected Shortfall criterion.
+-->
+
+In the current literature, most reconciliation methodology has been developed for point forecasts, and its benefits for accuracy and coordination across organisation's departments or "silos" are well documented. However, in many applications the quantity of interest is a probabilistic forecast, not just a typical mean or median value. Modern risk management and operations need more than a single number--they need quantities from the full predictive distribution that capture uncertainty and tail behaviour, because many decisions are tail-sensitive (e.g., extreme demand in newsvendor settings or energy generation shortfalls).
+
+Existing reconciliation methods for point forecasts has recently been generalised to reconcile probabilistic forecasts with downstream decisions based on these. However, these approaches originally focus on point forecasts and are optimised for scoring functions such as mean squared error (MSE). There is a gap in the literature on how *optimal* this approach when considering alternative quantities of interest, such as quantiles or expected shortfall (ES). This leaves the question: *"How can we construct probabilistic forecast reconciliation that are explicitly optimised for ES (and, where useful, jointly for VaR and ES)?"*
+
+Although @Panagiotelis2023-fs introduced an score optimisation for reconciliation weights using proper scoring rules, energy score and variogram score, for full multivariate predictive distributions, they do not directly address the tail functionals. Other than that, there is a lack of research on optimising reconciliation for specific risk measures such as VaR and ES.
+
+- briefly expand on limitaions of VaR: not coherent risk measure, not subadditive, on top of ignoring tail risk
+- focus on ES
+- however ES is not elicitable, but is jointly elicitable with the quantile function
+- Bring the work of Fissler and Ziegel (2016) and Rockafellar and Uryasev (2000) into the reconciliation framework
 
 <!-- footnote for subadditivity property? -->
 
