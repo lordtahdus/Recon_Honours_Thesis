@@ -1,5 +1,5 @@
 ---
-title: "\\LARGE Decision-Optimal Probabilistic Forecast Reconciliation for Expected Shortfall in Hierarchical Time Series"
+title: "\\LARGE Decision-Optimal Forecast Reconciliation for Expected Shortfall in Hierarchical Time Series"
 author: 
   - \Large Vincent Su
 format: 
@@ -15,7 +15,7 @@ format:
         
         % adjust spacing
         \usepackage{titling}
-        \pretitle{\begin{center}\vspace{-5em}}
+        \pretitle{\begin{center}\vspace{-3em}\bfseries}
         \posttitle{\end{center}\vspace{-1.5em}} 
         \preauthor{\begin{center}}
         \postauthor{\end{center}\vspace{-4em}} 
@@ -80,9 +80,9 @@ Risk managers and regulators use quantitative risk measures to quantify and mana
 
 These tail risks are, however, not managed in isolation. Consider a hedge fund's investment portfolio returns, which compose of returns of different asset classes, and each asset class further contain returns of various individual securities. This is an example of a hierarchical structure, with multiple *aggregation levels*. Risk managers need to assess and forecast the returns or risk quantities at several levels, from the overall portfolio, down to individual securities. Ignoring this naturally formed hierarchical structure can lead to misaligned forecasts, for example, the predicted returns of individual securities are low while the overall portfolio returns are high. This results in misallocation of capital and suboptimal risk management strategies.
 
-Forecasting such hierarchical structure also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomic [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. These hierarchical structures naturally form *aggregation constraints* (child levels must sum up to parents). Taken together, when we have a collection of time series organised in a hierarchy subject to the aggregation constraints, we refer to this as *hierarchical time series*.
+Forecasting data from such hierarchical structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. These hierarchical structures naturally form *aggregation constraints* (child levels must sum up to parents). Taken together, a collection of time series organised in a hierarchy and subject to aggregation constraints is refered as *hierarchical time series*.
 
-In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data; such forecasts are *incoherent*. This can undermine downstream decisions that require internal consistency. Forecast reconciliation, a post-processing step, addresses this by adjusting the base forecasts so the final adjusted set of forecasts is *coherent* with the aggregation structure. Approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], MinT [@Wickramasuriya2019-xq], and more are developed and commonly used in practice. An additional incentive for the rapid adoption of reconciliation methods is that they improve forecast accuracy [@Athanasopoulos2024-as]. For instance, the International Monetary Fund reported improvements in their liquidity forecasts, generating economic benefits via more efficient monetary policy operations [@El-Gemayel2022-hx].
+In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data; such forecasts are *incoherent*. This can undermine downstream decisions that require internal consistency. Forecast reconciliation, a post-processing step, addresses this by adjusting the base forecasts to the final adjusted set of forecasts that are *coherent* with the aggregation structure. Reconciliation approaches such as OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], MinT [@Wickramasuriya2019-xq], and more are developed and commonly used in practice. As well as guaranteeing coherence, reconciliation methods have been shown to improve forecast accuracy [@Athanasopoulos2024-as]. For instance, the International Monetary Fund reported improvements in their liquidity forecasts, generating economic benefits via more efficient monetary policy operations [@El-Gemayel2022-hx].
 
 <!-- \color{red}
 Importantly, ES behaves well under aggregation (satisfying subadditivity), making it a natural target when risks are rolled up through a hierarchy. This context motivates methods that deliver coherent, multi-level forecasts whose uncertainty aligns with the tail-risk metrics managers actually use.
@@ -132,11 +132,9 @@ Both VaR and ES are popular risk measures, but they have different properties. W
 Even with these advantages, ES has its own challenges. Notably, ES is not elicitable on its own, meaning there is no scoring rule or loss function that can uniquely identify the ES as the optimal optimiser. However, works from @Fissler2015-uu and @Rockafellar2000-el show that this is not impossible when ES is considered jointly with VaR. This joint elicitability opens the door to optimising reconciliation methods specifically for ES. As a result, the biggest objective of this project is to bring these recent theoretical advances into the reconciliation framework, to develop methods that produce coherent probabilistic forecasts optimised for ES.
 -->
 
-Modern risk management and operations need more than a typical mean or median value--they need quantities from the full predictive distribution that capture uncertainty and tail behaviour, because many decisions are tail-sensitive (e.g., extreme demand in retail settings or energy generation shortfalls). While VaR is conceptually straightforward, it ignores the severity of losses beyond the VaR threshold and does not satisfy the subadditivity property\footnote{\textbf{Subadditivity.} A risk measure $\rho$ on loss variables is subadditive if $\rho(X+Y)\le \rho(X)+\rho(Y)$ for any losses $X,Y$. Expected Shortfall satisfies subadditivity for all $\alpha\in(0,1)$, whereas VaR can violate it. Thus, the portfolio ES cannot exceed the sums of individual security ESs.} [@Yamai2005-me]. Violating subadditivity is a critical problem, because it means that the risk measure of a combined portfolio can exceed the sum of stand-alone risks, which contradicts the principle of diversification. VaR therefore can mislead risk assessments across different levels of the hierarchy, and may underestimate the true risk exposure under market stress. ES, on the other hand, is a consistent metric that captures the average loss in the tail beyond the VaR threshold. This makes ES a more reliable measure for assessing and managing "tail risks", and it has been adopted as the preferred regulatory metric since the Basel III framework [@Basel-iii]. Although ES is the metric that risk managers actually use, there is a lack of research on forecasting ES within the reconciliation framework.
+Modern risk management and operations need more than a typical mean or median forecast. As many decisions are tail-sensitive (e.g., extreme demand in retail settings or energy generation shortfalls), they need quantities that capture uncertainty and tail behaviour. While VaR is conceptually straightforward, it ignores the severity of losses beyond the VaR threshold and does not satisfy the subadditivity property\footnote{\textbf{Subadditivity.} A risk measure $\rho$ on loss variables is subadditive if $\rho(X+Y)\le \rho(X)+\rho(Y)$ for any losses $X,Y$. Expected Shortfall satisfies subadditivity for all $\alpha\in(0,1)$, whereas VaR can violate it. Thus, the portfolio ES cannot exceed the sums of individual security ESs.} [@Yamai2005-me]. Violating subadditivity is a critical problem, because it means that the risk measure of a combined portfolio can exceed the sum of stand-alone risks, which contradicts the principle of diversification. VaR therefore can mislead risk assessments across different levels of the hierarchy, and may underestimate the true risk exposure under market stress. ES, on the other hand, is a consistent metric that captures the average loss in the tail beyond the VaR threshold. This makes ES a more reliable measure for assessing and managing "tail risks", and it has been adopted as the preferred regulatory metric since the Basel III framework [@Basel-iii]. Although ES is the metric that risk managers actually use, there is a lack of research on forecasting ES within the reconciliation framework.
 
-\color{red}
-Most reconciliation methodology has been developed for point forecasts and are optimised for point scoring functions such as mean squared error (MSE). Generalising these methods to reconcile probabilistic forecasts does not guarantee optimality for tail-risk measures such as VaR or ES. Although @Panagiotelis2023-fs introduced score optimisation for reconciliation weights using proper scoring rules (energy score and variogram score) for full multivariate predictive distributions, they do not directly address the tail functionals. This leaves the question: *"How can we construct probabilistic forecast reconciliation that are explicitly optimised for tail-risk measures such as ES?"*
-\color{black} 
+Most reconciliation methodology has been developed for mean forecasts and are optimised for point scoring functions such as mean squared error (MSE). Generalising these methods to reconcile probabilistic forecasts does not guarantee optimality for tail-risk measures such as VaR or ES. Recent works from @Panagiotelis2023-fs that introduced score optimisation for reconciliation weights using proper scoring rules (energy score and variogram score) has shred lights on reconciling full multivariate predictive distributions. Building on this, I aim to construct methods that directly address the tail functionals. The challenge will be to *"construct forecast reconciliation methods that are explicitly optimised for tail-risk measures such as ES."*
 
 <!-- 
 **AP: I have thought a bit about how we discuss the point v probabilistic issue. Ultimately, a VaR or ES forecast is a point forecast. However, a) any point forecast can be derived from a distributional forecast and b) scoring rules give us a way to obtain the optimal VaR or ES if we know the underlying probabilistic distribution. These two facts taken together mean we can naturally adapt the score optimisation framework of Panagiotelis et al (2023) to obtain optimal ES forecasts while also guaranteeing that these forecast come from an underlying probabilitistic forecast that is coherent.**
@@ -144,7 +142,7 @@ Most reconciliation methodology has been developed for point forecasts and are o
 
 A practical challenge is that ES is not elicitable on its own, meaning there is no scoring rule or loss function that can uniquely identify ES as the optimiser. However, ES is jointly elicitable with VaR [@Fissler2015-uu], and is amenable to convex optimisation via an auxiliary VaR variable [@Rockafellar2000-el]. This opens the door to train reconciliation specifically for ES.
 
-As a result, the objective of this thesis is to bring these theoretical advances into the reconciliation framework and develop methods that produce coherent probabilistic forecasts optimised for ES. The goal is a reliable, consistent, and decision-aligned risk-forecasting framework that helps national and international organisations improve ES backtesting, stabilise capital, and allocate resources more effectively across hierarchical levels.
+As a result, the objective my PhD research project is to bring these theoretical advances into the reconciliation framework and develop methods that produce coherent probabilistic forecasts optimised for ES. The goal is a reliable, consistent, and decision-aligned risk-forecasting framework that helps national and international organisations improve ES backtesting, stabilise capital, and allocate resources more effectively across hierarchical levels.
 
 <!-- footnote for subadditivity property? -->
 
@@ -181,7 +179,7 @@ Talk about the probabilistic reconciliation and how it is extended from point re
 
 Let $\boldsymbol{y}_t \in \mathbb{R}^K$ denote a vector of $K$ time series variables from the hierarchy, at time $t$. For simplicity, we suppress the subscript $t$ and denote it as $\boldsymbol{y}$. These variables are subject to linear aggregation constraints. Base forecasts $\hat{\boldsymbol{y}}$, which we generate for each series, are typically *incoherent*, while reconciled forecasts $\tilde{\boldsymbol{y}}$ are coherent by construction. We obtain coherence via a linear mapping $\tilde{\boldsymbol{y}} = \boldsymbol P \hat{\boldsymbol{y}}$, where $\boldsymbol P$ maps the full *incoherent* space $\mathbb{R}^K$ to the linear *coherent* subspace $\mathbb{S} \subset \mathbb{R}^K$, where aggregation constraints hold. Ultimately, selecting an optimal $\boldsymbol P$ is the core design problem. In this project, we will focus solely on linear reconciliation.
 
-For a random variable $Y$, the Expected Shortfall (ES) at level $\alpha \in (0, 1)$ is defined as $\mathrm{ES}_\alpha(Y) = E[Y \mid Y < \mathrm{VaR}_\alpha(Y)]$, where $\mathrm{VaR}_\alpha(Y)$ is the quantile $q$ at level $\alpha$. Thus, we can define $\widetilde{\mathrm{ES}}_k(\boldsymbol{P}) = \mathrm{ES}_\alpha(\tilde y_k(\boldsymbol{P}))$ as the ES of the $k$-th series after reconciliation, where $\tilde y_k(\boldsymbol{P})$ is the $k$-th element of the reconciled forecasts $\tilde{\boldsymbol{y}}(\boldsymbol{P}) = \boldsymbol P \hat{\boldsymbol{y}}$; and similarly define $\tilde q_k(\boldsymbol{P}) = \mathrm{VaR}_\alpha(\tilde y_k(\boldsymbol{P}))$ as the quantile of the $k$-th series after reconciliation.
+For a random variable $Y$, the Expected Shortfall (ES) at level $\alpha \in (0, 1)$ is defined as $\mathrm{ES}^{(\alpha)}(Y) = E[Y \mid Y < \mathrm{VaR}^{(\alpha)}(Y)]$, where $\mathrm{VaR}^{(\alpha)}(Y)$ is the quantile $q$ at level $\alpha$. Hereafter $\alpha$ is dropped for convenience. Thus, we can define $\widetilde{\mathrm{ES}}_k(\boldsymbol{P}) = \mathrm{ES}(\tilde y_k(\boldsymbol{P}))$ as the ES of the $k$-th series after reconciliation, where $\tilde y_k(\boldsymbol{P})$ is the $k$-th element of the reconciled forecasts $\tilde{\boldsymbol{y}}(\boldsymbol{P}) = \boldsymbol P \hat{\boldsymbol{y}}$; and similarly define $\tilde q_k(\boldsymbol{P}) = \mathrm{VaR}(\tilde y_k(\boldsymbol{P}))$ as the quantile of the $k$-th series after reconciliation.
 
 ### Optimisation Framework {-}
 <!-- 
@@ -197,16 +195,16 @@ For a random variable $Y$, the Expected Shortfall (ES) at level $\alpha \in (0, 
 @Fissler2015-uu showed that the quantile function and ES are jointly elicitable, minimising the Fissler-Ziegel class of loss functions in expectation. One of which takes the form:
 
 $$
-L_\alpha^\mathrm{FZ}(y, q, e) = (\mathbb{I}(y \leq q) - \alpha)(q-y) 
+L^{(\alpha)}(y, q, e) = (\mathbb{I}(y \leq q) - \alpha)(q-y) 
 + \frac{1}{\alpha} \mathrm{exp}(e) \mathbb{I}(y \leq q)(q-y) + \mathrm{exp}(e)(e-q-1),
 $$
 
 where $y$ is the realisation of $Y$, $q$ is the quantile, and $e$ is the ES. This loss function is non-convex, thus greatly complicating the optimisation problem. Alternatively, we propose to use the Rockafellar-Uryasev joint characterisation of the quantile and ES [@Rockafellar2000-el]:
-$\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$ 
+$\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$ 
 and 
-$\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$,
+$\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right]$,
 where
-$H_{\alpha}(y, q) = q - \frac{1}{\alpha}\max\{0, y - q\}$.
+$H(y, q) = H^{(\alpha)}(y, q) = q - \frac{1}{\alpha}\max\{0, y - q\}$.
 Thus, we jointly reconcile the quantile and ES using the following bilevel optimisation problem:
 
 \vspace{-0.8cm}
@@ -214,14 +212,14 @@ Thus, we jointly reconcile the quantile and ES using the following bilevel optim
 \begin{align}
 \min_{\boldsymbol{P}}\;&
 \sum_{k=1}^{K} E_{\boldsymbol y}\!\left[
-  L^{\mathrm{FZ}}_{\alpha}\!\big(y_k,\, \tilde q_k(\boldsymbol{P}),\, \widetilde{\mathrm{ES}}_k(\boldsymbol{P})\big)
+  L^{(\alpha)}\!\big(y_k,\, \tilde q_k(\boldsymbol{P}),\, \widetilde{\mathrm{ES}}_k(\boldsymbol{P})\big)
 \right]
 \\
 \text{s.t. }&
-\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
+\tilde q_k(\boldsymbol{P})=\arg\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
 \notag\\
 &
-\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H_{\alpha}\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
+\widetilde{\mathrm{ES}}_k(\boldsymbol{P})=\max_{q}\, E_{\tilde{\boldsymbol{y}}}\!\left[ H\!\big(\tilde y_k(\boldsymbol{P}), q\big) \right],
 \qquad \forall\,k=1,\ldots,K.
 \notag
 \end{align}
@@ -230,14 +228,14 @@ Thus, we jointly reconcile the quantile and ES using the following bilevel optim
 
 This ensures that the lower-level problem is still convex, however the upper-level objective function with the Fissler-Ziegler loss is non-convex. Irrespective of this non-convexity, smoothing techniques combined with the implicit function and envelope theorems can be used to devise gradient-based methods for locally minimising.
 
-# Applications 
 <!-- 
+# Applications 
+
 - Finance: ES is prefered risk measure, hierarchical structure from composite indices and etfs, also accounting for varying weights. Data is publicly available.
 - Energy: ES can be a measure of economic loss accrued if insufficient generation capacity, hierarchical structure from geographical aggregation of service zones, states, and national level. Electricity load data are made available by the Australian Energy Market Operator
--->
 
 # Contributions
-<!-- 
+
 - Methodological: cutting-edge techniques from optimisation, econometrics and statistics will be combined to develop new reconciliation methods, new methods will be applied to important problems in energy, retail, and finance thus demonstrating that the research can inform decisions that lower real-world economic costs.
 
 - Economic, environmental and social benefits: the research will improve the accuracy of probabilistic forecasts for decision making in energy, retail, and finance. This will lead to more efficient allocation of resources, reduced economic costs, and improved risk management.
