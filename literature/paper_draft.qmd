@@ -77,9 +77,14 @@ A collection of time series connected via a set of linear constraints is known a
 
 <!-- ############  Intro  ############ -->
 
-In time series forecasting, aggregation occurs in a variety of settings. While a formal definition of hierarchical time series can be found in @sec-hierarchy, we can think of Starbucks sales data as an illustrative example. Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is structured hierarchically: the top level is the total sales across all countries, followed by national sales for each country, then city sales for each city within a country, and finally outlet sales for each outlet in a city. As a result, there are over 40,000 individual outlet sales to forecast, plus additional series at higher levels of aggregation such as city and country. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level.
+<!--
+Para 1
+- Introduce hierarchical time series and its importance in various applications.
+-->
 
-This hierarchical structure is not unique to the Starbucks sales data; it can be found in many other domains, such as national tourism, electricity demand, or Gross Domestic Product (GDP). The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+In time series forecasting, aggregation occurs in a variety of settings. While a formal definition of hierarchical time series can be found in @sec-hierarchy, we can think of Starbucks sales data as an illustrative example. Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is *structured hierarchically*: the top level is the total sales across all countries, followed by national sales for each country, and then individual sales for each outlet in a city. As a result, there are over 40,000 individual outlet sales to forecast, plus additional series at higher levels of aggregation such as city and country. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level.
+
+Forecasting data from such hierarchical structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
 
 <!-- ##########  Literature Review  ########## -->
@@ -91,7 +96,9 @@ This hierarchical structure is not unique to the Starbucks sales data; it can be
   - MinT
   - Bayesian, Machine learning
   - Probabilistic methods -->
-  
+
+In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data; such forecasts are *incoherent*. This can undermine downstream decisions that require internal consistency.
+
 Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top-level series and disaggregate them down. Middle-out methods combine both approaches by forecasting middle-level series and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Additionally, the most disaggregated series often are very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique. Consequently, these single-level methods tend to give poor results across other levels of the hierarchy.
 
 To overcome these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, and others to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
@@ -197,13 +204,13 @@ Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates
 
 ## Hierarchical tructure {#sec-hierarchy}
 
-The hierarchical structure can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, city, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series. As illustrated in @fig-grouped, the aggregation or disaggregation paths are not unique.
+The *hierarchical structure* can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. These hierarchical structures naturally form *aggregation constraints* (child levels must sum up to parents). When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series. As illustrated in @fig-grouped, the aggregation or disaggregation paths are not unique.
 
 ![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/research_proposal/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
 ![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/research_proposal/figs/grouped_structure.png){#fig-grouped width="90%"}
 
-For simplicity, we refer to both of these structures as hierarchical time series, we will distinguish between them if and when it is necessary. All hierarchical structures can be represented using matrix algebra:
+For simplicity, we refer to both of these structures as hierarchical structure, we will distinguish between them if and when it is necessary. Taken together, a collection of time series organised in a hierarchy and subject to aggregation constraints is refered as *hierarchical time series*. All hierarchical time series can be represented using matrix algebra:
 
 $$
 \boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
@@ -223,13 +230,13 @@ $$
 \right].
 $$
 
-Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods. Then pre-multiplying them by $\boldsymbol{S}$ we get: 
+Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods, pre-multiplying them by $\boldsymbol{S}$ we get: 
 
 $$
 \tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \hat{\boldsymbol{b}}_{t+h|t} \, .
 $$ {#eq-sb}
 
-We refer to $\tilde{\boldsymbol{y}}_{t+h|t}$ as coherent forecasts, as they respect the aggregation structure. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the inherent information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation.
+We refer to $\tilde{\boldsymbol{y}}_{t+h|t}$ as *coherent forecasts*, as they respect the aggregation constraints. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the inherent information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation.
 
 Another issue with expressing reconciled methods as in @eq-sb is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing methods, which also provides a framework for new methods to be developed:
 
@@ -284,7 +291,7 @@ Additionally, the shrinkage estimator shrinks all off-diagonal elements towards 
 
 ## NOVELIST Estimator
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, is currently the main focus of this research project. It introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy effects. NOVELIST offers more flexibility than the shrinkage estimator, which is useful when we believe that only a few variables are truly correlated. However, it does not guarantee to be positive definite.
+The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy effects. NOVELIST offers more flexibility than the shrinkage estimator, which is useful when we believe that only a few variables are truly correlated. However, it does not guarantee to be positive definite.
 
 The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
 
@@ -323,7 +330,7 @@ On the other hand, the optimal threshold $\delta^*$ does not have a closed-form 
 
 We also tested out minimising 1- to h-step-ahead MSE in the cross-validation procedure. Surprisingly, it returns almost the same best threshold parameter is in the 1-step-ahead case above. Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix.
 
-## POET
+<!-- ## POET
 
 The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. It takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example.
 
@@ -333,10 +340,10 @@ $$
 \hat{\boldsymbol{R}}^{K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + T(\hat{\boldsymbol{R}}_{1, K})
 $$
 
-where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively, and $T(.)$ is the thresholding function, which can be either soft-thresholding, hard-thresholding, or others.
+where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively, and $T(.)$ is the thresholding function, which can be either soft-thresholding, hard-thresholding, or others. -->
 
 
-## PC-adjusted NOVELIST
+<!-- ## PC-adjusted NOVELIST
 
 This approach is best of both worlds, leveraging the strengths of both NOVELIST and POET. The PC-adjusted (Principal-Component-adjusted) NOVELIST overcomes the shortcomings of the current shrinkage estimator, taking prominent PCs into account while also offers extra flexibility. The idea is to apply the NOVELIST estimator to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, and then add the principal components part back. The PC-adjusted NOVELIST estimator is formulated as:
 
@@ -347,7 +354,42 @@ $$
 
 where $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{N, K}_{1}$ is not guaranteed to be positive definite.
 
-Methods to ensure positive definiteness of the NOVELIST estimator (and its PC-adjusted variant) will be explored and studied in the project. @Huang2019-ua proposed to diagonalise the NOVELIST estimator and replace any eigenvalues that fall under a certain small positive threshold by the value of that threshold. Alternatively, we can implement the algorithm of @Higham2002-te that computes the nearest positive definite matrix to a given matrix.
+Methods to ensure positive definiteness of the NOVELIST estimator (and its PC-adjusted variant) will be explored and studied in the project. @Huang2019-ua proposed to diagonalise the NOVELIST estimator and replace any eigenvalues that fall under a certain small positive threshold by the value of that threshold. Alternatively, we can implement the algorithm of @Higham2002-te that computes the nearest positive definite matrix to a given matrix. -->
+
+## PC-adjusted Estimator
+
+This method takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example. It starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{C}}^K_{1}$ (the correlation matrix after removing the first $K$ principal components). Then we can apply either shrinkage or NOVELIST estimator to $\hat{\boldsymbol{R}}_{1, K}$:
+
+$$
+\hat{\boldsymbol{R}}^{g, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + g(\hat{\boldsymbol{C}}^K_{1})
+$$
+
+where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{*, K}_{1}$ is not guaranteed to be positive definite.
+
+
+## Scaled Variance
+
+Apply shrinkage or NOVELIST to the correlation matrix of 1-step-ahead base forecast errors, then scale it back to covariance matrix of h-step-ahead base forecast errors using the h-step-ahead standard deviations:
+
+$$
+\hat{\boldsymbol{W}}^{sv}_{h} = \boldsymbol{D}^{1/2}_h g(\hat{\boldsymbol{R}}_1) \boldsymbol{D}^{1/2}_h,
+$$
+
+where $\boldsymbol{D}_h = \text{diag}(\hat{\sigma}_{1,h}, \hat{\sigma}_{2,h}, \ldots, \hat{\sigma}_{n_b,h})$, and $\hat{\sigma}_{i,h}$ is the standard deviation of the $i$-th series' h-step-ahead base forecast errors. The asterisk $*$ indicates either shrinkage or NOVELIST estimator.
+
+
+## Constructing from h-step-ahead residuals
+
+Construct the sample covariance matrix directly from h-step-ahead base forecast errors, then apply either shrinkage or NOVELIST estimator:
+
+$$
+\hat{\boldsymbol{W}}^{g}_{h} = g(\hat{\boldsymbol{W}}_h)
+$$
+
+where $\hat{\boldsymbol{R}}_h$ is the sample correlation matrix of h-step-ahead base forecast errors, and $\circ$ denotes the Hadamard product (element-wise product). The asterisk $*$ indicates either shrinkage or NOVELIST estimator.
+
+
+
 
 # Simulation Design {#sec-simulation}
 
@@ -602,7 +644,7 @@ Additional designs (varying block sizes, aggregation paths, correlation configur
 
 # Forecasting Australian Domestics Tourism {#sec-empirical}
 
-Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate.
+Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. A complete illustration of this geographic hierarchy appears in Appendix @sec-tourism-supplement. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate. @tbl-tourism-structure depicts this structure.
 
 <!-- - A table/figure to illustrate the hierarchy -->
 
