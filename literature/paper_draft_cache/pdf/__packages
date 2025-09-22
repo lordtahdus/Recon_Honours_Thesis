@@ -9,3 +9,6 @@ feasts
 tsibble
 lubridate
 stringr
+tibble
+knitr
+kableExtra

@@ -25,7 +25,7 @@ format:
 #       # for PDF output only, tell LaTeX to use the `algorithm` env:
 #       latex-env: algorithm
 execute:
-  cache: false
+  cache: true
   echo: false
   warning: false
 bibliography: D:/Github/Recon_Honours_Thesis/references.bib
@@ -52,7 +52,6 @@ editor_options:
 ```{r library}
 library(ggplot2)
 library(patchwork)
-library(ReconCov)
 library(dplyr)
 library(tidyr)
 library(fable)
@@ -60,8 +59,13 @@ library(fabletools)
 library(feasts)
 library(tsibble)
 library(lubridate)
+library(knitr)
+library(kableExtra)
+library(stringr)
 
-path <- "D:/Github/Recon_Honours_Thesis"
+library(ReconCov)
+
+path <- "D:/Github/Recon_Honours_Thesis/"
 knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
@@ -646,13 +650,36 @@ Additional designs (varying block sizes, aggregation paths, correlation configur
 
 Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. A complete illustration of this geographic hierarchy appears in Appendix @sec-tourism-supplement. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate. @tbl-tourism-structure depicts this structure.
 
-<!-- - A table/figure to illustrate the hierarchy -->
+```{r}
+#| tbl-cap: "Hierarchical and grouped structure of Australian domestic tourism flows"
+#| label: tbl-tourism-structure
+
+num_series_geo <- c(1, 7, 27, 77)
+table_structure <- tibble(
+  `Geographical division` = c("Australia", "States", "Zones", "Regions"),
+  `Number of series per geographical division` = num_series_geo,
+  `Number of series per purpose` = 4*num_series_geo,
+  `Total number of series` = 5*num_series_geo
+)
+# add total per row
+table_structure <- rbind(
+  table_structure,
+  c("Total", colSums(table_structure[,-1]))
+)
+
+# width margin smaller (90%)
+table_structure |> 
+  knitr::kable(
+    align = "lccc",
+    booktabs = TRUE
+  )
+```
+
 
 We quantify tourism demand via "visitor nights", the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourism-au]. 
 
 ```{r}
 library(stringr)
-
 desired_order <- c(
   "Australia", "Australia_by_Purpose",
   "State",     "State_by_Purpose",
@@ -684,7 +711,7 @@ tourism_MSE |>
     base_MSE = mean(base_MSE),
     pct_change = (MSE - base_MSE) / base_MSE * 100
   ) |>
-  filter(.model != "mint_sample") %>%
+  filter(.model != "mint_sample") |>
   # Reorder the levels according to the desired order
   mutate(
     level = factor(
@@ -692,7 +719,7 @@ tourism_MSE |>
       levels = desired_order,
       labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
     )
-  ) %>% 
+  ) |> 
   ggplot(aes(x = h, y = pct_change, color = .model)) +
     geom_line() +
     labs(x = "Horizon", y = "% improvements") +
@@ -724,28 +751,28 @@ The results are presented in @fig-tourism-results, which shows the relative impr
 
 visnights_full <- readRDS("literature/lib/visnights_full.rds")
 
-visnights_full %>% 
+visnights_full |> 
   filter(
     is_aggregated(Purpose) & is_aggregated(Zone) & is_aggregated(Region),
     !is_aggregated(State)
-  ) %>% 
+  ) |> 
   model(
     STL(Nights)
-  ) %>% 
-  components() %>% 
+  ) |> 
+  components() |> 
   pivot_longer(
     cols = c(Nights, trend, season_year, remainder, season_adjust),
     names_to = "component",
     values_to = "value"
-  ) %>%
+  ) |>
   filter(
     component == c("Nights", "trend"),
     year(Month) >= 2000
-  ) %>%
-  as_tibble() %>%
+  ) |>
+  as_tibble() |>
   mutate(component = recode(component,                     # give them nicer names
                             Nights = "Observed Nights",
-                            trend  = "STL Decomposed Trend")) %>% 
+                            trend  = "STL Decomposed Trend")) |> 
   ggplot(aes(Month, value, color = as.character(State))) +
     geom_line() +
     facet_wrap(~ component, ncol=1, scales = "free_y") +
@@ -781,7 +808,7 @@ tourism_MSE_ex2016 |>
     base_MSE = mean(base_MSE),
     pct_change = (MSE - base_MSE) / base_MSE * 100
   ) |>
-  filter(.model != "mint_sample") %>%
+  filter(.model != "mint_sample") |>
   # Reorder the levels according to the desired order
   mutate(
     level = factor(
@@ -789,7 +816,7 @@ tourism_MSE_ex2016 |>
       levels = desired_order,
       labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
     )
-  ) %>%
+  ) |>
   ggplot(aes(x = h, y = pct_change, color = .model)) +
     geom_line() +
     labs(x = "Horizon", y = "% improvements") +
@@ -858,17 +885,17 @@ tibble(
     "Other estimators simulation results and full-fledged covariance estimators assessment",
     "Presentation and thesis manuscript"
   )
-) %>%
+) |>
   kable(
     format = "latex",
     booktabs = TRUE,
     longtable = TRUE,
     caption = "Project Timeline and Key Milestones",
     escape = TRUE
-  ) %>%
-  column_spec(1, width = "1.9cm") %>%
-  column_spec(2, width = "8cm") %>%
-  column_spec(3, width = "4.8cm") %>%
+  ) |>
+  column_spec(1, width = "1.9cm") |>
+  column_spec(2, width = "8cm") |>
+  column_spec(3, width = "4.8cm") |>
   kable_styling(latex_options = "hold_position", font_size = 10)
 ```
 
@@ -940,6 +967,45 @@ The cross-validation algorithm for NOVELIST is available in the ReconCov package
 
 \end{algorithmic}
 \end{algorithm}
+```
+
+## Appendix: Australian Domestic Tourism Geographical Hierarchy {#sec-tourism-supplement}
+
+
+```{r}
+#| tbl-cap: "Geographical divisions of Australia."
+#| label: tbl-tourism-geo
+#| warning: false
+#| message: false
+
+source(paste0(path, "R/table_geo.R"))
+table_geo_labeled <- create_table_geo()
+table_geo_labeled[1,1] <- "Total"
+
+df <- table_geo_labeled %>% 
+  select(Series, Name, Label)
+
+n  <- ceiling(nrow(df) / 2)
+L  <- df[1:n, ]
+R  <- df[(n+1):nrow(df), ]
+
+# pad the shorter side
+if (nrow(R) < nrow(L)) {
+  R <- bind_rows(R, tibble(Series = rep(NA_integer_, n - nrow(R)),
+                           Name = "", Label = ""))
+}
+
+wide <- bind_cols(
+  setNames(L, c("Series","Name","Label")),
+  setNames(R, c("Series","Name","Label"))
+)
+
+kable(
+  wide,
+  align     = c("r","l","l","r","l","l"),
+  col.names = c("Series","Name","Label","Series","Name","Label")
+) |> 
+  kable_styling(latex_options = "hold_position", font_size = 8)
 ```
 
 \pagebreak
