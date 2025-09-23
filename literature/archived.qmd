@@ -1,0 +1,147 @@
+
+# Evaluating ex- and include 2016 onwards on Tourism
+
+```{r}
+library(stringr)
+desired_order <- c(
+  "Australia", "Australia_by_Purpose",
+  "State",     "State_by_Purpose",
+  "Zone",      "Zone_by_Purpose",
+  "Region",    "Region_by_Purpose"
+)
+```
+
+
+```{r fig tourism results}
+#| label: fig-tourism-results
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows"
+#| fig.width: 8
+#| fig.height: 10
+#| out.width: "100%"
+
+tourism_MSE <- readRDS("./literature/lib/tourism_MSE.rds")
+
+# % improv plot by level
+tourism_MSE |>
+  group_by(series, h) |>
+  mutate(
+    base_MSE = MSE[.model == "base"]
+  ) |>
+  ungroup() |>
+  group_by(.model, level, h) |>
+  summarise(
+    MSE = mean(MSE),
+    base_MSE = mean(base_MSE),
+    pct_change = (MSE - base_MSE) / base_MSE * 100
+  ) |>
+  filter(.model != "mint_sample") |>
+  # Reorder the levels according to the desired order
+  mutate(
+    level = factor(
+      level,
+      levels = desired_order,
+      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
+    )
+  ) |> 
+  ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(x = "Horizon", y = "% improvements") +
+    facet_wrap(~ level, ncol=2, scales = "free_y") +
+    theme_bw() +
+    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
+    theme(legend.position = "bottom", legend.title = element_blank())
+```
+
+
+The results are presented in @fig-tourism-results, which shows the relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows. The results are grouped by levels of aggregation. MinT variants show improvement over the base ARIMA forecasts for middle to lower aggregation levels. We hardly differentiate the point accuracy performance between mint_shr and mint_n in these level, except at the most disaggregated, where mint_shr slightly edges out mint_n.
+
+```{r fig STL tourism}
+#| label: fig-STL-tourism
+#| fig-cap: "Monthly domestic overnight tourism nights in Australia by state, with STL decomposition to extract trend component"
+#| fig.width: 8
+#| fig.height: 6
+#| out.width: "100%"
+#| fig.align: "center"
+
+visnights_full <- readRDS("literature/lib/visnights_full.rds")
+
+visnights_full |> 
+  filter(
+    is_aggregated(Purpose) & is_aggregated(Zone) & is_aggregated(Region),
+    !is_aggregated(State)
+  ) |> 
+  model(
+    STL(Nights)
+  ) |> 
+  components() |> 
+  pivot_longer(
+    cols = c(Nights, trend, season_year, remainder, season_adjust),
+    names_to = "component",
+    values_to = "value"
+  ) |>
+  filter(
+    component == c("Nights", "trend"),
+    year(Month) >= 2000
+  ) |>
+  as_tibble() |>
+  mutate(component = recode(component,                     # give them nicer names
+                            Nights = "Observed Nights",
+                            trend  = "STL Decomposed Trend")) |> 
+  ggplot(aes(Month, value, color = as.character(State))) +
+    geom_line() +
+    facet_wrap(~ component, ncol=1, scales = "free_y") +
+    labs(
+      x = "Month",
+      y = "Visitor Nights (in thousands)",
+      color = "State"
+    ) +
+    theme_bw()
+```
+
+Surprisingly, however, MinT underperforms OLS at higher aggregation level and even the base forecasts at country-wise. This contradicts with the canonical results from @Wickramasuriya2019-xq, prompting further investigation. Applying STL decomposition by @Bandara2022-og to state-aggregated observations reveals a structural change around 2016: four large states (New South Wales, Victoria, Queensland, Western Australia) develop a modest upward trend in visitor nights, as shown in @fig-STL-tourism. The trend is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. 
+
+```{r}
+#| label: fig-tourism-results-ex2016
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows, excluding the period after 2016"
+#| fig.width: 8
+#| fig.height: 10
+#| out.width: "100%"
+
+tourism_MSE_ex2016 <- readRDS("literature/lib/tourism_MSE_ex2016.rds")
+
+# % improv plot by level
+tourism_MSE_ex2016 |>
+  group_by(series, h) |>
+  mutate(
+    base_MSE = MSE[.model == "base"]
+  ) |>
+  ungroup() |>
+  group_by(.model, level, h) |>
+  summarise(
+    MSE = mean(MSE),
+    base_MSE = mean(base_MSE),
+    pct_change = (MSE - base_MSE) / base_MSE * 100
+  ) |>
+  filter(.model != "mint_sample") |>
+  # Reorder the levels according to the desired order
+  mutate(
+    level = factor(
+      level,
+      levels = desired_order,
+      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
+    )
+  ) |>
+  ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(x = "Horizon", y = "% improvements") +
+    facet_wrap(~ level, ncol=2, scales = "free_y") +
+    theme_bw() +
+    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
+    theme(legend.position = "bottom", legend.title = element_blank())
+```
+
+Neither ARIMA nor reconciliation strategies capture this shift, degrading accuracy at the most aggregated level. From the results in @fig-tourism-results-ex2016, excluding the post-2016 period (i.e., restricting the final training window to end on December 2015) restores reconciliation’s performance: both MinT methods now clearly outperform OLS and the base forecasts at all levels. Additionally, we notice that mint_n increasingly outperforms mint_shr at higher levels (Australia, State, and Australia by Purposes levels). This is an advantage of NOVELIST estimator. At higher levels most series are combinations of many bottom cells, their cross-series base forecast error correlations are strong and genuinely useful. NOVELIST keeps these strong links at those higher levels, while its thresholding feature minimises the effects of weak, noisy ones.
+
+The empirical analysis on real, hierarchical Australian domestic tourism shreds lights on the strengths of the NOVELIST estimator--advantages that were not fully apparent in previous simulation studies. Going forward, we plan to embed this structure into our data-generating processes and to pinpoint contexts where NOVELIST’s thresholding yields gains beyond those of Shrinkage. Moreover, our findings underscore the need to accommodate structural changes--the post-2016 Australian domestic tourism demand shifts we encountered.
+
+<!-- perhaps via robust trend adjustment or state-space extensions that jointly model coherence and temporal dynamics. -->

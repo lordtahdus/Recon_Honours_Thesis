@@ -12,3 +12,4 @@ stringr
 tibble
 knitr
 kableExtra
+forcats

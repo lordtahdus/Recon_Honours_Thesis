@@ -24,6 +24,7 @@ format:
 #       caption-prefix: Algorithm
 #       # for PDF output only, tell LaTeX to use the `algorithm` env:
 #       latex-env: algorithm
+link-citations: true
 execute:
   cache: true
   echo: false
@@ -62,6 +63,7 @@ library(lubridate)
 library(knitr)
 library(kableExtra)
 library(stringr)
+library(forcats)
 
 library(ReconCov)
 
@@ -70,8 +72,7 @@ knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
 
-
-# Abstract {-}
+# Abstract {.unnumbered}
 
 <!-- [This is pasted from the Project Description]{style="color:red;"} -->
 
@@ -90,7 +91,6 @@ In time series forecasting, aggregation occurs in a variety of settings. While a
 
 Forecasting data from such hierarchical structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
 
-
 <!-- ##########  Literature Review  ########## -->
 
 <!-- - Talk about the history and evolution of forecasting hierarchical time series, starting from the early heuristic methods to the modern statistical approaches.
@@ -101,21 +101,19 @@ Forecasting data from such hierarchical structures also arises in many other dec
   - Bayesian, Machine learning
   - Probabilistic methods -->
 
+
 In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data; such forecasts are *incoherent*. This can undermine downstream decisions that require internal consistency.
 
 Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top-level series and disaggregate them down. Middle-out methods combine both approaches by forecasting middle-level series and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Additionally, the most disaggregated series often are very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique. Consequently, these single-level methods tend to give poor results across other levels of the hierarchy.
 
 To overcome these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, and others to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
 
-Among the modern reconciliation strategies, the Min Trace (MinT) approach developed by @Wickramasuriya2019-xq is widely used and perform significantly well under right conditions. Despite its properties, MinT relies on a good high-dimensional covariance estimator, which is positive-definite. However, not many researchers have explored this issue in the current literature, except @Carrara2025-rz, who introduced a new estimator for MinT--Double Shrinkage estimator. The current stage of this research piece is fairly early, leaving many potential gaps still not yet to explore. As a result, a study of alternative high-dimensional covariance estimators for MinT is timely and desirable. 
+Among the modern reconciliation strategies, the Min Trace (MinT) approach developed by @Wickramasuriya2019-xq is widely used and perform significantly well under right conditions. Despite its properties, MinT relies on a good high-dimensional covariance estimator, which is positive-definite. However, not many researchers have explored this issue in the current literature, except @Carrara2025-rz, who introduced a new estimator for MinT--Double Shrinkage estimator. The current stage of this research piece is fairly early, leaving many potential gaps still not yet to explore. As a result, a study of alternative high-dimensional covariance estimators for MinT is timely and desirable.
 
 The remainder of the paper is organised as follows. @sec-pre-theory provides the basic theoretical framework for hierarchical time series and forecasting, and Min Trace approach, introducing notations, terminologies, and motivations for alternative estimators. @sec-cov-est walks through the main covariance estimators this paper explores, and argues their strengths and weaknesses. @sec-simulation covers the simulation design and currently explores the performance of NOVELIST on MinT. @sec-empirical shows a real-world application of MinT with NOVELIST, which produces results that did not occured in the simulation settings, suggesting further inspection and analysis.
 
-
 <!-- Include more details on the gaps for each of these methods, such as bias, high variance? -->
-  
 
-  
 <!-- - Discuss the interests in MinT and how it has become a standard method for forecast reconciliation.
 
 - Discuss the MinT's reliance on a good estimate of the covariance matrix of base forecast errors and other gaps
@@ -155,7 +153,6 @@ The remainder of the paper is organised as follows. @sec-pre-theory provides the
     -   Empirical results and discussion.
     -   Conclusions and suggestions for future work.
 -->
-
 
 <!--
 # Literature Review
@@ -234,7 +231,7 @@ $$
 \right].
 $$
 
-Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods, pre-multiplying them by $\boldsymbol{S}$ we get: 
+Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods, pre-multiplying them by $\boldsymbol{S}$ we get:
 
 $$
 \tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \hat{\boldsymbol{b}}_{t+h|t} \, .
@@ -248,12 +245,9 @@ $$
 \tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_{t+h|t} \; ,
 $$ {#eq-sgy}
 
-for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_{t+h|t}$, and modern reconciliation methods are developed to estimate $\boldsymbol{G}$. 
+for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_{t+h|t}$, and modern reconciliation methods are developed to estimate $\boldsymbol{G}$.
 
 <!-- including the OLS and WLS developed by @Hyndman2011-jv and @Hyndman2016-ic, respectively. A more detailed explanation of these methods can be found in the @sec-ols-wls Appendix. -->
-
-
-
 
 ## The Minimum Trace (MinT) Reconciliation
 
@@ -272,7 +266,7 @@ $$
 \hat{\boldsymbol{W}}^{shr}_{1} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1 \, ,
 $$
 
-where $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries  $\text{diag}( \hat{\boldsymbol{W}}_1 )$. We refer to any $\lambda \in [0,1]$ as the shrinkage intensity parameter, the subscript specifies which estimator it belongs to. This approach shrinks the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal matrix, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
+where $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries $\text{diag}( \hat{\boldsymbol{W}}_1 )$. We refer to any $\lambda \in [0,1]$ as the shrinkage intensity parameter, the subscript specifies which estimator it belongs to. This approach shrinks the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal matrix, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
 
 @Schafer2005-yw also proposed an estimate of the optimal shrinkage intensity parameter $\lambda_D$:
 
@@ -281,15 +275,13 @@ $$
 {\sum_{i \neq j} \hat{r}_{ij}^2} \, ,
 $$
 
-where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$). The optimal estimate is obtained by minimising $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance. 
+where $\hat{r}_{ij}$ is the $ij$th element of $\hat{\boldsymbol{R}}_1$, the 1-step-ahead sample correlation matrix (obtained from $\hat{\boldsymbol{W}}_1$). The optimal estimate is obtained by minimising $MSE(\hat{\boldsymbol{W}}_1) = Bias(\hat{\boldsymbol{W}}_1)^2 + Var(\hat{\boldsymbol{W}}_1)$. More specifically, we trade the unbiasedness of the sample covariance matrix for a lower variance.
 
 However, the hierarchical time series data often exhibit a prominent principal components structure, which is not fully taken advantage. Taking an example of the Australian domestic overnight trips data set [@tourism-au], where the national trips are disaggregated into states and territories, and further into regions. We then fit ETS models to all series, using the algorithm from Fabletools R package [@O-Hara-Wild2024-we], and compute the one-step-ahead in-sample base forecast error covariance matrix $\hat{\boldsymbol{W}}_1$. The twenty largest eigenvalues of the covariance matrix are plotted in @fig-eigen. We can see that the point of inflexion occurs at the component with 5th largest eigenvalue, indicating a prominent principal components structure.
 
 ![Twenty largest eigenvalues of one-step-ahead in-sample base forecast error covariance, Australian domestic overnight trips](D:/Github/Recon_Honours_Thesis/research_proposal/figs/eigen_tourism.png){#fig-eigen width="70%"}
 
 Additionally, the shrinkage estimator shrinks all off-diagonal elements towards zeros with equal weights $\lambda_D$. We might prefer to better preserve strong signals, and largely reduce the effects of small, noisy correlations. In the next sections, we will explore several options that take these two issues into account.
-
-
 
 # Covariance Estimation Approaches {#sec-cov-est}
 
@@ -347,6 +339,7 @@ $$
 where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively, and $T(.)$ is the thresholding function, which can be either soft-thresholding, hard-thresholding, or others. -->
 
 
+
 <!-- ## PC-adjusted NOVELIST
 
 This approach is best of both worlds, leveraging the strengths of both NOVELIST and POET. The PC-adjusted (Principal-Component-adjusted) NOVELIST overcomes the shortcomings of the current shrinkage estimator, taking prominent PCs into account while also offers extra flexibility. The idea is to apply the NOVELIST estimator to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, and then add the principal components part back. The PC-adjusted NOVELIST estimator is formulated as:
@@ -360,6 +353,7 @@ where $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the
 
 Methods to ensure positive definiteness of the NOVELIST estimator (and its PC-adjusted variant) will be explored and studied in the project. @Huang2019-ua proposed to diagonalise the NOVELIST estimator and replace any eigenvalues that fall under a certain small positive threshold by the value of that threshold. Alternatively, we can implement the algorithm of @Higham2002-te that computes the nearest positive definite matrix to a given matrix. -->
 
+
 ## PC-adjusted Estimator
 
 This method takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example. It starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{C}}^K_{1}$ (the correlation matrix after removing the first $K$ principal components). Then we can apply either shrinkage or NOVELIST estimator to $\hat{\boldsymbol{R}}_{1, K}$:
@@ -369,7 +363,6 @@ $$
 $$
 
 where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{*, K}_{1}$ is not guaranteed to be positive definite.
-
 
 ## Scaled Variance
 
@@ -381,7 +374,6 @@ $$
 
 where $\boldsymbol{D}_h = \text{diag}(\hat{\sigma}_{1,h}, \hat{\sigma}_{2,h}, \ldots, \hat{\sigma}_{n_b,h})$, and $\hat{\sigma}_{i,h}$ is the standard deviation of the $i$-th series' h-step-ahead base forecast errors. The asterisk $*$ indicates either shrinkage or NOVELIST estimator.
 
-
 ## Constructing from h-step-ahead residuals
 
 Construct the sample covariance matrix directly from h-step-ahead base forecast errors, then apply either shrinkage or NOVELIST estimator:
@@ -392,20 +384,19 @@ $$
 
 where $\hat{\boldsymbol{R}}_h$ is the sample correlation matrix of h-step-ahead base forecast errors, and $\circ$ denotes the Hadamard product (element-wise product). The asterisk $*$ indicates either shrinkage or NOVELIST estimator.
 
-
-
-
 # Simulation Design {#sec-simulation}
 
 <!-- -   Talk about description of the hierarchical time series data set (e.g., economic, financial, or synthetic data). -->
+
 <!-- -   Characteristics such as dimensionality, frequency, and hierarchical structure. -->
 
 <!-- **Experimental Design** -->
 
 <!-- -   Design different cases of simulation studies and real-data experiments. -->
-<!-- -   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability... -->
-<!-- -   Visualisation... -->
 
+<!-- -   Metrics: Forecast accuracy (e.g., RMSE, MAE), reconciliation error reduction, and matrix stability... -->
+
+<!-- -   Visualisation... -->
 
 The general design of data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
@@ -417,13 +408,13 @@ where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregres
 
 The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\boldsymbol{\Sigma}$. The covariance matrix $\boldsymbol{\Sigma}$ is generated specifically using the Algorithm 1 in @Hardin2013-wu:
 
-1. A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the entries $\rho_i$ for each block $i$ are sampled from a uniform distribution between 0 and 1. They are baseline correlations within group.
+1.  A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the entries $\rho_i$ for each block $i$ are sampled from a uniform distribution between 0 and 1. They are baseline correlations within group.
 
-2. A constant correlation, which is smaller than $\text{min} \{\rho_1, \rho_2, \dots, \rho_m \}$, is imposed on the entries between different blocks. It serves as baseline correlations between group.
+2.  A constant correlation, which is smaller than $\text{min} \{\rho_1, \rho_2, \dots, \rho_m \}$, is imposed on the entries between different blocks. It serves as baseline correlations between group.
 
-3. The entry-wise random noise is added on top of the entire correlation matrix.
+3.  The entry-wise random noise is added on top of the entire correlation matrix.
 
-4. The covariance matrix $\boldsymbol{\Sigma}$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+4.  The covariance matrix $\boldsymbol{\Sigma}$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
 
 We will randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$, yielding $\boldsymbol{\Sigma}^* = \boldsymbol{V} \boldsymbol{\Sigma} \boldsymbol{V}$.
 
@@ -457,7 +448,7 @@ In our first set of experiments, we examine how MinT combined with the NOVELIST 
 
 The 100‐series design employs a deliberately intricate aggregation path to stress‐test reconciliation methods. We first sum the one hundred bottom series into ten intermediate series by grouping them in contiguous blocks of ten. These ten series are then organised into three level-2 aggregates—four, three, and four series, respectively—before finally summing to a single top node. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories.
 
-To save space, we illustrate only the six-by-six's VAR(1) and correlation configuration in @fig-settings-6x6; the two-by-two and the one-hundred-series structures appear in Appendix @sec-sim-supplement. 
+To save space, we illustrate only the six-by-six's VAR(1) and correlation configuration in @fig-settings-6x6; the two-by-two and the one-hundred-series structures appear in Appendix @sec-sim-supplement.
 
 ```{r generate plots for A and Sigma}
 MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F) |> 
@@ -564,10 +555,9 @@ p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
   theme(legend.position = "right")
 ```
 
-Figure @fig-sim-results-1 illustrates that as hierarchy size and complexity increase, the relative improvements in MSE over the base forecasts from reconciliation amplify, across all 1- to 4-step horizons. While extending the training window (from 50 to 300 in‐sample observations) uniformly improves the accuracy of base ARIMA forecasts, it does not alter the relative improvements of mint_shr or mint_n. This is evidence that both high-dimensional estimators robustly handle the "large $p \gg T$” regime. By contrast, mint_sample achieves significant accuracy when more data make the sample covariance more reliable. 
+Figure @fig-sim-results-1 illustrates that as hierarchy size and complexity increase, the relative improvements in MSE over the base forecasts from reconciliation amplify, across all 1- to 4-step horizons. While extending the training window (from 50 to 300 in‐sample observations) uniformly improves the accuracy of base ARIMA forecasts, it does not alter the relative improvements of mint_shr or mint_n. This is evidence that both high-dimensional estimators robustly handle the "large $p \gg T$” regime. By contrast, mint_sample achieves significant accuracy when more data make the sample covariance more reliable.
 
-Despite their theoretical differences, mint_shr and mint_n exhibit nearly identical performance in these canonical settings. Yet NOVELIST’s thresholding ability to minimise effects of weak correlations and retain strong ones suggests it may excel in contexts where correlation matrix has small, noisy entries. This motivates our subsequent exploration of sparse covariance structures, in which many off-diagonals are truly zero.
-<!--
+Despite their theoretical differences, mint_shr and mint_n exhibit nearly identical performance in these canonical settings. Yet NOVELIST’s thresholding ability to minimise effects of weak correlations and retain strong ones suggests it may excel in contexts where correlation matrix has small, noisy entries. This motivates our subsequent exploration of sparse covariance structures, in which many off-diagonals are truly zero. <!--
 ## Exploring Effects of Hierarchy's Aggregation
 
 - 2x50 with usual path and weird path
@@ -580,6 +570,7 @@ Despite their theoretical differences, mint_shr and mint_n exhibit nearly identi
 In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. We consider the same hierarchical structure of two large groups of 50 bottom series as above. Specifically, the two groups would have strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-2x50. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
 
 <!-- Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both. -->
+
 <!-- emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. -->
 
 ```{r}
@@ -646,7 +637,12 @@ Additional designs (varying block sizes, aggregation paths, correlation configur
 - Finding: NOVELIST performs well in both cases
 -->
 
+
 # Forecasting Australian Domestics Tourism {#sec-empirical}
+
+```{r}
+tourism_plots <- readRDS("literature/tourism_plots.rds")
+```
 
 Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. A complete illustration of this geographic hierarchy appears in Appendix @sec-tourism-supplement. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate. @tbl-tourism-structure depicts this structure.
 
@@ -675,166 +671,103 @@ table_structure |>
   )
 ```
 
+We quantify tourism demand via "visitor nights", the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourism-au].
 
-We quantify tourism demand via "visitor nights", the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourism-au]. 
+The data are monthly time series spanning from January 1998 to December 2016, resulting in 228 observations per series, producing a canonical "$n \ll p$" setting which is ideal for evaluating reconciliation approaches that rely on high-dimensional covariance estimation. The extreme dimensionality over sample size mirrors many contemporary business problems, for instance, Starbucks drink sales. Tourism demand is also economically vital yet highly volatile, with geographical and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. 
 
-```{r}
-library(stringr)
-desired_order <- c(
-  "Australia", "Australia_by_Purpose",
-  "State",     "State_by_Purpose",
-  "Zone",      "Zone_by_Purpose",
-  "Region",    "Region_by_Purpose"
-)
-```
-
-
-```{r fig tourism results}
-#| label: fig-tourism-results
-#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows"
-#| fig.width: 8
-#| fig.height: 10
-#| out.width: "100%"
-
-tourism_MSE <- readRDS("./literature/lib/tourism_MSE.rds")
-
-# % improv plot by level
-tourism_MSE |>
-  group_by(series, h) |>
-  mutate(
-    base_MSE = MSE[.model == "base"]
-  ) |>
-  ungroup() |>
-  group_by(.model, level, h) |>
-  summarise(
-    MSE = mean(MSE),
-    base_MSE = mean(base_MSE),
-    pct_change = (MSE - base_MSE) / base_MSE * 100
-  ) |>
-  filter(.model != "mint_sample") |>
-  # Reorder the levels according to the desired order
-  mutate(
-    level = factor(
-      level,
-      levels = desired_order,
-      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
-    )
-  ) |> 
-  ggplot(aes(x = h, y = pct_change, color = .model)) +
-    geom_line() +
-    labs(x = "Horizon", y = "% improvements") +
-    facet_wrap(~ level, ncol=2, scales = "free_y") +
-    theme_bw() +
-    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
-    theme(legend.position = "bottom", legend.title = element_blank())
-```
-
-The data are monthly time series spanning from January 1998 to December 2019, resulting in 264 observations per series, producing a canonical "$n \ll p$" setting which is ideal for evaluating reconciliation approaches that rely on high-dimensional covariance estimation. The extreme dimensionality over sample size mirrors many contemporary business problems, for instance, Starbucks drink sales. Tourism demand is also economically vital yet highly volatile, with geographical and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Consequently, this panel offers both a rich policy case study and a stringent statistical laboratory for comparing reconciliation strategies that exploit cross-series information to improve forecasts when historical data are scarce.
+<!-- Consequently, this panel offers both a rich policy case study and a stringent statistical laboratory for comparing reconciliation strategies that exploit cross-series information to improve forecasts when historical data are scarce. -->
 
 <!-- This dataset is particularly well‑suited to evaluating forecast‑reconciliation methods for three reasons. First, tourism demand is economically important and notoriously volatile; the heterogeneous regional and purpose‑specific patterns create a realistic stress‑test for reconciliation algorithms. Second, the clear structural shift towards stronger growth after 2016—visible in most aggregates—necessitates techniques capable of handling possible breaks or time‑varying error structures, making the exercise practically relevant. Third, the extreme dimensionality relative to sample size mirrors many contemporary business problems (e.g., SKU‑level retail sales), allowing insights to generalise beyond tourism. Using this panel therefore provides both a compelling policy context and a stringent statistical laboratory for comparing alternative reconciliation strategies, especially those that rely on regularised covariance estimation or exploit cross‑sectional information to stabilise forecasts when historical data are scant. -->
 
-@Wickramasuriya2019-xq also argued that modelling spatial autocorrelations would be challenging as in the case of a large collection of time series. Reconciliation approaches have the advantage to implicitly model this spatial autocorreltion structure, especially when the MinT method is used.
+@Wickramasuriya2019-xq also argued that modelling spatial autocorrelations directly from the start would be challenging as in this case of a large collection of time series. Post-processing reconciliation approaches have the advantage to implicitly model this spatial autocorrelation structure, especially true for MinT.
 
-To assess forecasting performance, we adopt a rolling-window cross-validation scheme. Beginning with the first 96 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm in the fabletools package, by minimising AICc [@O-Hara-Wild2024-we]. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models. These incoherent base forecasts are reconciled via OLS, MinT with shrinkage (mint_shr), and MinT with the NOVELIST estimator (mint_n). We then roll the training window forward by one month and refit all models, rebuild reconciliations, and produce another batch of 1- to 12-step-ahead forecasts, repeating until December 2018. In total, this results in 156 out-of-sample windows and an equal number of forecast sets for each series.
+To assess forecasting performance, we adopt a rolling-window cross-validation scheme. Beginning with the first 120 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm by minimising AICc from @Hyndman2008-rf. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models, and then reconciled using multiple approaches. We then roll the training window forward by one month and refit all models, rebuild reconciliations, and produce another batch of 1- to 12-step-ahead forecasts, repeating until the training set reaches December 2015. In total, this results in 133 out-of-sample windows.
+
+<!-- 
+Should MinT-sample be included in the paper?
 
 Note that the number of series is larger than the number of observations (560 compared to 96), hence the sample covariance matrix is not positive definite and will not be considered.
-
-The results are presented in @fig-tourism-results, which shows the relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows. The results are grouped by levels of aggregation. MinT variants show improvement over the base ARIMA forecasts for middle to lower aggregation levels. We hardly differentiate the point accuracy performance between mint_shr and mint_n in these level, except at the most disaggregated, where mint_shr slightly edges out mint_n.
-
-```{r fig STL tourism}
-#| label: fig-STL-tourism
-#| fig-cap: "Monthly domestic overnight tourism nights in Australia by state, with STL decomposition to extract trend component"
-#| fig.width: 8
-#| fig.height: 6
-#| out.width: "100%"
-#| fig.align: "center"
-
-visnights_full <- readRDS("literature/lib/visnights_full.rds")
-
-visnights_full |> 
-  filter(
-    is_aggregated(Purpose) & is_aggregated(Zone) & is_aggregated(Region),
-    !is_aggregated(State)
-  ) |> 
-  model(
-    STL(Nights)
-  ) |> 
-  components() |> 
-  pivot_longer(
-    cols = c(Nights, trend, season_year, remainder, season_adjust),
-    names_to = "component",
-    values_to = "value"
-  ) |>
-  filter(
-    component == c("Nights", "trend"),
-    year(Month) >= 2000
-  ) |>
-  as_tibble() |>
-  mutate(component = recode(component,                     # give them nicer names
-                            Nights = "Observed Nights",
-                            trend  = "STL Decomposed Trend")) |> 
-  ggplot(aes(Month, value, color = as.character(State))) +
-    geom_line() +
-    facet_wrap(~ component, ncol=1, scales = "free_y") +
-    labs(
-      x = "Month",
-      y = "Visitor Nights (in thousands)",
-      color = "State"
-    ) +
-    theme_bw()
-```
-
-Surprisingly, however, MinT underperforms OLS at higher aggregation level and even the base forecasts at country-wise. This contradicts with the canonical results from @Wickramasuriya2019-xq, prompting further investigation. Applying STL decomposition by @Bandara2022-og to state-aggregated observations reveals a structural change around 2016: four large states (New South Wales, Victoria, Queensland, Western Australia) develop a modest upward trend in visitor nights, as shown in @fig-STL-tourism. The trend is likely due to the increasing popularity of tourism in these places, as well as the impact of various factors such as economic growth, population growth, and changes in consumer preferences. 
+-->
 
 ```{r}
-#| label: fig-tourism-results-ex2016
-#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the Australian domestic tourism flows, excluding the period after 2016"
+#| label: fig-tourism-MSE-line
+#| fig.height: 6
 #| fig.width: 8
-#| fig.height: 10
-#| out.width: "100%"
-
-tourism_MSE_ex2016 <- readRDS("literature/lib/tourism_MSE_ex2016.rds")
-
-# % improv plot by level
-tourism_MSE_ex2016 |>
-  group_by(series, h) |>
-  mutate(
-    base_MSE = MSE[.model == "base"]
-  ) |>
-  ungroup() |>
-  group_by(.model, level, h) |>
-  summarise(
-    MSE = mean(MSE),
-    base_MSE = mean(base_MSE),
-    pct_change = (MSE - base_MSE) / base_MSE * 100
-  ) |>
-  filter(.model != "mint_sample") |>
-  # Reorder the levels according to the desired order
-  mutate(
-    level = factor(
-      level,
-      levels = desired_order,
-      labels = str_replace_all(desired_order, "_", " ")  # replace "_" with " "
-    )
-  ) |>
-  ggplot(aes(x = h, y = pct_change, color = .model)) +
-    geom_line() +
-    labs(x = "Horizon", y = "% improvements") +
-    facet_wrap(~ level, ncol=2, scales = "free_y") +
-    theme_bw() +
-    scale_x_continuous(limits = c(1, 12), expand = c(0, 0)) +
-    theme(legend.position = "bottom", legend.title = element_blank())
+#| fig-cap: "Percentage relative improvement in the mean squared error (MSE) of different reconciled forecasts over the base forecasts for the Australian domestic tourism data, for 1 to 12 steps ahead forecasts. The positive entries indicate an decrease in MSE."
+tourism_plots$MSE_line + 
+  labs(title = NULL, subtitle = NULL) + 
+  theme(
+    legend.position = "bottom", 
+    legend.direction = "vertical", 
+    legend.title.position = "left"
+  ) + 
+  scale_x_continuous(breaks = c(1:12), minor_breaks = NULL)
 ```
 
-Neither ARIMA nor reconciliation strategies capture this shift, degrading accuracy at the most aggregated level. From the results in @fig-tourism-results-ex2016, excluding the post-2016 period (i.e., restricting the final training window to end on December 2015) restores reconciliation’s performance: both MinT methods now clearly outperform OLS and the base forecasts at all levels. Additionally, we notice that mint_n increasingly outperforms mint_shr at higher levels (Australia, State, and Australia by Purposes levels). This is an advantage of NOVELIST estimator. At higher levels most series are combinations of many bottom cells, their cross-series base forecast error correlations are strong and genuinely useful. NOVELIST keeps these strong links at those higher levels, while its thresholding feature minimises the effects of weak, noisy ones.
+```{r}
+#| label: fig-tourism-MSE-heat
+#| fig.height: 5
+#| fig.width: 7
+#| out.width: "90%"
+#| fig-cap: "Heatmap of relative improvement in the mean squared error (MSE) of different reconciled forecasts over the base forecasts for the Australian domestic tourism data, for 1 to 12 steps ahead forecasts. The values are scaled to the range of 0 to 100 for better visualisation, with darker colors indicating greater improvement and best performance is noted by a star."
 
-The empirical analysis on real, hierarchical Australian domestic tourism shreds lights on the strengths of the NOVELIST estimator--advantages that were not fully apparent in previous simulation studies. Going forward, we plan to embed this structure into our data-generating processes and to pinpoint contexts where NOVELIST’s thresholding yields gains beyond those of Shrinkage. Moreover, our findings underscore the need to accommodate structural changes--the post-2016 Australian domestic tourism demand shifts we encountered.
+tourism_plots$MSE_heat + 
+  labs(title = NULL, subtitle = NULL) + 
+  theme(legend.title = element_blank(), legend.position = "bottom") + 
+  scale_x_continuous(breaks = c(1:12), minor_breaks = NULL)
+```
 
-<!-- perhaps via robust trend adjustment or state-space extensions that jointly model coherence and temporal dynamics. -->
+
+@fig-tourism-MSE-line and @fig-tourism-MSE-heat show that reconciliation is beneficial for point forecasts: across horizons $h=1,2,\dots,12$, all reconciled methods improve MSE over incoherent base ARIMA on average. Among vanilla MinT variants, the shrinkage estimator (*MinT-S*) marginally outperforms NOVELIST (*MinT-N*) at most horizons, though the gap is small. Adjusting for a single dominant factor via PC decomposition tightens performance further: both *MinT-S(PC1)* and *MinT-N(PC1)* beat their unadjusted counterparts, with *MinT-N(PC1)* narrowly ahead. Adding more than one PC brings no additional benefit, likely due to injecting estimation noise from weaker components. Variants that modify the multi-step covariance, either via scaled-variance or direct h-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this setting.
+
+
+```{r}
+#| label: fig-tourism-probscores
+#| fig.height: 12
+#| fig.width: 12
+#| fig-cap: "Percentage relative improvement in the Winkler score at 80% and 95% nominal coverage, CRPS, and Energy score of multiple reconciled forecasts over the base forecasts for the Australian domestic tourism data, for 1-step-ahead forecasts. The positive entries indicate an decrease in the probabilistic scores."
+
+# a 2x2 showing 4 plots showing the 1-step-ahead % improv in Winkler score 80, 95, CRPS, and Energy
+
+tourism_plots$W80 + labs(title = "Winkler score 80%", subtitle = NULL) + 
+  tourism_plots$W95 + labs(title = "Winkler score 95%", subtitle = NULL) +
+  tourism_plots$CRPS + labs(title = "CRPS", subtitle = NULL) +
+  tourism_plots$Energy + labs(title = "Energy score", subtitle = NULL) +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "bottom", legend.title = element_blank())
+
+```
+
+
+Turning to probabilistic forecasts (1-step-ahead forecasts), @fig-tourism-probscores shows that *MinT-N* consistently outperforms *MinT-S* across CRPS and both Winkler scores, and PC1-adjustment again yields the best improvements. Results are aligned across probabilistic scoring rules, but the 95% Winkler reveals a notable pattern, as all MinT variants lose to the base while *OLS* performs best. 
+
+\color{red}
+This points to tail-calibration sensitivity at high nominal coverage. The reconciliation that helps central accuracy can degrade extreme-tail interval performance when uncertainty is misallocated across the hierarchy.
+\color{black}
+
+In the multivariate evaluation, the Energy score places *OLS* close to the PC1-adjusted MinT methods, indicating that simple coherent projection might be able to capture a substantial share of cross-series dependence benefits even without sophisticated covariance regularisation.
+
+The summary radar graph in @fig-tourism-radar consolidates these findings: among the selected MinT models by probabilistic criteria, *MinT-N(PC1)* clearly leads across CRPS, W80, W95, and Energy, extending the improvements seen in the single-metric panels. 
+
+Taken together, the evidence supports the use of reconciliation for both point and probabilistic forecasts in this high-dimensional setting. For point forecasts, MinT with shrinkage is a solid default; for probabilistic forecasts, NOVELIST performs more reliably. PC adjustment with a single dominant factor consistently enhances performance and should be considered when a dominant latent factor is evident. More complex adjustments, such as multiple PCs or horizon-specific covariances, add estimation noise without clear benefits and can be omitted for parsimony.
+
+
+```{r}
+#| label: fig-tourism-radar
+#| fig.height: 8
+#| fig.width: 8
+#| out.width: "90%"
+#| fig-cap: "Radar plot of relative improvements in probabilistic scores (Winkler 80, Winkler 95, CRPS, Energy) over the base forecasts. The scores are scaled to a range of 0 to 100, with larger values indicating better performance. Only the top 5 models are shown."
+
+
+# a radar plot of 5 top models based on probabilistic scores (Winkler 80, 95, CRPS, Energy) scaled to 0-100 
+par(mfrow=c(1,1), mar=c(0,0,0,0))
+tourism_plots$radar
+```
 
 <!-- # Supplementary -->
 
-
+<!-- 
 \pagebreak
 
 # Timeline & Milestones {#sec-timeline}
@@ -898,10 +831,11 @@ tibble(
   column_spec(3, width = "4.8cm") |>
   kable_styling(latex_options = "hold_position", font_size = 10)
 ```
+-->
 
 \pagebreak
 
-# Appendix {#sec-appendix} 
+# Appendix {#sec-appendix}
 
 ## Simulation Settings: Supplementary Figures {#sec-sim-supplement}
 
@@ -970,7 +904,6 @@ The cross-validation algorithm for NOVELIST is available in the ReconCov package
 ```
 
 ## Appendix: Australian Domestic Tourism Geographical Hierarchy {#sec-tourism-supplement}
-
 
 ```{r}
 #| tbl-cap: "Geographical divisions of Australia."
