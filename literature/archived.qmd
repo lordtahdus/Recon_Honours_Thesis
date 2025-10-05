@@ -145,3 +145,112 @@ Neither ARIMA nor reconciliation strategies capture this shift, degrading accura
 The empirical analysis on real, hierarchical Australian domestic tourism shreds lights on the strengths of the NOVELIST estimator--advantages that were not fully apparent in previous simulation studies. Going forward, we plan to embed this structure into our data-generating processes and to pinpoint contexts where NOVELIST’s thresholding yields gains beyond those of Shrinkage. Moreover, our findings underscore the need to accommodate structural changes--the post-2016 Australian domestic tourism demand shifts we encountered.
 
 <!-- perhaps via robust trend adjustment or state-space extensions that jointly model coherence and temporal dynamics. -->
+
+
+
+
+
+
+
+
+
+
+<!-- ## POET
+
+The POET (Principal Orthogonal complEment Thresholding) estimator, proposed by @Fan2013-jz, is another "sparse" + "non-sparse" covariance estimator. It takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example.
+
+The POET method starts by decomposing the correlation matrix $\hat{\boldsymbol{R}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$ (the correlation matrix after removing the first $K$ principal components). Then it applies thresholding to $\hat{\boldsymbol{R}}_{1, K}$. The POET estimator is given by:
+
+$$
+\hat{\boldsymbol{R}}^{K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + T(\hat{\boldsymbol{R}}_{1, K})
+$$
+
+where $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively, and $T(.)$ is the thresholding function, which can be either soft-thresholding, hard-thresholding, or others. -->
+
+
+
+<!-- ## PC-adjusted NOVELIST
+
+This approach is best of both worlds, leveraging the strengths of both NOVELIST and POET. The PC-adjusted (Principal-Component-adjusted) NOVELIST overcomes the shortcomings of the current shrinkage estimator, taking prominent PCs into account while also offers extra flexibility. The idea is to apply the NOVELIST estimator to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$, and then add the principal components part back. The PC-adjusted NOVELIST estimator is formulated as:
+
+$$
+\hat{\boldsymbol{R}}^{N, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + \hat{\boldsymbol{R}}^{N}_{1, K}
+\; ,
+$$
+
+where $\hat{\boldsymbol{R}}^{N}_{1, K}$ is the NOVELIST estimator applied to the orthogonal complement part $\hat{\boldsymbol{R}}_{1, K}$. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{N, K}_{1}$ is not guaranteed to be positive definite.
+
+Methods to ensure positive definiteness of the NOVELIST estimator (and its PC-adjusted variant) will be explored and studied in the project. @Huang2019-ua proposed to diagonalise the NOVELIST estimator and replace any eigenvalues that fall under a certain small positive threshold by the value of that threshold. Alternatively, we can implement the algorithm of @Higham2002-te that computes the nearest positive definite matrix to a given matrix. -->
+
+
+
+
+
+
+
+<!--  
+```{r}
+plot_relative_improvement <- function(MSE_data) {
+  MSE_data |>
+    filter(
+      .model != "mint_true",
+      h <= 4
+    ) |>
+    group_by(series, h) |>
+    mutate(
+      base_MSE = MSE[.model == "base"]
+    ) |>
+    ungroup() |>
+    group_by(.model, h) |>
+    summarise(
+      MSE = mean(MSE),
+      base_MSE = mean(base_MSE),
+      pct_change = (MSE - base_MSE) / base_MSE * 100
+    ) |>
+    ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(
+      x = "Forecast Horizon (h)",
+      y = "Percentage Change (%)"
+    ) +
+    # labs(x = element_blank(), y = element_blank()) +
+    theme_bw()
+}
+```
+
+```{r fig-sim-results-1}
+#| label: fig-sim-results-1
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 2x2, 6x6, and 2x50 hierarchical structures, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
+#| fig.width: 8
+#| fig.height: 6
+#| out.width: "100%"
+#| fig.align: "center"
+
+p_MSE1_1 <- MSE1_1 |> 
+  plot_relative_improvement() +
+    labs(title = "2x2 Hierarchy", subtitle = "T = 54")
+p_MSE2_1 <- MSE2_1 |> 
+  plot_relative_improvement() +
+    labs(title = "6x6 Hierarchy")
+p_MSE3_1 <- MSE3_1 |> 
+  plot_relative_improvement() +
+    labs(title = "2x50 Hierarchy")
+
+p_MSE1_2 <- MSE1_2 |> 
+  plot_relative_improvement() +
+    labs(subtitle = "T = 304")
+p_MSE2_2 <- MSE2_2 |> 
+  plot_relative_improvement()
+p_MSE3_2 <- MSE3_2 |> 
+  plot_relative_improvement()
+
+p_MSE1_1 + p_MSE2_1 + p_MSE3_1 + p_MSE1_2 + p_MSE2_2 + p_MSE3_2 +
+  plot_layout(ncol = 3, guides = "collect", axis_titles = "collect") &
+  theme(legend.position = "right")
+```
+
+-->
+
+Figure @fig-sim-results-1 illustrates that as hierarchy size and complexity increase, the relative improvements in MSE over the base forecasts from reconciliation amplify, across all 1- to 4-step horizons. While extending the training window (from 50 to 300 in‐sample observations) uniformly improves the accuracy of base ARIMA forecasts, it does not alter the relative improvements of mint_shr or mint_n. This is evidence that both high-dimensional estimators robustly handle the "large $p \gg T$” regime. By contrast, mint_sample achieves significant accuracy when more data make the sample covariance more reliable.
+
+Despite their theoretical differences, mint_shr and mint_n exhibit nearly identical performance in these canonical settings. Yet NOVELIST’s thresholding ability to minimise effects of weak correlations and retain strong ones suggests it may excel in contexts where correlation matrix has small, noisy entries. This motivates our subsequent exploration of sparse covariance structures, in which many off-diagonals are truly zero.
