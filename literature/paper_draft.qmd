@@ -129,77 +129,16 @@ The remainder of the paper is organised as follows. @sec-pre-theory provides the
 - Talk about the paper outline and what will be covered in the following sections. -->
 
 
-<!--
--   **Problem Statement:**
 
-    The sample covariance matrix, although natural, suffers in high-dimensional settings. Especially when the number of series $p$ is huge and larger than the time dimension $T$, the sample covariance matrix is non-positive definite (rank T if p\>T).
 
-    The shrinkage estimators come in to tackle this issue. The shrinkage estimator with diagonal target (often shrinking toward a diagonal matrix) is proven to produce a guaranteed PD matrix (Schäfer & Strimmer, 2005). However, as it shrinks the covariance matrix toward a diagonal one, it does not have flexibility and might neglect the prominent structure presented in the covariance matrix.
 
-    An alternative approach is to perform shrinkage of the sample covariance towards its thresholded version, instead of a diagonal matrix. This is the NOVELIST (NOVEL Integration of the Sample and Thresholded covariance estimators) method proposed by Huang & Fryzlewicz (2019). They introduced thresholding functions applied only to off-diagonal elements, allowing for more flexibility in the estimation.
 
-    [... can include more estimators ...]{style="color:red;"}
 
--   **Research Aim:**
 
-    This paper assesses the reconciled forecasting performance of MinT approach using various covariance estimators, with a focus on the NOVELIST estimator.
 
--   **Paper Outline:**
 
-    The paper is structured as follows:
 
-    -   A literature review of forecast reconciliation and covariance estimation.
-    -   A description of the methodology, including the NOVELIST estimator and its principal-component-adjusted variant.
-    -   An experimental design using both synthetic and real hierarchical time series.
-    -   Empirical results and discussion.
-    -   Conclusions and suggestions for future work.
--->
 
-<!--
-# Literature Review
-
-## Forecast Reconciliation in Hierarchical and Grouped Time Series
-
-Forecast reconciliation converts a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system. Early work focused on heuristic single-level strategies, including bottom-up, top-down, and middle-out (...), each of which exploits only part of the information in the hierarchy and can induce bias or high variance.
-
--   Cite the single level approach
--   Athanasopoulos et al., 2024
-
-Hyndman et al. (2011) first showed that all single-level methods can be written as $\tilde{y} = SG\hat{y}$, where $S$ is the summing matrix and $G$ is a matrix that maps base forecasts $\hat{y}$ to into the bottom level. Treating reconciliation as a GLS regression problem, Hyndman et al. (2011) found that it yields a solution for $G$, but the required covariance matrix of reconcilation error is not identifiable in practice (Wickramasuriya et al., 2019).
-
--   (Talk more about how others transform it to OLS, WLS,..)
--   Di Fonzo and Marini (2011)
--   Athanasopoulos et al. (2009)
-
-Wickramasuriya, Athanasopoulos & Hyndman (2019) reframed the problem by taking an optimisation approach rather than the regression. They formulated the problem as minimising the variances of all reconciled forecasts, which happens to be equivalent to minimising the trace of the covariance matrix (sum of the diagonal elements). This is known as the Minimum Trace (MinT) reconciliation method. The MinT solution is given by $G_h = (S'W_h^{-1}S)^{-1}S'W_h^{-1}$, and $W_h$ is the covariance matrix of the h-step-ahead base forecast errors.
-
-The MinT approach is an algebraical generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $W_h$ is a diagonal or identity matrix, respectively. However, the MinT solution hinges on a reliable estimate of the h-step-ahead base forecast error covariance $W_h$. In high-dimensional setting, the usual sample covariance matrix is unstable, thus we need alternative covariance estimators.
-
--   Structural Scaling, based only on the struc- ture of the hierarchy (Athanasopoulos et al., 2017)
--   Shrinkage estimators (Schäfer & Strimmer, 2005; Ledoit & Wolf, 2004)
-
-Empirical evaluations have demonstrated that MinT with an appropriate covariance estimate often outperforms earlier methods in both simulation and real data studies.
-
-Wickramasuriya et al. (2019) adopt the diagonal-target Ledoit–Wolf approach and show analytically that any scalar multiple $k_h$ from $W_h = k_hW_1$ suffices for point-forecast reconciliation.  However, simulation and empirical evidence suggest that ignoring cross-series error correlation can leave accuracy untapped, especially in highly-coupled systems (energy, retail SKUs).  Their subsequent work imposes non-negativity constraints via quadratic programming citeturn0file2 and studies bias-robust variants (MinT-U).
-
-Empirical findings to date
-
-Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates single-level baselines in most studies; WLS or diagonal-shrinkage MinT is the current industry default; but gains plateau when off-diagonals are weak citeturn0file9.  Only a handful of papers explore richer covariance structures (e.g., block or factor shrinkage), and none benchmark them systematically against NOVELIST-type estimators.
-
-## Covariance Estimation in High Dimensions
-
--   Limitations of the sample covariance matrix.
--   Estimators used by Wickramasuriya et al. (2019).
--   Shrinkage estimators:
-    -   Diagonal shrinkage (e.g., Schäfer & Strimmer, Ledoit & Wolf).
-    -   NOVELIST estimator and its Cross-validation & PC-adjusted variant.
-    -   ...
-
-## Relevance to Forecast Reconciliation
-
--   Discuss how covariance estimation affects MinT performance.
--   Identify research gaps.
--->
 
 
 # Theoretical Framework {#sec-pre-theory}
@@ -425,8 +364,8 @@ where $\hat{\boldsymbol{W}}_h$ is the covariance matrix of in-sample h-step-ahea
 |-----------------------------------------|--------------------|
 | Shrinkage                               | MinT-S             |
 | NOVELIST                                | MinT-N             |
-| PC-adjusted Shrinkage with *k* PCs      | MinT-S(PC*k*)      |
-| PC-adjusted NOVELIST with *k* PCs       | MinT-N(PC*k*)      |
+| PC-adjusted Shrinkage with *K* PCs      | MinT-S(PC*K*)      |
+| PC-adjusted NOVELIST with *K* PCs       | MinT-N(PC*K*)      |
 | Scaled Variance Shrinkage               | MinT-S(sv)         |
 | Scaled Variance NOVELIST                | MinT-N(sv)         |
 | Constructed from h-step-ahead Shrinkage | MinT-S(hcov)       |
