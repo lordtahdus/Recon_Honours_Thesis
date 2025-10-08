@@ -15,6 +15,7 @@ format:
         \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
         \usepackage{array}
         \usepackage{float}
+        \usepackage{xcolor}
     mathspec: true
     number-sections: true
 # crossref:
@@ -146,7 +147,11 @@ to be revised with probabilistic framework
   - definition
   - image
 
+\color{black}
+
 *Hierarchical time series* are multivariate time series $\boldsymbol{y}_t \in \mathbb{R}^n$ organised in a structure where the series adheres to some *constraints*. For example, @fig-hierarchy illustrates a simple 2-level hierarchical structure with one top-level series, two middle-level series, and four bottom-level series. Here, the constraints imply that the four bottom-level series (or the most disaggregated series) must sum up to the two middle-level series, which in turn sum up to the top-level series (or the most aggregated series).
+
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
 The bottom-level series are denoted as $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$. Thus, the hierarchical time series can be represented as:
 
@@ -180,7 +185,7 @@ When we produce forecasts for each individual series, referred to as *base forec
 
 Many existing reconciliation methods including the OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] express the projection matrix as $\boldsymbol{P} = \boldsymbol{S} \boldsymbol{G}$, for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. The idea is to map the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_{t+h|t}$, and modern reconciliation methods are developed to estimate $\boldsymbol{G}$.
 
-\color{black}
+
 
 <!-- 
 The *hierarchical structure* can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. These hierarchical structures naturally form *aggregation constraints* (child levels must sum up to parents). When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series. As illustrated in @fig-grouped, the aggregation or disaggregation paths are not unique.
@@ -455,11 +460,51 @@ sim3_1 <- sim_dense_50 # using same with next section simulation
 sim3_2 <- sim_dense_300
 ```
 
-## Scoring Metric {-}
+## Probabilistic Scoring Rules {-}
 
-\color{red}
-to be included...
-\color{black}
+We use the mean squared error (MSE) to evaluate the accuracy of point forecasts. Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(P, y)]$ for all $P$, where $P$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
+
+We employ Winkler score and continuous ranked probability score as our univariate scoring rules, and energy score as the multivariate scoring rule. All three are proper scoring rules.
+
+\textcolor{blue}{\textit{Winkler score (WS).}} If the 100$(1-\alpha)$\% prediction interval is $[l, u]$ (the $\alpha / 2$ and $1 - $\alpha / 2$ quantiles), then the Winkler score is defined as:
+
+$$
+WS_{\alpha}(l, u; y) = (u - l) + \frac{2}{\alpha} (l - y) \boldsymbol{1}(y < l) + \frac{2}{\alpha} (y - u) \boldsymbol{1}(y > u),
+$$
+
+where $y$ is the observed value, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
+
+\textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $P$ and the empirical CDF of the observation $y$:
+
+$$
+CRPS(P, y) = \int_{-\infty}^{\infty} (P(x) - \boldsymbol{1}(x \geq y))^2 dx.
+$$
+
+When the predictive distribution is Gaussian with mean $\mu$ and standard deviation $\sigma$, the CRPS has a closed-form expression:
+
+$$
+CRPS(P, y) = \sigma \left[ z \left( 2 \Phi(z) -1 \right) + 2 \phi(z) - \frac{1}{\sqrt{\pi}} \right],
+$$
+
+where $z = \frac{y - \mu}{\sigma}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
+
+\textcolor{blue}{\textit{Energy score (ES).}} The energy score is a multivariate generalisation of the CRPS. It is defined as:
+
+$$
+ES(P, \boldsymbol{y}) = \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
+$$
+
+where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with distribution $P$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
+
+Since the closed-form expression of the ES may not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $P$:
+
+$$
+\widehat{ES}(P, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
+$$
+
+where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\} \setminus \{\boldsymbol{x}_m\}$. In our experiments, we use $M=10000$ samples to approximate the ES.
+
+
 
 ## Exploring Effects of Hierarchy's Size
 
