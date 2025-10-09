@@ -370,11 +370,10 @@ The cross-validation algorithm for NOVELIST is available in the ReconCov package
 To utilise the latent factors structure for better shrinkage, the PC-adjusted method takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example. It starts by decomposing the covariance matrix $\hat{\boldsymbol{W}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{W}}^K_{1}$ (the correlation matrix after removing the first $K$ principal components). Then we can apply either shrinkage or NOVELIST estimator to $\hat{\boldsymbol{W}}^K_{1}$:
 
 $$
-\hat{\boldsymbol{R}}^{g, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + g(\hat{\boldsymbol{W}}^K_{1})
+\hat{\boldsymbol{W}}^{g, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + g(\hat{\boldsymbol{W}}^K_{1})
 $$
 
-where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. Similar to the NOVELIST estimator, $\hat{\boldsymbol{R}}^{*, K}_{1}$ is not guaranteed to be positive definite.
-
+where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. Similar to the NOVELIST estimator, its PC-adjusted variant $\hat{\boldsymbol{W}}^{N, K}_{1}$ requires a cross-validation procedure and adjustment to obtain positive definiteness.
 ## Scaled Variance
 
 To address the potential issue of the proportionality relationship $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$ not holding in practice, we can relax the assumption by allowing the variances to scale differently. This is done by scaling the $1$-step-ahead correlation matrix back to $h$-step-ahead covariance matrix using the h-step-ahead standard deviations. The scaled variance estimator is given by:
@@ -389,7 +388,7 @@ If NOVELIST is used to produce $h$-step-ahead reconciled forecasts, the cross-va
 
 ## Constructing from h-step-ahead residuals
 
-Another approach is not to rely on the assumption of proportionality at all, and directly estimate the covariance matrix from the h-step-ahead base forecast errors:
+Another alternative is not to rely on the assumption of proportionality at all, and directly estimate the covariance matrix from the h-step-ahead base forecast errors:
 
 $$
 \hat{\boldsymbol{W}}^{g}_{h} = g(\hat{\boldsymbol{W}}_h)
@@ -575,7 +574,7 @@ p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 
 ![Percentage relative improvement in MSE of reconciled forecasts over the base forecasts in the 6 by 6 case (top row) and the 2 by 50 case (bottom row), T=50 (left column) and T=300 (right column), for 1- to 4-step-ahead forecasts. The positive (negative) entries indicate a decrease (increase) in MSE relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_MSE.png){#fig-sim-results-1}
 
-Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across two structures and time series lengths. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) are in purple. The concrete lines represent the vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1), *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residuals versions (e.g. *MinT-S(SV), MinT-N(hcov)*).
+Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across two structures and time series lengths. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) are in purple. The concrete lines represent the vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residuals versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
 
 The first key observation is that methods with shrinkage slightly outperform those with NOVELIST across all scenarios, despite the differences being small. Second, the PC-adjusted variants (using one and two principal components) do not yield improvements over the vanilla versions. This is expected since the synthetic data generating process does not simulate from strong latent factors. Third, the scaled variance and h-step-ahead residuals approaches do not enhance performance as the forecast horizon increases, suggesting that the proportionality assumption may not be severely violated in this VAR(1) setup. Lastly, as the hierarchy expands from 36 to 100 series, forecasts from NOVELIST methods become worse relative to base forecasts when we move to $2$-step-ahead and beyond. When looking into each MCMC replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}^*$ being selected in the cross-validation step. 
 
