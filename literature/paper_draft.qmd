@@ -412,6 +412,51 @@ where $\hat{\boldsymbol{W}}_h$ is the covariance matrix of in-sample h-step-ahea
 | Constructed from h-step-ahead Shrinkage | MinT-S(hcov)       |
 | Constructed from h-step-ahead NOVELIST  | MinT-N(hcov)       |
 
+# Probabilistic Scoring Rules {#sec-scores}
+
+We use the mean squared error (MSE) to evaluate the accuracy of point forecasts. Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(P, y)]$ for all $P$, where $P$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
+
+We employ Winkler score and continuous ranked probability score as our univariate scoring rules, and energy score as the multivariate scoring rule. All three are proper scoring rules.
+
+\textcolor{blue}{\textit{Winkler score (WS).}} If the 100$(1-\alpha)$\% prediction interval is $[l, u]$ (the $\alpha / 2$ and $1 - $\alpha / 2$ quantiles), then the Winkler score is defined as:
+
+$$
+WS_{\alpha}(l, u; y) = (u - l) + \frac{2}{\alpha} (l - y) \boldsymbol{1}(y < l) + \frac{2}{\alpha} (y - u) \boldsymbol{1}(y > u),
+$$
+
+where $y$ is the observed value, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
+
+\textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $P$ and the empirical CDF of the observation $y$:
+
+$$
+CRPS(P, y) = \int_{-\infty}^{\infty} (P(x) - \boldsymbol{1}(x \geq y))^2 dx.
+$$
+
+When the predictive distribution is Gaussian with mean $\mu$ and standard deviation $\sigma$, the CRPS has a closed-form expression:
+
+$$
+CRPS(P, y) = \sigma \left[ z \left( 2 \Phi(z) -1 \right) + 2 \phi(z) - \frac{1}{\sqrt{\pi}} \right],
+$$
+
+where $z = \frac{y - \mu}{\sigma}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
+
+\textcolor{blue}{\textit{Energy score (ES).}} The energy score is a multivariate generalisation of the CRPS. It is defined as:
+
+$$
+ES(P, \boldsymbol{y}) = \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
+$$
+
+where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with distribution $P$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
+
+Since the closed-form expression of the ES may not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $P$:
+
+$$
+\widehat{ES}(P, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
+$$
+
+where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\} \setminus \{\boldsymbol{x}_m\}$. In our experiments, we use $M=10000$ samples to approximate the ES.
+
+
 
 # Simulation {#sec-simulation}
 
@@ -459,51 +504,6 @@ sim_sparse_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_sparsebwgrp.rd
 sim3_1 <- sim_dense_50 # using same with next section simulation
 sim3_2 <- sim_dense_300
 ```
-
-## Probabilistic Scoring Rules {-}
-
-We use the mean squared error (MSE) to evaluate the accuracy of point forecasts. Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(P, y)]$ for all $P$, where $P$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
-
-We employ Winkler score and continuous ranked probability score as our univariate scoring rules, and energy score as the multivariate scoring rule. All three are proper scoring rules.
-
-\textcolor{blue}{\textit{Winkler score (WS).}} If the 100$(1-\alpha)$\% prediction interval is $[l, u]$ (the $\alpha / 2$ and $1 - $\alpha / 2$ quantiles), then the Winkler score is defined as:
-
-$$
-WS_{\alpha}(l, u; y) = (u - l) + \frac{2}{\alpha} (l - y) \boldsymbol{1}(y < l) + \frac{2}{\alpha} (y - u) \boldsymbol{1}(y > u),
-$$
-
-where $y$ is the observed value, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
-
-\textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $P$ and the empirical CDF of the observation $y$:
-
-$$
-CRPS(P, y) = \int_{-\infty}^{\infty} (P(x) - \boldsymbol{1}(x \geq y))^2 dx.
-$$
-
-When the predictive distribution is Gaussian with mean $\mu$ and standard deviation $\sigma$, the CRPS has a closed-form expression:
-
-$$
-CRPS(P, y) = \sigma \left[ z \left( 2 \Phi(z) -1 \right) + 2 \phi(z) - \frac{1}{\sqrt{\pi}} \right],
-$$
-
-where $z = \frac{y - \mu}{\sigma}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
-
-\textcolor{blue}{\textit{Energy score (ES).}} The energy score is a multivariate generalisation of the CRPS. It is defined as:
-
-$$
-ES(P, \boldsymbol{y}) = \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
-$$
-
-where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with distribution $P$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
-
-Since the closed-form expression of the ES may not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $P$:
-
-$$
-\widehat{ES}(P, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
-$$
-
-where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\} \setminus \{\boldsymbol{x}_m\}$. In our experiments, we use $M=10000$ samples to approximate the ES.
-
 
 
 ## Exploring Effects of Hierarchy's Size
@@ -781,74 +781,9 @@ par(mfrow=c(1,1), mar=c(0,0,0,0))
 tourism_plots$radar
 ```
 
+
+
 <!-- # Supplementary -->
-
-<!-- 
-\pagebreak
-
-# Timeline & Milestones {#sec-timeline}
-
-```{r timeline}
-#| echo: false
-#| message: false
-#| warning: false
-library(tibble)
-library(knitr)
-library(kableExtra)
-
-tibble(
-  Period = c(
-    "March",
-    "April", 
-    "May", 
-    "June",
-    "July",
-    "August", 
-    "September",
-    "October"
-  ),
-  Task = c(
-    "Initial setup and understanding the research scope. Preliminary knowledge and Literature review",
-
-    "Develop ReconCov, an R package implementing the Min Trace approach with the shrinkage and NOVELIST estimators, and rolling-window cross-validation process for choosing NOVELIST threshold parameter. Exploring simulation framework.",
-
-    "Code functions for producing simulation settings in ReconCov package. Initial simulation for MinT in hierarchical time series. Writing research proposal and presenting research project.",
-
-    "Intensive simulation on multiple different settings, in order to assess the performance and behaviours of NOVELIST under different conditions, and to explore cases where NOVELIST performs different than Shrinkage.",
-
-    "Empirical analysis on forecasting Australian Domestic Tourism data. Explore the real-world data generating process which can be used to refine the current simulation design",
-
-    "Implement the Tourism DGP configuration into the current simulation settings. Implementing POET and PC-adjusted NOVELIST estimators. Assessing whether prominent principal components structure can be exploited to improve the out-of-sample forecast performance.",
-
-    "Exploring other high-dimensional covariance estimators. More simulations on all explored covariance estimators. Final,  full-fledged assessment on all implemented estimators",
-
-    "Final writing, presenation, submission"
-  ),
-  Deliverable = c(
-    "Initial literature review + paper draft",
-    "ReconCov package: Main codes for estimators + simulation framework + cross-validation",
-    "NOVELIST initial simulation results + research proposal + presentation",
-    "More simulation results on NOVELIST",
-    "Empirical results on forecasting Tourism data",
-    "New simulation design, POET & PC-adjusted NOVELIST simulation results",
-    "Other estimators simulation results and full-fledged covariance estimators assessment",
-    "Presentation and thesis manuscript"
-  )
-) |>
-  kable(
-    format = "latex",
-    booktabs = TRUE,
-    longtable = TRUE,
-    caption = "Project Timeline and Key Milestones",
-    escape = TRUE
-  ) |>
-  column_spec(1, width = "1.9cm") |>
-  column_spec(2, width = "8cm") |>
-  column_spec(3, width = "4.8cm") |>
-  kable_styling(latex_options = "hold_position", font_size = 10)
-```
--->
-
 
 \pagebreak
 
