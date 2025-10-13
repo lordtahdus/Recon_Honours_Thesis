@@ -130,6 +130,110 @@ $$
 
 @Wickramasuriya2019-xq also showed that MinT is an algebraic generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity matrix $I_{n_b}$ and a diagonal matrix $\text{diag}( \boldsymbol{W}_h )$, respectively. In this paper, we place our main focus on the MinT method. -->
 
+# Sparse correlation simulation discussion
+
+<!-- ## Exploring the sparsity of the DGP covariance matrix
+
+\color{red}
+to be revised for final draft
+\color{black}
+
+```{r}
+plot_relative_improvement <- function(MSE_data) {
+  MSE_data |>
+    filter(
+      .model != "mint_true",
+      h <= 4
+    ) |>
+    group_by(series, h) |>
+    mutate(
+      base_MSE = MSE[.model == "base"]
+    ) |>
+    ungroup() |>
+    group_by(.model, h) |>
+    summarise(
+      MSE = mean(MSE),
+      base_MSE = mean(base_MSE),
+      pct_change = (MSE - base_MSE) / base_MSE * 100
+    ) |>
+    ggplot(aes(x = h, y = pct_change, color = .model)) +
+    geom_line() +
+    labs(
+      x = "Forecast Horizon (h)",
+      y = "Percentage Change (%)"
+    ) +
+    # labs(x = element_blank(), y = element_blank()) +
+    theme_bw()
+}
+```
+
+```{r}
+# #| label: fig-Sigma-2x50
+# #| fig-cap: "Heatmaps of the dense and sparse correlation matrix of the data generating process."
+# #| fig.height: 12
+# #| fig.width: 8
+# #| out.width: "100%"
+# #| fig.align: "center"
+p_dense_Sigma <- sim_dense_50$Sigma |>
+  cov2cor() |> 
+  plot_heatmap(T) +
+    labs(title = "Dense")
+
+p_sparse_Sigma <- sim_sparse_50$Sigma |>
+  cov2cor() |> 
+  plot_heatmap(T) +
+    labs(title = "Sparse")
+
+p_dense_Sigma + p_sparse_Sigma + 
+  plot_layout(ncol = 1, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "right")
+```
+
+```{r}
+#| label: fig-sim-results-dsp
+#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 2x50 hierarchical structure with dense and sparse DGP's correlation matrix, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
+#| fig.height: 7
+#| fig.width: 8
+#| out.width: "90%"
+#| fig.align: "center"
+p_dense_50 <- sim_dense_50$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement() +
+    labs(title = "Dense DGP Covariance Matrix", subtitle = "T = 54")
+p_sparse_50 <- sim_sparse_50$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement() +
+    labs(title = "Dense DGP Covariance Matrix")
+
+p_dense_300 <- sim_dense_300$MSE |>
+  transform_sim_MSE(F) |> 
+  filter(.model != "ols") |> 
+  plot_relative_improvement() +
+    labs(subtitle = "T = 304")
+p_sparse_300 <- sim_sparse_300$MSE |>
+  transform_sim_MSE(F) |> 
+  plot_relative_improvement()
+
+p_dense_50 + p_sparse_50 + p_dense_300 + p_sparse_300 +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") &
+  theme(legend.position = "right")
+```
+
+
+In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. We consider the same hierarchical structure of two large groups of 50 bottom series as above. Specifically, the two groups would have strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-2x50. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
+
+Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both.
+
+emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories.
+
+Figure @fig-sim-results-dsp presents out‐of‐sample mean squared error improvements over the base forecasts for each reconciliation strategy under both dense and sparse settings, with two panel lengths--54 and 304 observations--reserving the last four points for testing. In both short and long samples, MinT using either the shrinkage estimator (mint_shr) or the NOVELIST estimator (mint_n) delivers pronounced gains over incoherent ARIMA forecasts, particularly at the one‐step horizon where cross‐series correlations most directly inform the forecast adjustments. Although the two MinT variants perform almost indistinguishably overall, mint_n edges out mint_shr in the immediate horizon, whereas mint_shr slightly outperforms for longer horizons. By contrast, MinT with the raw sample covariance (mint_sample) suffers in small‐sample settings; as expected, its performance improves dramatically with 304 data points, since the sample covariance becomes more reliable with larger $n$. This highlights the practical necessity of regularized estimators in high‐dimensional, low‐sample contexts, a situation common in real applications where histories are short relative to the number of series.
+
+Additional designs (varying block sizes, aggregation paths, correlation configurations) also failed to separate NOVELIST from Shrinkage. Their nearly identical performance under these synthetic scenarios suggests that our current simulation may not unveil the full advantages of the thresholding estimators. This finding motivates our turn to empirical data, where latent structural features and regime shifts, which we will discuss in the next section, may reveal performance differences. 
+-->
+
+
+
+
 # Evaluating ex- and include 2016 onwards on Tourism
 
 ```{r}

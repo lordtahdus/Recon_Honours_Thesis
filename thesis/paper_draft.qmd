@@ -417,7 +417,7 @@ where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_
 
 # Simulation {#sec-simulation}
 
-## General Design Framework {-}
+## General Design
 
 The general design of data generating process for bottom-level series is a stationary VAR(1) process, with the following structure:
 
@@ -471,7 +471,7 @@ In the 36‐series case, each block of six forms a level‐1 aggregate, and thos
 
 ![Aggregation structures used in the simulation experiments: 6 groups of 6 (left) and 2 groups of 50 (right)](D:/Github/Recon_Honours_Thesis/figs/sim_structures.png){#fig-sim-structures}
 
-The VAR(1) and correlation configurations for the 6 by 6 case and 2 by 50 case are illustrated in @fig-settings-6x6 and @fig-settings-2x50, respectively. The block diagonal structure of the VAR(1) coefficient matrices $\boldsymbol{A}$ reflects the grouping of series, and the correlation matrices $\boldsymbol{\Sigma}$ show higher correlations among series within the same group.
+The VAR(1) and correlation configurations for the 6 by 6 case and 2 by 50 case are illustrated in @fig-settings-6x6 and @fig-settings-2x50, respectively. The block diagonal structure of the VAR(1) coefficient matrices $\boldsymbol{A}$ reflects the grouping of series, and the correlation matrices- show higher correlations among series within the same group.
 
 ```{r generate plots for A and Sigma}
 MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F) |> 
@@ -492,27 +492,27 @@ p1_A <- plot_heatmap(sim1_1$A, T) +
   ggtitle("2x2 VAR(1) Coefficients Matrix")
 
 p1_Sigma <- plot_heatmap(cov2cor(sim1_1$Sigma), T) + 
-  ggtitle("2x2 Correlation Matrix")
+  ggtitle("2x2 Correlation Matrix of Innovation process")
 
 p2_A <- plot_heatmap(sim2_1$A) +
   ggtitle("VAR(1) Coefficients Matrix") + theme_void()
 
 p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
-  ggtitle("Correlation Matrix") + theme_void()
+  ggtitle("Correlation Matrix of Innovation process") + theme_void()
 
 p3_A <- plot_heatmap(sim3_1$A) +
-  ggtitle("2x50 VAR(1) Coefficients Matrix")
+  ggtitle("VAR(1) Coefficients Matrix")
 
 p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
-  ggtitle("2x50 Correlation Matrix")
+  ggtitle("Correlation Matrix of Innovation process")
 ```
 
 ```{r settings 6x6}
 #| label: fig-settings-6x6
-#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 6 by 6 structure."
-#| fig.height: 4
-#| fig.width: 6
-#| out.width: "85%"
+#| fig-cap: "The VAR(1) coefficients matrix (left) and correlation matrix of the innovation process (right) for the 6 groups of 6 structure."
+#| fig.height: 5
+#| fig.width: 7
+#| out.width: "75%"
 #| fig.align: "center"
 
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
@@ -520,7 +520,7 @@ p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 
 ```{r settings 2x50}
 #| label: fig-settings-2x50
-#| fig-cap: "Heatmaps of the VAR(1) coefficient matrix and correlation matrix for the 2 by 50 structure."
+#| fig-cap: "The VAR(1) coefficients matrix (top) and correlation matrix of the innovation process (bottom) for the 2 groups of 50 structure."
 #| fig.height: 12
 #| fig.width: 8
 #| out.width: "100%"
@@ -534,111 +534,40 @@ p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 
 Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across two structures and time series lengths. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) are in purple. The concrete lines represent the vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residuals versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
 
-The first key observation is that methods with shrinkage slightly outperform those with NOVELIST across all scenarios, despite the differences being small. Second, the PC-adjusted variants (using one and two principal components) do not yield improvements over the vanilla versions. This is expected since the synthetic data generating process does not simulate from strong latent factors. Third, the scaled variance and h-step-ahead residuals approaches do not enhance performance as the forecast horizon increases, suggesting that the proportionality assumption may not be severely violated in this VAR(1) setup. Lastly, as the hierarchy expands from 36 to 100 series, forecasts from NOVELIST methods become worse relative to base forecasts when we move to $2$-step-ahead and beyond. When looking into each MCMC replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}^*$ being selected in the cross-validation step. 
+The first key observation is that methods with shrinkage slightly outperform those with NOVELIST across all scenarios, despite the differences being small. Second, the PC-adjusted variants (using one and two principal components) do not yield improvements over the vanilla versions. This is expected since the synthetic data generating process does not simulate from strong latent factors. Lastly, the scaled variance and h-step-ahead residuals approaches do not enhance performance as the forecast horizon increases, suggesting that the proportionality assumption may not be severely violated in this VAR(1) setup. 
+
+<!-- Lastly, as the hierarchy expands from 36 to 100 series, forecasts from NOVELIST methods become worse relative to base forecasts when we move to $2$-step-ahead and beyond.  -->
+
+When looking into each MCMC replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}$ being selected in the cross-validation step, resulting in a diagonal shrinkage target.
 
 ![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-results-2}
 
-Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score [@Gneiting2011-km], a proper scoring rule for multivariate distributions. Figure @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are insignificant, except for the 6 by 6 case with 50 observations, where shrinkage has a slight edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and h-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
+Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. Figure @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are insignificant, except for the 6 by 6 case with 50 observations, where shrinkage has a slight edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and h-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
 
-## Exploring the sparsity of the DGP covariance matrix
+Other scoring rules, such as the Winkler score and CRPS, yield similar conclusions.
 
-\color{red}
-to be revised for final draft
-\color{black}
 
-```{r}
-plot_relative_improvement <- function(MSE_data) {
-  MSE_data |>
-    filter(
-      .model != "mint_true",
-      h <= 4
-    ) |>
-    group_by(series, h) |>
-    mutate(
-      base_MSE = MSE[.model == "base"]
-    ) |>
-    ungroup() |>
-    group_by(.model, h) |>
-    summarise(
-      MSE = mean(MSE),
-      base_MSE = mean(base_MSE),
-      pct_change = (MSE - base_MSE) / base_MSE * 100
-    ) |>
-    ggplot(aes(x = h, y = pct_change, color = .model)) +
-    geom_line() +
-    labs(
-      x = "Forecast Horizon (h)",
-      y = "Percentage Change (%)"
-    ) +
-    # labs(x = element_blank(), y = element_blank()) +
-    theme_bw()
-}
-```
+## Other Data Generating Processes
+
+In attempts to differentiate the performance of NOVELIST from the shrinkage estimator, we also simulate from a sparse covariance matrix for a 2 groups of 50 scenario, as illustrated in @fig-Sigma-2x50. The sparse covariance matrix is obtained by randomly choosing 40% of the bottom series and setting their correlations with all other series to zero, resulting in a grid-like sparse structure. The VAR(1) coefficient matrix remains the same as in the dense case. The idea is to allow NOVELIST to exploit the sparsity in the covariance structure, since it can control the sparsity of the shrinkage target via the thresholding parameter $\delta$. However, no profound insights can be drawn from the results.
 
 ```{r}
 #| label: fig-Sigma-2x50
-#| fig-cap: "Heatmaps of the dense and sparse correlation matrix of the data generating process."
-#| fig.height: 12
+#| fig-cap: "Sparse correlation matrix of the innovation process for 2 groups of 50 structure."
+#| fig.height: 6
 #| fig.width: 8
-#| out.width: "100%"
+#| out.width: "80%"
 #| fig.align: "center"
-p_dense_Sigma <- sim_dense_50$Sigma |>
-  cov2cor() |> 
-  plot_heatmap(T) +
-    labs(title = "Dense")
 
-p_sparse_Sigma <- sim_sparse_50$Sigma |>
+sim_sparse_50 <- readRDS(paste0(path, "/thesis/lib/params_S100_10_3_1_sparse46.rds"))
+sim_sparse_50$Sigma |>
   cov2cor() |> 
-  plot_heatmap(T) +
-    labs(title = "Sparse")
-
-p_dense_Sigma + p_sparse_Sigma + 
-  plot_layout(ncol = 1, guides = "collect", axis_titles = "collect") & 
-  theme(legend.position = "right")
+  plot_heatmap(T)
 ```
 
-```{r}
-#| label: fig-sim-results-dsp
-#| fig-cap: "Relative improvement of the MSE of reconciled forecasts over the base forecasts for the 2x50 hierarchical structure with dense and sparse DGP's correlation matrix, for 1 to 4 steps ahead forecasts, with 2 time series lengths (T = 54 and T = 304)."
-#| fig.height: 7
-#| fig.width: 8
-#| out.width: "90%"
-#| fig.align: "center"
-p_dense_50 <- sim_dense_50$MSE |>
-  transform_sim_MSE(F) |> 
-  plot_relative_improvement() +
-    labs(title = "Dense DGP Covariance Matrix", subtitle = "T = 54")
-p_sparse_50 <- sim_sparse_50$MSE |>
-  transform_sim_MSE(F) |> 
-  plot_relative_improvement() +
-    labs(title = "Dense DGP Covariance Matrix")
+Additional designs (varying block sizes, grouped structure, aggregation paths, correlation configurations) also failed to separate NOVELIST from Shrinkage. Their nearly identical performance under these synthetic scenarios suggests that our current simulation may not unveil the full advantages of the thresholding estimators. Nevertheless, we have not explored settings where PC variants or using h-step-ahead residuals approaches would have an edge.
 
-p_dense_300 <- sim_dense_300$MSE |>
-  transform_sim_MSE(F) |> 
-  filter(.model != "ols") |> 
-  plot_relative_improvement() +
-    labs(subtitle = "T = 304")
-p_sparse_300 <- sim_sparse_300$MSE |>
-  transform_sim_MSE(F) |> 
-  plot_relative_improvement()
-
-p_dense_50 + p_sparse_50 + p_dense_300 + p_sparse_300 +
-  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") &
-  theme(legend.position = "right")
-```
-
-
-In our second simulation study, we design a data‐generating process that contrasts “dense” and “sparse” correlation regimes among bottom‐level series, reflecting settings one might encounter in practice. We consider the same hierarchical structure of two large groups of 50 bottom series as above. Specifically, the two groups would have strong within-group dependencies throughout and either modest between‐group correlations (the dense scenario) or complete independence (the sparse scenario). These correlation matrices are depicted in Figure @fig-Sigma-2x50. Both scenarios share the same VAR(1) coefficient structure as in our previous simulations; only the innovation covariance changes. Such a setup mirrors real‐world contexts where, for example, sales within a product line may exhibit strong co‐movements, while those in a separate line operate nearly independently.
-
-<!-- Rather than collapsing each group into a single aggregate as in previous practice, we impose a more intricate, multi‐level aggregation path to stress‐test reconciliation methods. We first form ten intermediate series by summing bottom‐level series in consecutive blocks of ten. These ten series are then assigned to three second‐level aggregates--groups of four, three, and four--and finally summed to produce a single top‐level series. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both. -->
-
-<!-- emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. -->
-
-Figure @fig-sim-results-dsp presents out‐of‐sample mean squared error improvements over the base forecasts for each reconciliation strategy under both dense and sparse settings, with two panel lengths--54 and 304 observations--reserving the last four points for testing. In both short and long samples, MinT using either the shrinkage estimator (mint_shr) or the NOVELIST estimator (mint_n) delivers pronounced gains over incoherent ARIMA forecasts, particularly at the one‐step horizon where cross‐series correlations most directly inform the forecast adjustments. Although the two MinT variants perform almost indistinguishably overall, mint_n edges out mint_shr in the immediate horizon, whereas mint_shr slightly outperforms for longer horizons. By contrast, MinT with the raw sample covariance (mint_sample) suffers in small‐sample settings; as expected, its performance improves dramatically with 304 data points, since the sample covariance becomes more reliable with larger $n$. This highlights the practical necessity of regularized estimators in high‐dimensional, low‐sample contexts, a situation common in real applications where histories are short relative to the number of series.
-
-Additional designs (varying block sizes, aggregation paths, correlation configurations) also failed to separate NOVELIST from Shrinkage. Their nearly identical performance under these synthetic scenarios suggests that our current simulation may not unveil the full advantages of the thresholding estimators. This finding motivates our turn to empirical data, where latent structural features and regime shifts, which we will discuss in the next section, may reveal performance differences.
-
-
+These findings motivates our turn to empirical data in the next section, where latent structural features, regime shifts, and noisy, intermittent series will reveal performance differences. 
 
 # Forecasting Australian Domestics Tourism {#sec-empirical}
 
@@ -871,6 +800,9 @@ Taken together, the evidence supports the use of reconciliation for both point a
 \pagebreak
 
 # Appendix {#sec-appendix}
+
+## Appendix: Simulation Supplementary {#sec-sim-supplement}
+
 
 ## Appendix: Australian Domestic Tourism Geographical Hierarchy {#sec-tourism-supplement}
 
