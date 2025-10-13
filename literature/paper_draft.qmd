@@ -335,7 +335,7 @@ where $\boldsymbol{D}_h = \text{diag}(\hat{\sigma}^2_{1,h}, \ldots, \hat{\sigma}
 
 If NOVELIST is used to produce $h$-step-ahead reconciled forecasts, the cross-validation procedure is slightly modified to evaluate the out-of-sample reconciled forecast MSE using $\hat{\boldsymbol{W}}^{N, sv}_{h}$ instead of $\hat{\boldsymbol{W}}^{N}_{1}$.
 
-## Constructing from h-step-ahead residuals
+## Constructing from h-step-ahead Residuals
 
 Another alternative is not to rely on the assumption of proportionality at all, and directly estimate the covariance matrix from the h-step-ahead base forecast errors:
 
@@ -360,46 +360,50 @@ The covariance estimators explored in this paper are summarised in the table bel
 | Constructed from h-step-ahead Shrinkage | MinT-S(hcov)       |
 | Constructed from h-step-ahead NOVELIST  | MinT-N(hcov)       |
 
-# Probabilistic Scoring Rules {#sec-scores}
+# Evaluation of Point and Probabilistic Forecasts {#sec-scores}
 
-We use the mean squared error (MSE) to evaluate the accuracy of point forecasts. Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(P, y)]$ for all $P$, where $P$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
+This section briefly introduces the scoring rules used to evaluate the point and probabilistic forecast accuracy in @sec-simulation and @sec-empirical.
 
-We employ Winkler score and continuous ranked probability score as our univariate scoring rules, and energy score as the multivariate scoring rule. All three are proper scoring rules.
+For point forecasts, we use the mean squared error (MSE) to evaluate the accuracy of different reconciliation methods: $MSE = \frac{1}{n} \sum_{i=1}^n (y_{i, t+h} - \tilde{y}_{i,t+h|t})^2$, where $y_{i, t+h}$ is the realised value of series $i$ at time $t+h$, and $\tilde{y}_{i,t+h|t}$ is the reconciled point forecast.
 
-\textcolor{blue}{\textit{Winkler score (WS).}} If the 100$(1-\alpha)$\% prediction interval is $[l, u]$ (the $\alpha / 2$ and $1 - $\alpha / 2$ quantiles), then the Winkler score is defined as:
+Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use proper scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(F, y)]$ for all $F$, where $F$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
 
-$$
-WS_{\alpha}(l, u; y) = (u - l) + \frac{2}{\alpha} (l - y) \boldsymbol{1}(y < l) + \frac{2}{\alpha} (y - u) \boldsymbol{1}(y > u),
-$$
+We employ Winkler score and continuous ranked probability score as our univariate scoring rules, and energy score as the multivariate scoring rule. All three are proper scoring rules. In this paper, we only evaluate $1$-step-ahead probabilistic forecasts, and thus we drop the subscript $t$ and $h$ for simplicity.
 
-where $y$ is the observed value, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
-
-\textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $P$ and the empirical CDF of the observation $y$:
+\textcolor{blue}{\textit{Winkler score (WS).}} If the 100$(1-\alpha)$\% prediction interval of $i$-th series is $[l_i, u_i]$ (the $\alpha / 2$ and $1 - \alpha / 2$ quantiles), then the Winkler score is defined as:
 
 $$
-CRPS(P, y) = \int_{-\infty}^{\infty} (P(x) - \boldsymbol{1}(x \geq y))^2 dx.
+WS_{\alpha}(l_i, u_i; y_i) = (u_i - l_i) + \frac{2}{\alpha} (l_i - y_i) \boldsymbol{1}(y_i < l_i) + \frac{2}{\alpha} (y_i - u_i) \boldsymbol{1}(y_i > u_i),
 $$
 
-When the predictive distribution is Gaussian with mean $\mu$ and standard deviation $\sigma$, the CRPS has a closed-form expression:
+where $y_i$ is the observed value of $i$-th series, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
+
+\textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $F_i$ and the empirical CDF of the observation $y_i$ of series $i$:
 
 $$
-CRPS(P, y) = \sigma \left[ z \left( 2 \Phi(z) -1 \right) + 2 \phi(z) - \frac{1}{\sqrt{\pi}} \right],
+CRPS(F_i, y_i) = \int_{-\infty}^{\infty} (F_i(x) - \boldsymbol{1}(x \geq y_i))^2 dx.
 $$
 
-where $z = \frac{y - \mu}{\sigma}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
+When the predictive distribution is Gaussian with mean $\mu_i$ and standard deviation $\sigma_i$, the CRPS has a closed-form expression:
+
+$$
+CRPS(F_i, y_i) = \sigma_i \left[ z_i \left( 2 \Phi(z_i) -1 \right) + 2 \phi(z_i) - \frac{1}{\sqrt{\pi}} \right],
+$$
+
+where $z_i = \frac{y_i - \mu_i}{\sigma_i}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
 
 \textcolor{blue}{\textit{Energy score (ES).}} The energy score is a multivariate generalisation of the CRPS. It is defined as:
 
 $$
-ES(P, \boldsymbol{y}) = \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_P ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
+ES(F, \boldsymbol{y}) = \mathbb{E}_F ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_F ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
 $$
 
-where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with distribution $P$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
+where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with multivariate distribution $F$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
 
 Since the closed-form expression of the ES may not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $P$:
 
 $$
-\widehat{ES}(P, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
+\widehat{ES}(F, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
 $$
 
 where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\} \setminus \{\boldsymbol{x}_m\}$. In our experiments, we use $M=10000$ samples to approximate the ES.
