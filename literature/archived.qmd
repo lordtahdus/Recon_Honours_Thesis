@@ -121,6 +121,15 @@ including the OLS and WLS developed by @Hyndman2011-jv and @Hyndman2016-ic, resp
 
 -->
 
+<!-- @Wickramasuriya2019-xq framed the problem as minimising the variances of all reconciled forecast errors $\text{Var}[y_{t+h} - \tilde{y}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G} \boldsymbol{W}_h \boldsymbol{G}' \boldsymbol{S}'$, where $\boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors. They showed that this is equivalent to minimising the trace of the reconciled forecast error covariance matrix (sum of the diagonal elements - the variances). The Minimum Trace (MinT) solution is given by
+
+$$
+\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
+\boldsymbol{S}' \boldsymbol{W}_h^{-1} .
+$$
+
+@Wickramasuriya2019-xq also showed that MinT is an algebraic generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity matrix $I_{n_b}$ and a diagonal matrix $\text{diag}( \boldsymbol{W}_h )$, respectively. In this paper, we place our main focus on the MinT method. -->
+
 # Evaluating ex- and include 2016 onwards on Tourism
 
 ```{r}

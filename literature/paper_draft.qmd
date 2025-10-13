@@ -133,22 +133,6 @@ The remainder of the paper is organised as follows. @sec-pre-theory provides the
 
 ## Hierarchical Time Series {#sec-hierarchy}
 
-\color{red}
-to be revised with probabilistic framework
-
-- start with hierarchical time series
-  - mention hier and grouped example (but stick to the general notation)
-- talk about S, containing A
-  - example of S
-- coherent subspace
-- coherent point forecasts
-  - projection
-- coherent probabilistic forecasts
-  - definition
-  - image
-
-\color{black}
-
 *Hierarchical time series* are multivariate time series $\boldsymbol{y}_t \in \mathbb{R}^n$ organised in a structure where the series adheres to some *constraints*. For example, @fig-hierarchy illustrates a simple 2-level hierarchical structure with one top-level series $y_{Tot,t}$, two middle-level series $(y_{A,t}, y_{B,t})'$, and four bottom-level series $(y_{A1,t}, y_{A2,t}, y_{B1,t}, y_{B2,t})'$. Here, the *aggregation constraints* imply that $y_{Tot,t} = y_{A,t} + y_{B,t}$, $y_{A,t} = y_{A1,t} + y_{A2,t}$, and $y_{B,t} = y_{B1,t} + y_{B2,t}$.
 
 ![A 2-level hierarchical tree structure](../figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
@@ -185,43 +169,43 @@ When we produce forecasts for each individual series, referred to as *base forec
 
 ![Geometry of probabilistic forecast reconciliation. The eliptical base forecast distribution is projected orthogonally onto the coherent subspace (purple line), resulting in the reconciled forecast distribution (red). The projection is defined by the projection matrix $\boldsymbol{P}$, and MinT allows oblique projections. Note that this figure is schematic since most applications are high-dimensional.](../figs/geometry_orthogonal.png){#fig-geometry width="60%"}
 
-Many existing reconciliation methods including the OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] express the projection matrix as $\boldsymbol{P} = \boldsymbol{S} \boldsymbol{G}$, for a suitable $n_b \times n$ mapping matrix $\boldsymbol{G}$. The idea is to map the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. Since the projection matrix $\boldsymbol{P}$ is idempotent and symmetric, $\boldsymbol{G}$ must satisfy the condition $\boldsymbol{S} \boldsymbol{G} \boldsymbol{S} = \boldsymbol{S}$. Thus, we generally have the mapping matrix $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{M}^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{M}^{-1}$, for some positive definite matrix $\boldsymbol{M}$.
+Many existing reconciliation methods including the OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] express the projection matrix as $\boldsymbol{P} = \boldsymbol{S} \boldsymbol{G}$, for a suitable $n_b \times n$ mapping matrix $\boldsymbol{G}$. The idea is to map the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. Since the projection matrix $\boldsymbol{P}$ is idempotent and symmetric, $\boldsymbol{G}$ must satisfy the condition $\boldsymbol{S} \boldsymbol{G} \boldsymbol{S} = \boldsymbol{S}$. Thus, we generally have the mapping matrix $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{M}^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{M}^{-1}$, for some positive definite matrix $\boldsymbol{M}$ [@Gamakumara2020-ml].
 
-When setting $\boldsymbol{M} = \boldsymbol{I}_n$, the identity matrix, we obtain the OLS method, which also corresponds to an orthogonal projection onto the coherent subspace. Research have been done to introduce $\boldsymbol{M}$ that better utilise the inherent information from the observed data, resulting in oblique projections to deliver better-performing reconciled forecasts.
+When setting $\boldsymbol{M} = \boldsymbol{I}_n$, the identity matrix, we obtain the OLS method, which also corresponds to an orthogonal projection onto the coherent subspace (similar to @fig-geometry). Research have been done to introduce $\boldsymbol{M}$ that better utilise the inherent information from the observed data, to construct oblique projections and deliver better-performing forecasts.
 
 
 ## The Minimum Trace (MinT) Reconciliation
 
-- we link to MinT saying that when M is the covariance matrix of base forecast errors, minimise the trace of the reconciled forecast error covariance matrix 
-
-@Wickramasuriya2019-xq showed that by setting $\boldsymbol{M} = \boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$, the covariance matrix of the $h$-step-ahead base forecast errors $\hat{\boldsymbol{e}}_{t+h|t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h|t}$, we essentially minimise the total variance of the reconciled forecast errors across all series. In which, it is minimising the trace of $\text{Var}[y_{t+h} - \tilde{y}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G} \boldsymbol{W}_h \boldsymbol{G}' \boldsymbol{S}'$. This method is called Minimum Trace (MinT) reconciliation. The matrix $\boldsymbol{G}$ is thus given by:
+@Wickramasuriya2019-xq showed that by setting $\boldsymbol{M} = \boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$, the covariance matrix of the $h$-step-ahead base forecast errors $\hat{\boldsymbol{e}}_{t+h|t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h|t}$, we essentially minimise the total variance of the reconciled forecast errors across all series. In which, it is minimising the trace of $\text{Var}[y_{t+h} - \tilde{y}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}'$. This method is called Minimum Trace (MinT) reconciliation. The matrix $\boldsymbol{G}_h$ is thus given by:
 
 $$
-\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
+\boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
 \boldsymbol{S}' \boldsymbol{W}_h^{-1} .
 $$
 
-<!-- @Wickramasuriya2019-xq framed the problem as minimising the variances of all reconciled forecast errors $\text{Var}[y_{t+h} - \tilde{y}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G} \boldsymbol{W}_h \boldsymbol{G}' \boldsymbol{S}'$, where $\boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$ is the positive definite covariance matrix of the $h$-step-ahead base forecast errors. They showed that this is equivalent to minimising the trace of the reconciled forecast error covariance matrix (sum of the diagonal elements - the variances). The Minimum Trace (MinT) solution is given by
+This is initially derived under point forecast reconciliation setting. However, @Wickramasuriya2024-mb showed that under the Gaussian base forecast distribution assumption, MinT also yields a Gaussian reconciled forecast distribution. Let $h$-step-ahead base forecast distribution be $\hat{\boldsymbol{y}}_{t+h|t} \sim \mathcal{N}(\hat{\boldsymbol{y}}_{t+h|t}, \boldsymbol{W}_h)$, then the reconciled forecast distribution is given by $\tilde{\boldsymbol{y}}_{t+h|t} \sim \mathcal{N}(\tilde{\boldsymbol{y}}_{t+h|t}, \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}')$. Additionally, MinT also minimises the logarithmic score of the reconciled predictive distribution among all projection matrices.
+
+For probabilistic forecasts, this paper focuses on evaluating the performance of MinT with different covariance estimators under the Gaussian framework. Even so, it is worth to mention that the methods can be extended to non-Gaussian settings by bootstrapping [@Gamakumara2020-ml; @Panagiotelis2023-fs].
+
+
+## Shrinkage Estimator for MinT
+
+The MinT solution hinges on a reliable, positive-definite estimate of $\boldsymbol{W}_h$, which comes in both the mapping matrix $\boldsymbol{G}_h$ and the reconciled forecast variance $\boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}'$.
+
+However, the covariance matrix $\boldsymbol{W}_h$ is often not available in theoretical derivation, and is challenging to estimate in high-dimensional setting where the number of series $n$ is larger than the time dimension $T$. To tackle this issue, the original paper @Wickramasuriya2019-xq assumed a proportionality relationship between $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$, where $\hat{\boldsymbol{W}}_1$ is the covariance matrix of the in-sample 1-step-ahead base residuals (to approximate $\boldsymbol{W}_1$) and $k_h$ is a positive scaling constant (which will be cancelled out in point-forecast reconciliation). The function $g(.)$ is a covariance estimator that produces a positive-definite matrix, the main focus of this paper.
+
+The authors suggested using the shrinkage estimator with diagonal target from @Schafer2005-yw, given by:
 
 $$
-\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
-\boldsymbol{S}' \boldsymbol{W}_h^{-1} .
+\hat{\boldsymbol{W}}^{S}_{1} = \lambda_S \, \text{diag}( \hat{\boldsymbol{W}}_1 ) + (1 - \lambda_S) \hat{\boldsymbol{W}}_1 \, ,
 $$
 
-@Wickramasuriya2019-xq also showed that MinT is an algebraic generalisation of the GLS, and the OLS and WLS methods are special cases of MinT when $\boldsymbol{W}_h$ is an identity matrix $I_{n_b}$ and a diagonal matrix $\text{diag}( \boldsymbol{W}_h )$, respectively. In this paper, we place our main focus on the MinT method. -->
+where $\text{diag}( \hat{\boldsymbol{W}}_1 )$ comprises only the diagonal elements of $\hat{\boldsymbol{W}}_1$. We refer to any $\lambda_S \in [0,1]$ as the shrinkage intensity parameter, the subscript specifies the shrinkage estimator it belongs to. This approach shrinks the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal matrix, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
 
-The MinT solution hinges on a reliable, positive-definite estimate of $\boldsymbol{W}_h$, which is often not available and challenging to estimate in high-dimensional setting. The sample covariance matrix is unstable and non-positive-definite when the number of series $n$ is huge and larger than the time dimension $T$. To tackle this issue, the original paper @Wickramasuriya2019-xq assumed a proportionality relationship between $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$, where $\hat{\boldsymbol{W}}_1$ is the covariance matrix of the in-sample 1-step-ahead base residuals (to approximate $\boldsymbol{W}_1$), $k_h$ is a positive scaling constant (which will be cancelled out in point-forecast reconciliation), and $g(.)$ is a covariance estimator that produces a positive-definite matrix. They suggested using the shrinkage estimator with diagonal target from @Schafer2005-yw, given by:
-
-$$
-\hat{\boldsymbol{W}}^{S}_{1} = \lambda_D \hat{\boldsymbol{W}}_{1, D} + (1 - \lambda_D) \hat{\boldsymbol{W}}_1 \, ,
-$$
-
-where $\hat{\boldsymbol{W}}_{1, D}$ is a diagonal matrix comprising the diagonal entries $\text{diag}( \hat{\boldsymbol{W}}_1 )$. We refer to any $\lambda \in [0,1]$ as the shrinkage intensity parameter, the subscript specifies which estimator it belongs to. This approach shrinks the covariance matrix $\hat{\boldsymbol{W}}_1$ towards its diagonal matrix, meaning the off-diagonal elements are shrunk towards zero while the diagonal ones remain unchanged.
-
-@Schafer2005-yw also proposed an estimate of the optimal shrinkage intensity parameter $\lambda_D$:
+@Schafer2005-yw also proposed an estimate of the optimal shrinkage intensity parameter $\lambda_S$:
 
 $$
-\hat{\lambda}_D = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} 
+\hat{\lambda}_S = \frac{\sum_{i \neq j} \widehat{Var}(\hat{r}_{ij})} 
 {\sum_{i \neq j} \hat{r}_{ij}^2} \, ,
 $$
 
@@ -231,7 +215,7 @@ Despite its relative simplicity and guaranteed positive definiteness, MinT with 
 
 ### Problem 1: Uniform shrinkage {.unnumbered}
 
-The shrinkage estimator shrinks all off-diagonal elements towards zeros with equal weights $\lambda_D$. We might prefer to better preserve strong signals, and largely reduce the effects of small, noisy correlations. This is especially true in high-dimensional settings, where only a few series to be truly correlated; or due to the aggregation effects, bottom-level series will correlate more strongly with their parents. The shrinkage estimator lacks this flexibility.
+The shrinkage estimator shrinks all off-diagonal elements towards zeros with equal weights $\lambda_S$. We might prefer to better preserve strong signals, and largely reduce the effects of small, noisy correlations. This is especially true in high-dimensional settings, where only a few series to be truly correlated; or due to the aggregation effects, bottom-level series will correlate more strongly with their parents. The shrinkage estimator lacks this flexibility.
 
 ### Problem 2: Latent factors {.unnumbered}
 
@@ -363,7 +347,7 @@ where $\hat{\boldsymbol{W}}_h$ is the covariance matrix of in-sample h-step-ahea
 
 ## Summary of MinT with Covariance Estimators {-}
 
-
+The covariance estimators explored in this paper are summarised in the table below. The abbreviations will be used in the following sections.
 
 | Covariance estimators used              | Abbreviation       | 
 |-----------------------------------------|--------------------|
