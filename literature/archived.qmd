@@ -1,4 +1,4 @@
-
+# Old literature review (archived)
 
 <!--
 -   **Problem Statement:**
@@ -72,7 +72,54 @@ Athanasopoulos et al. (2024) synthesise the accumulated evidence: MinT dominates
 -   Identify research gaps.
 -->
 
+# Old preliminary section
 
+<!-- 
+The *hierarchical structure* can be represented as a tree, as shown in @fig-hierarchy. The top level of the tree represents the total value of all series, while the lower levels represent the series at different levels of disaggregation. These hierarchical structures naturally form *aggregation constraints* (child levels must sum up to parents). When there are attributes of interest that are crossed, such as the Starbucks drinks sales at any aggregation level (brand-wise, national, or outlet) is also considered by kinds of drinks (e.g., coffees, refreshers), the structure is described as a grouped time series. As illustrated in @fig-grouped, the aggregation or disaggregation paths are not unique.
+
+![A 2-level hierarchical tree structure](D:/Github/Recon_Honours_Thesis/figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
+
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](D:/Github/Recon_Honours_Thesis/figs/grouped_structure.png){#fig-grouped width="90%"}
+
+For simplicity, we refer to both of these structures as hierarchical structure, we will distinguish between them if and when it is necessary. Taken together, a collection of time series organised in a hierarchy and subject to aggregation constraints is refered as *hierarchical time series*. All hierarchical time series can be represented using matrix algebra:
+
+$$
+\boldsymbol{y}_t = \boldsymbol{S} \boldsymbol{b}_t,
+$$
+
+where $\boldsymbol{S}$ is a summing matrix of order $n \times n_b$ which aggregates the bottom-level series $\boldsymbol{b}_t \in \mathbb{R}^{n_b}$ to the series at aggregation levels above. The vector $\boldsymbol{y}_t \in \mathbb{R}^n$ contains all observations at time $t$. The summing matrix $\boldsymbol{S}$ for the tree structure in @fig-hierarchy is:
+
+$$
+\boldsymbol{S} = 
+\left[
+\begin{array}{cccc}
+1 & 1 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+\multicolumn{4}{c}{\boldsymbol{I_4}}
+\end{array}
+\right].
+$$
+
+Assume we produce $h$-step-ahead base forecasts $\hat{\boldsymbol{b}}_{t+h|t}$ for the bottom-level series, obtained by any prediction methods, pre-multiplying them by $\boldsymbol{S}$ we get:
+
+$$
+\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \hat{\boldsymbol{b}}_{t+h|t} \, .
+$$ {#eq-sb}
+
+We refer to $\tilde{\boldsymbol{y}}_{t+h|t}$ as *coherent forecasts*, as they respect the aggregation constraints. We also refer to this way of obtaining coherent forecasts by summing the bottom-level forecasts as the bottom-up approach. However, generating forecasts this way is anchored only to prediction models at a single level, and will not be utilising the inherent information from other levels. This drawback applies to the top-down and middle-out approaches. For example, the bottom-level data can be very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation.
+
+Another issue with expressing reconciled methods as in @eq-sb is that it restricts the reconciliation to only single-level approaches. Thus, @Hyndman2011-jv suggested a generalised expression for all existing methods, which also provides a framework for new methods to be developed:
+
+$$
+\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_{t+h|t} \; ,
+$$ {#eq-sgy}
+
+for a suitable $n_b \times n$ matrix $\boldsymbol{G}$. $\boldsymbol{G}$ maps the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. The choice of $\boldsymbol{G}$ determines the composition of reconciled forecasts $\tilde{\boldsymbol{y}}_{t+h|t}$, and modern reconciliation methods are developed to estimate $\boldsymbol{G}$.
+
+including the OLS and WLS developed by @Hyndman2011-jv and @Hyndman2016-ic, respectively. A more detailed explanation of these methods can be found in the @sec-ols-wls Appendix. 
+
+-->
 
 # Evaluating ex- and include 2016 onwards on Tourism
 
