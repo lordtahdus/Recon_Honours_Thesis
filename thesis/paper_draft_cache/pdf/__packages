@@ -1,6 +1,5 @@
 ggplot2
 patchwork
-ReconCov
 dplyr
 tidyr
 fabletools
@@ -8,8 +7,8 @@ fable
 feasts
 tsibble
 lubridate
-stringr
-tibble
 knitr
 kableExtra
+stringr
 forcats
+ReconCov
