@@ -11,4 +11,6 @@ knitr
 kableExtra
 stringr
 forcats
+tibble
+fmsb
 ReconCov

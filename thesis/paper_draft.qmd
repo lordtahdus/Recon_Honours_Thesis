@@ -66,6 +66,8 @@ library(knitr)
 library(kableExtra)
 library(stringr)
 library(forcats)
+library(tibble)
+library(fmsb)
 
 library(ReconCov)
 
@@ -706,7 +708,7 @@ plot_uniscore <- function(score_label, title) {
     summarise(
       score = mean(score),
       base_score = mean(base_score),
-      pct_change = (base_score - score) / base_score * 100,
+      pct_change = (base_score - score) / base_score * 100, # positive indicate decrease in score
       .groups = "drop_last"
     ) %>%
     ungroup() %>%
@@ -780,18 +782,17 @@ To dissect the 95% Winkler score results, @fig-tourism-coverage-95-level breaks 
 
 ```{r}
 #| label: fig-tourism-radar
-#| fig.height: 8
-#| fig.width: 8
-#| out.width: "90%"
-#| fig-cap: "Radar plot of relative improvements in probabilistic scores (Winkler 80, Winkler 95, CRPS, Energy) over the base forecasts. The scores are scaled to a range of 0 to 100, with larger values indicating better performance. The outermost polygon represents the best possible score (100) and the innermost polygon represents the worst possible score (0). Only the top 5 models are shown."
-
+#| fig.height: 7
+#| fig.width: 7
+#| out.width: "70%"
+#| fig-cap: "Radar plot of relative improvements in probabilistic scores (Winkler score at 80% and 95% intervals, CRPS, and Energy) over the base forecasts. The scores are scaled to a range of 0 to 100, with larger values indicating better performance. The outermost polygon represents the best possible score (100) and the innermost polygon represents the worst possible score (0). Only the top 4 MinT approaches are shown (with the base model)."
 
 # a radar plot of 5 top models based on probabilistic scores (Winkler 80, 95, CRPS, Energy) scaled to 0-100 
-par(mfrow=c(1,1), mar=c(0,0,0,0))
-tourism_plots$radar
+par(mfrow=c(1,1), mar=c(1,2,1,2))
+plot_radar(tourism_uniscores, tourism_energy)
 ```
 
-The summary radar graph in @fig-tourism-radar consolidates these findings: among the selected MinT models by probabilistic criteria, *MinT-N(PC1)* (the yellow polygon) clearly leads across CRPS, W80, W95, and Energy, extending the improvements seen in the single-metric panels.
+The summary radar graph in @fig-tourism-radar consolidates these findings: among the selected MinT models by probabilistic criteria, *MinT-N(PC1)* (the yellow polygon) clearly leads across CRPS, Winkler score at 80% and 95% intervals, and Energy, extending the improvements seen in the single-metric panels. Except for the Winkler score at 95% interval, all MinT variants outperform the base forecasts.
 
 Taken together, the evidence supports the use of reconciliation for both point and probabilistic forecasts in this high-dimensional setting. For point forecasts, MinT with shrinkage is a solid default; for probabilistic forecasts, NOVELIST performs more reliably. PC adjustment with a single dominant factor consistently enhances performance in both point and probabilistic forecast and should be considered when a dominant latent factor is evident. More complex adjustments, such as multiple PCs or horizon-specific covariances, add estimation noise without clear benefits and can be omitted for parsimony.
 
