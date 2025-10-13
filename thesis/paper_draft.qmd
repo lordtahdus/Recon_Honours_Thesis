@@ -441,17 +441,17 @@ All data generation, covariance estimation, and reconciliation routines were imp
 ```{r load results}
 path_sim <- "D:/Github/Recon_Honours_Analysis/sim/thesis_sim/"
 
-sim1_1 <- readRDS("./literature/lib/S4-2-1_T50_M500.rds")
-sim1_2 <- readRDS("./literature/lib/S4-2-1_T300_M500.rds")
+sim1_1 <- readRDS("./thesis/lib/S4-2-1_T50_M500.rds")
+sim1_2 <- readRDS("./thesis/lib/S4-2-1_T300_M500.rds")
 
-sim2_1 <- readRDS("./literature/lib/S36-6-1_T50_M500.rds")
-sim2_2 <- readRDS("./literature/lib/S36-6-1_T300_M500.rds")
+sim2_1 <- readRDS("./thesis/lib/S36-6-1_T50_M500.rds")
+sim2_2 <- readRDS("./thesis/lib/S36-6-1_T300_M500.rds")
 
-sim_dense_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M200_dense.rds")
-sim_dense_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_dense.rds")
+sim_dense_50 <- readRDS("./thesis/lib/S100-10-3-1_T50_M200_dense.rds")
+sim_dense_300 <- readRDS("./thesis/lib/S100-10-3-1_T300_M200_dense.rds")
 
-sim_sparse_50 <- readRDS("./literature/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
-sim_sparse_300 <- readRDS("./literature/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
+sim_sparse_50 <- readRDS("./thesis/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
+sim_sparse_300 <- readRDS("./thesis/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
 
 sim3_1 <- sim_dense_50 # using same with next section simulation
 sim3_2 <- sim_dense_300
@@ -609,7 +609,7 @@ Additional designs (varying block sizes, aggregation paths, correlation configur
 # Forecasting Australian Domestics Tourism {#sec-empirical}
 
 ```{r}
-tourism_plots <- readRDS("D:/Github/Recon_Honours_Thesis/literature/tourism_plots.rds")
+tourism_plots <- readRDS("D:/Github/Recon_Honours_Thesis/thesis/tourism_plots.rds")
 ```
 
 Domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. A complete illustration of this geographic hierarchy appears in Appendix @sec-tourism-supplement. Intersecting this geographic hierarchy is a second dimension--travel motive--partitioning tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped system of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate. @tbl-tourism-structure depicts this structure.
