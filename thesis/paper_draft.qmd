@@ -38,19 +38,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!-- # Notation {-} -->
 
-<!-- -   Scalar $y_t$ -->
-
-<!-- -   Vector $\boldsymbol{y}_t$ -->
-
-<!-- -   Matrix $\boldsymbol{S}$ -->
-
-<!-- -   Covariance matrix of in-sample 1-step-ahead base forecast errors $\hat{\boldsymbol{W}}_1$ -->
-
-<!-- -   Its shrinkage estimator with diagonal target $\hat{\boldsymbol{W}}^{shr}_{1, D}$ -->
-
-<!-- -   Its NOVELIST estimator $\hat{\boldsymbol{W}}^{shr}_{1, thr}$ -->
 
 ```{r library}
 library(ggplot2)
@@ -89,35 +77,30 @@ A collection of time series connected via a set of linear constraints is known a
 
 # Introduction
 
-<!-- ############  Intro  ############ -->
+<!-- 
 
-<!--
-Para 1
-- Introduce hierarchical time series and its importance in various applications.
+############  Paragraphs  ############ 
+
+1. Introduce hierarchical time series and its importance in various applications.
+2. Discuss the challenges in forecasting hierarchical time series, and current methods used. Introduce MinT.
+3. Highlight the reliance of MinT on a good estimate of the covariance matrix of base forecast errors, and the problems with current estimation methods.
+4. Note the Double Shrinkage estimator paper, but still early stage.
+5. Mention advances in high-dimensional covariance estimation that can be potentially useful.
+6. State the purpose and contribution of this paper.
+
 -->
 
-In time series forecasting, aggregation occurs in a variety of settings. While a formal definition of hierarchical time series can be found in @sec-hierarchy, we can think of Starbucks sales data as an illustrative example. Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is *structured hierarchically*: the top level is the total sales across all countries, followed by national sales for each country, and then individual sales for each outlet in a city. As a result, there are over 40,000 individual outlet sales to forecast, plus additional series at higher levels of aggregation such as city and country. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level.
+In time series forecasting, aggregation occurs in a variety of settings. For example, Starbucks operates in many countries, and each country has multiple cities where they have outlets. The sales data is structured *hierarchically*: the top level is the total sales across all countries, which are the sum of sales in each country, which in turn are the sum of sales in each city, and finally the sum of sales from each outlet in the city. As a result, there are over 50,000 sales series across all *aggregation levels*, and decision makers need forecasts at each level to manage inventory and plan marketing strategies effectively. The hierarchy can be even more complex if we consider the sales of different kinds of drinks (e.g., coffees, teas, refreshers) at each aggregation level. Such hierarchical structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. 
 
-Forecasting data from such hierarchical structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. The impact of methods for forecasting hierarchical time series has not been limited to academia, with industry also showing a strong interest. Many companies and organisations have adopted these methods in practice, including Amazon, the International Monetary Fund, IBM, SAP, and more [@Athanasopoulos2024-as].
+In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data (the sum of all countries' sales does not equal the total sales). Such forecasts are called *incoherent*. First, they undermine downstream decisions that require internal consistency, and second, our forecast performance suffers. To overcome these issues, forecast reconciliation was introduced. Forecast reconciliation, a post-processing step, utilises the information from the hierarchical structure and data to adjust the initially produced base forecasts, so that the resulting forecasts are *coherent* (i.e., respecting the aggregation constraints). It first introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, @Wickramasuriya2020-uk, and others to enhance point forecast performance. Among the modern methods, the Min Trace (MinT) approach developed by @Wickramasuriya2019-xq provides good theoretical properties of minimising the total variance of the reconciled forecast errors, fast computational speed, and significant empirical improvements in many applications. It has become a standard method for forecast reconciliation, implemented in popular R and Python softwares/packages [@O-Hara-Wild2024-we; @Nixtla].
 
-<!-- ##########  Literature Review  ########## -->
+A difficulty with MinT is in estimating the covariance matrix of the base forecast errors, especially for 2-step-ahead forecasts and beyond. This is a high-dimensional covariance estimation problem, where the number of series $n$ is often larger than the time dimension $T$. @Wickramasuriya2019-xq proposed using a shrinkage estimator with diagonal target from @Schafer2005-yw to estimate the 1-step-ahead covariance matrix, which is then scaled by a constant to approximate the h-step-ahead covariance matrix. While this approach is relatively simple and guarantees positive definiteness, it has three main shortcomings. First, it uniformly shrinks all off-diagonal elements towards zeros with equal weights, lacking flexibility to effectively preserve strong signals in the data. Second, in many real-world applications, hierarchical time series data often exhibit a prominent principal components structure, which is not fully utilised. Third, the proportionality relationship between the h-step-ahead and 1-step-ahead forecast error covariance matrices might not hold in practice.
 
-<!-- - Talk about the history and evolution of forecasting hierarchical time series, starting from the early heuristic methods to the modern statistical approaches.
+The theorectical advantage of MinT might not be achieved in finite sample settings if the covariance estimate is not close enough to the true covariance matrix. Despite its importance, not many researchers have explored this issue in the current literature, except @Carrara2025-rz, who proposed a Double Shrinkage estimator for MinT. The idea is to introduce a second shrinkage target, which incorporates conditional dependence information suggested by the hierarchical structure. This paper is still in its early stage, leaving many potential gaps still not yet to explore. 
 
-  - Single level methods
-  - Optimal combination methods (OLS, WLS)
-  - MinT
-  - Bayesian, Machine learning
-  - Probabilistic methods -->
+In the current literature, there are many advancements in high-dimensional covariance estimation that can be potentially useful for MinT. Building upon the shrinkage estimator, @Huang2019-ua introduces a soft-thresholded target matrix instead of the diagonal target. Extending beyond linear shrinkage, @Ledoit2012-ga proposed a nonlinear shrinkage estimator that replaces each sample eigenvalue with a data-driven nonlinear transformation of itself, which is further developed by @Ledoit2020-xt. On the other hand, @Fan2013-jz introduced an estimator that directly preserves the latent factors structure, decomposing the covariance matrix into a low-rank component and a sparse component, and applying thresholding to the latter. There are also approaches related to thresholding, such as the adaptive thresholding estimator for sparse covariance matrices by @Cai2011-jf. The list of modern high-dimensional covariance estimators is long, presenting many opportunities to explore their potential in improving the performance of MinT.
 
-
-In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data; such forecasts are *incoherent*. This can undermine downstream decisions that require internal consistency.
-
-Traditionally, forecasting these hierarchical time series has been done using single-level methods, such as bottom-up, top-down, and middle-out approaches. Bottom-up methods involve generating forecasts for the bottom-level series and aggregating them to higher levels. Top-down methods start with forecasts for the only top-level series and disaggregate them down. Middle-out methods combine both approaches by forecasting middle-level series and then aggregating or disaggregating as needed. Despite their simplicity, these methods only anchor forecasts to a single level, implying a large loss of information on the hierarchy's inherent correlation structure. Additionally, the most disaggregated series often are very noisy or even intermittent, and the higher-level data might be smoother due to the aggregation. Furthermore, as we saw from the Starbucks example considering the sales of different kinds of drinks at each aggregation level -- formally defined as grouped structure in @sec-hierarchy -- the disaggregation becomes more complex since the disaggregation paths are not unique. Consequently, these single-level methods tend to give poor results across other levels of the hierarchy.
-
-To overcome these issues, forecast reconciliation was introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, and others to achieve coherency in point forecasts and enhance accuracy. Forecast reconciliation projects a collection of independent base forecasts into a set of coherent forecasts that respect the linear constraints defining a hierarchical or grouped time-series system.
-
-Among the modern reconciliation strategies, the Min Trace (MinT) approach developed by @Wickramasuriya2019-xq is widely used and perform significantly well under right conditions. Despite its properties, MinT relies on a good high-dimensional covariance estimator, which is positive-definite. However, not many researchers have explored this issue in the current literature, except @Carrara2025-rz, who introduced a new estimator for MinT--Double Shrinkage estimator. The current stage of this research piece is fairly early, leaving many potential gaps still not yet to explore. As a result, a study of alternative high-dimensional covariance estimators for MinT is timely and desirable.
+The purpose of this paper is to assess the forecasting performance of MinT when different covariance estimators are used. First, we show 
 
 The remainder of the paper is organised as follows. @sec-pre-theory provides the basic theoretical framework for hierarchical time series and forecasting, and Min Trace approach, introducing notations, terminologies, and motivations for alternative estimators. @sec-cov-est walks through the main covariance estimators this paper explores, and argues their strengths and weaknesses. @sec-simulation covers the simulation design and currently explores the performance of NOVELIST on MinT. @sec-empirical shows a real-world application of MinT with NOVELIST, which produces results that did not occured in the simulation settings, suggesting further inspection and analysis.
 
