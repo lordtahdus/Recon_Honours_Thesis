@@ -211,21 +211,21 @@ The proportionality relationship $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsy
 
 Additionally, while the scalar factor cancels in point reconciliation, it directly controls dispersion in probabilistic reconciliation and can lead to miscalibrated predictive distributions. However, we will not explore this issue in this paper, and leave it for future research.
 
-In the next sections, we investigate covariance estimators that address these issues. We consider a estimator that mitigate uniform shrinkage, factor-aware adjustments that preserve low-rank structure while shrinking idiosyncratic noise, and horizon-specific estimators that relax proportional scaling.
+In the next sections, we introduce alternative covariance estimators that address these limitations individually and in combination.
 
 # Covariance Estimation Approaches {#sec-cov-est}
 
 ## NOVELIST Estimator
 
-The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, introduces a way to control the target matrix's sparsity, retaining strong correlations while discarding weak, noisy effects. NOVELIST offers more flexibility than the shrinkage estimator, which is useful when we believe that only a few variables are truly correlated.
+NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, introduces a parameter to control the sparsity level in the target toward which the sample matrix is shrunk. By soft-thresholding small correlations before shrinkage, NOVELIST preserves strong signals while attenuating weak, noisy ones, addressing the uniform, non-adaptive nature of diagonal-target shrinkage.
 
-The method is based on the idea of soft-thresholding the sample covariance matrix, then performing shrinkage towards this thresholded version. This introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator is given by:
+The construction proceeds in two steps. First, apply elementwise soft-thresholding to the sample correlation matrix; second, shrink the sample correlation toward this thresholded target. Working in correlation space avoids rescaling issues and keeps diagonal entries at one. The method introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator for covariance matrix is given by:
 
 $$
 \hat{\boldsymbol{W}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{W}}_{1, \delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{W}}_1,
 $$ {#eq-novelist-cov}
 
-where $\hat{\boldsymbol{W}}_{1, \delta}$ is the thresholded version of $\hat{\boldsymbol{W}}_{1}$. By convenient setting, we can rewrite it in terms of correlation:
+where $\hat{\boldsymbol{W}}_{1, \delta}$ is the thresholded version of $\hat{\boldsymbol{W}}_{1}$. By convenient setting as discussed above, we rewrite it in terms of correlation:
 
 $$
 \hat{\boldsymbol{R}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{R}}_{1,\delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{R}}_1,
@@ -238,7 +238,7 @@ $$
 \text{max}(|\hat{r}_{1,ij}| - \delta, \; 0),
 $$ {#eq-soft-thr}
 
-where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$ using Ledoit-Wolf's lemma \[@Ledoit2003-qv\], following similar logic to @Schafer2005-yw. It can be computed as:
+where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$, following similar logic to @Schafer2005-yw. It can be computed as:
 
 <!-- - \textcolor{red}{@Huang2019-ua mentioned Ledoit-Wolf's lemma} -->
 
@@ -252,9 +252,9 @@ $$ {#eq-lambda-thr}
 
 where $\boldsymbol{1}(.)$ is the indicator function.
 
-On the other hand, the optimal threshold $\hat \delta$ does not have a closed-form solution, and is typically obtained by executing a rolling-window cross-validation procedure. The idea is to find the threshold $\delta^*$, with the corresponding $\lambda^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\delta^*, \lambda^*)$, that minimises the average out-of-sample 1-step-ahead reconciled forecast mean squared error over all windows. The formal algorithm is given in @sec-novelist_cv.
+On the other hand, the optimal threshold $\hat \delta$ does not have a closed-form solution, and is typically obtained by rolling-window cross-validation procedure. The idea is to find the threshold $\delta^*$, with the corresponding $\lambda^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\delta^*, \lambda^*)$, that minimises the average out-of-sample 1-step-ahead reconciled forecast mean squared error over all windows. The formal algorithm is given in @sec-novelist_cv.
 
-We also tested out minimising 1- to h-step-ahead overall MSE in the cross-validation procedure. Surprisingly, it returns almost the same best threshold parameter is in the 1-step-ahead case above. Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix. An additional concern is that the estimator does not guarantee to be positive definite, but we can use @Higham2002-te algorithm to compute the nearest positive definite matrix if needed.
+Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix. An additional concern is that the estimator does not guarantee to be positive definite, but we can use @Higham2002-te algorithm to compute the nearest positive definite matrix if needed.
 
 ### NOVELIST cross-validation algorithm {#sec-novelist_cv}
 
@@ -296,20 +296,25 @@ It is only required to fit the base models once on the whole training data $\{\b
 \end{algorithm}
 ```
 
+*Remark.* Minimising a multi-step-ahead forecast error metric in the cross-validation procedure oftern yields a $\hat{\delta}^*$ that is close to the 1-step-ahead case.
+
 <!-- The cross-validation algorithm for NOVELIST is available in the ReconCov package [@ReconCov]. -->
 
 ## PC-adjusted Estimator
 
-To utilise the latent factors structure for better shrinkage, the PC-adjusted method takes the latent factors directly into its construction, and is appealing when there are common drivers in the time series within the hierarchy, as we saw in the Australian tourism example. It starts by decomposing the covariance matrix $\hat{\boldsymbol{W}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{W}}^K_{1}$ (the correlation matrix after removing the first $K$ principal components). Then we can apply either shrinkage or NOVELIST estimator to $\hat{\boldsymbol{W}}^K_{1}$:
+To exploit latent common components explicitly, the PC-adjusted method takes the latent factors directly into its construction. It starts by decomposing the covariance matrix $\hat{\boldsymbol{W}}_1$ into a prominent principle components part (low-rank) and a orthogonal complement part $\hat{\boldsymbol{W}}^K_{1}$ (the correlation matrix after removing the first $K$ principal components). Then we can apply either shrinkage or NOVELIST estimator to $\hat{\boldsymbol{W}}^K_{1}$:
 
 $$
 \hat{\boldsymbol{W}}^{g, K}_{1} = \sum_{k = 1}^K \hat{\gamma}_k \hat{\boldsymbol{\xi}}_k \hat{\boldsymbol{\xi}}_k' + g(\hat{\boldsymbol{W}}^K_{1})
 $$
 
-where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. Similar to the NOVELIST estimator, its PC-adjusted variant $\hat{\boldsymbol{W}}^{N, K}_{1}$ requires a cross-validation procedure and adjustment to obtain positive definiteness.
+where $g(.)$ is either the shrinkage or NOVELIST estimator, $\hat{\gamma}_k$ and $\hat{\boldsymbol{\xi}}_k$ are the $k$-th largest eigenvalue and the corresponding eigenvector of the sample covariance matrix, respectively. The number of principal components $K$ can be selected using information criteria.
+
+Similar to the NOVELIST estimator, its PC-adjusted variant $\hat{\boldsymbol{W}}^{N, K}_{1}$ requires a cross-validation procedure to select the threshold paramter and adjustment to obtain positive definiteness.
+
 ## Scaled Variance
 
-To address the potential issue of the proportionality relationship $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$ not holding in practice, we can relax the assumption by allowing the variances to scale differently. This is done by scaling the $1$-step-ahead correlation matrix back to $h$-step-ahead covariance matrix using the h-step-ahead standard deviations. The scaled variance estimator is given by:
+To address the potential issue of the proportionality relationship $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$ not holding in practice. A simple relaxation retains the $1$-step-ahead correlation shape but allows the variances to scale differently with horizon. The scaled variance estimator is given by:
 
 $$
 \hat{\boldsymbol{W}}^{g, sv}_{h} = \boldsymbol{D}^{1/2}_h g(\hat{\boldsymbol{R}}_1) \boldsymbol{D}^{1/2}_h,
@@ -317,17 +322,19 @@ $$
 
 where $\boldsymbol{D}_h = \text{diag}(\hat{\sigma}^2_{1,h}, \ldots, \hat{\sigma}^2_{n,h})$, and $\hat{\sigma}^2_{i,h}$ is the variance of the $i$-th series' h-step-ahead base forecast errors. Similarly, $g(.)$ is either the shrinkage or NOVELIST estimator.
 
-If NOVELIST is used to produce $h$-step-ahead reconciled forecasts, the cross-validation procedure is slightly modified to evaluate the out-of-sample reconciled forecast MSE using $\hat{\boldsymbol{W}}^{N, sv}_{h}$ instead of $\hat{\boldsymbol{W}}^{N}_{1}$.
+When NOVELIST is used to produce $h$-step-ahead reconciled forecasts, the cross-validation procedure is slightly modified to evaluate the out-of-sample reconciled forecast MSE using $\hat{\boldsymbol{W}}^{N, sv}_{h}$ instead of $\hat{\boldsymbol{W}}^{N}_{1}$.
 
 ## Constructing from h-step-ahead Residuals
 
-Another alternative is not to rely on the assumption of proportionality at all, and directly estimate the covariance matrix from the h-step-ahead base forecast errors:
+Another alternative is to directly estimate the covariance matrix from the h-step-ahead base forecast errors, without assuming any proportionality relationship:
 
 $$
 \hat{\boldsymbol{W}}^{g}_{h} = g(\hat{\boldsymbol{W}}_h)
 $$
 
-where $\hat{\boldsymbol{W}}_h$ is the covariance matrix of in-sample h-step-ahead base forecast residuals, and $g(.)$ is either the shrinkage or NOVELIST estimator. Similar to the scaled variance approach, if NOVELIST is used, the cross-validation procedure is modified to compute $\hat{\boldsymbol{W}}^{N}_{h}$ and evaluate the out-of-sample reconciled forecast MSE using it.
+where $\hat{\boldsymbol{W}}_h$ is the covariance matrix of in-sample h-step-ahead base forecast residuals, and $g(.)$ is either the shrinkage or NOVELIST estimator.
+
+Similar to the scaled variance approach, if NOVELIST is used, the cross-validation procedure is modified to compute $\hat{\boldsymbol{W}}^{N}_{h}$ and evaluate the out-of-sample reconciled forecast MSE using it.
 
 ## Summary of MinT with Covariance Estimators {-}
 
@@ -391,7 +398,6 @@ $$
 $$
 
 where $\boldsymbol{x}^*_m$ is a randomly selected sample from $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\} \setminus \{\boldsymbol{x}_m\}$. In our experiments, we use $M=10000$ samples to approximate the ES.
-
 
 
 # Simulation {#sec-simulation}
@@ -770,7 +776,7 @@ plot_radar(tourism_uniscores, tourism_energy)
 
 The summary radar graph in @fig-tourism-radar consolidates these findings: among the selected MinT models by probabilistic criteria, *MinT-N(PC1)* (the yellow polygon) clearly leads across CRPS, Winkler score at 80% and 95% intervals, and Energy, extending the improvements seen in the single-metric panels. Except for the Winkler score at 95% interval, all MinT variants outperform the base forecasts.
 
-Taken together, the evidence supports the use of reconciliation for both point and probabilistic forecasts in this high-dimensional setting. For point forecasts, MinT with shrinkage is a solid default; for probabilistic forecasts, NOVELIST performs more reliably. PC adjustment with a single dominant factor consistently enhances performance in both point and probabilistic forecast and should be considered when a dominant latent factor is evident. More complex adjustments, such as multiple PCs or horizon-specific covariances, add estimation noise without clear benefits and can be omitted for parsimony.
+<!-- Taken together, the evidence supports the use of reconciliation for both point and probabilistic forecasts in this high-dimensional setting. For point forecasts, MinT with shrinkage is a solid default; for probabilistic forecasts, NOVELIST performs more reliably. PC adjustment with a single dominant factor consistently enhances performance in both point and probabilistic forecast and should be considered when a dominant latent factor is evident. More complex adjustments, such as multiple PCs or horizon-specific covariances, add estimation noise without clear benefits and can be omitted for parsimony. -->
 
 <!-- # Supplementary -->
 
