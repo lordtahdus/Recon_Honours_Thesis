@@ -64,7 +64,7 @@ R_files <- list.files("D:/Github/Recon_Honours_Thesis/R", pattern = "*.R", full.
 invisible(lapply(R_files, source))
 
 
-path <- "D:/Github/Recon_Honours_Thesis"
+path <- here::here()
 knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
@@ -428,28 +428,31 @@ For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ an
 
 
 ```{r load results}
-path_sim <- "D:/Github/Recon_Honours_Analysis/sim/thesis_sim/"
+path_lib <- paste0(path, "/thesis/lib/")
 
-sim1_1 <- readRDS("./thesis/lib/S4-2-1_T50_M500.rds")
-sim1_2 <- readRDS("./thesis/lib/S4-2-1_T300_M500.rds")
+sim1_1 <- readRDS(paste0(path_lib, "S4-2-1_T50_M500.rds"))
+sim1_2 <- readRDS(paste0(path_lib, "S4-2-1_T300_M500.rds"))
 
-sim2_1 <- readRDS("./thesis/lib/S36-6-1_T50_M500.rds")
-sim2_2 <- readRDS("./thesis/lib/S36-6-1_T300_M500.rds")
+sim2_1 <- readRDS(paste0(path_lib, "S36-6-1_T50_M500.rds"))
+sim2_2 <- readRDS(paste0(path_lib, "S36-6-1_T300_M500.rds"))
 
-sim_dense_50 <- readRDS("./thesis/lib/S100-10-3-1_T50_M200_dense.rds")
-sim_dense_300 <- readRDS("./thesis/lib/S100-10-3-1_T300_M200_dense.rds")
+sim_dense_50 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M200_dense.rds"))
+sim_dense_300 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_dense.rds"))
 
-sim_sparse_50 <- readRDS("./thesis/lib/S100-10-3-1_T50_M500_sparsebwgrp.rds")
-sim_sparse_300 <- readRDS("./thesis/lib/S100-10-3-1_T300_M200_sparsebwgrp.rds")
+sim_sparse_50 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M500_sparsebwgrp.rds"))
+sim_sparse_300 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_sparsebwgrp.rds"))
 
 sim3_1 <- sim_dense_50 # using same with next section simulation
 sim3_2 <- sim_dense_300
+
+sim_MSE <- readRDS(paste0(path_lib, "sim_MSE.rds"))
+sim_prob <- readRDS(paste0(path_lib, "sim_prob.rds"))
 ```
 
 
 ## Exploring Effects of Hierarchy's Size
 
-In our first set of experiments, we examine how MinT combined with the different estimators perform as the hierarchy expands. We generate synthetic data from the same VAR(1) framework described earlier, but vary the number of bottom‐level series, $n_b$, across two structures: a small structure with six groups of six bottom series ($n_b = 6$x$6 = 36$), and a much larger configuration with two groups of fifty ($n_b = 2$x$50 = 100$).
+In our main experiments, we examine how MinT combined with the different estimators perform as the hierarchy expands. We generate synthetic data from the same VAR(1) framework described earlier, but vary the number of bottom‐level series, $n_b$, across two structures: a small structure with six groups of six bottom series ($n_b = 6$x$6 = 36$), and a much larger configuration with two groups of fifty ($n_b = 2$x$50 = 100$).
 
 In the 36‐series case, each block of six forms a level‐1 aggregate, and those six aggregates form the national total. The 100‐series design employs a deliberately intricate aggregation path to stress‐test reconciliation methods. We first sum the one hundred bottom series into ten intermediate series by grouping them in contiguous blocks of ten. These ten series are then organised into three level-2 aggregates—four, three, and four series, respectively—before finally summing to a single top node. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. The aggregation paths for both structures are illustrated in @fig-sim-structures.
 
@@ -514,7 +517,54 @@ p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 ```
 
 
-![Percentage relative improvement in MSE of reconciled forecasts over the base forecasts in the 6 by 6 case (top row) and the 2 by 50 case (bottom row), T=50 (left column) and T=300 (right column), for 1- to 4-step-ahead forecasts. The positive (negative) entries indicate a decrease (increase) in MSE relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_MSE.png){#fig-sim-results-1}
+<!-- ![Percentage relative improvement in MSE of reconciled forecasts over the base forecasts in the 6 by 6 case (top row) and the 2 by 50 case (bottom row), T=50 (left column) and T=300 (right column), for 1- to 4-step-ahead forecasts. The positive (negative) entries indicate a decrease (increase) in MSE relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_MSE.png){#fig-sim-results-1} -->
+
+```{r}
+#| label: fig-sim-results-1
+#| fig-cap: "Percentage relative improvement in MSE of reconciled forecasts over the base forecasts in the 6 by 6 case (top row) and the 2 by 50 case (bottom row), T=50 (left column) and T=300 (right column), for 1- to 4-step-ahead forecasts. The positive (negative) entries indicate a decrease (increase) in MSE relative to base. The negative improvements beyond 6% are capped."
+#| fig.height: 10
+#| fig.width: 10
+#| out.width: "100%"
+
+MSE_plots <- list()
+
+cap <- -6
+for (sim_name in names(sim_MSE)) {
+
+  plot_df <- sim_MSE[[sim_name]] |> 
+    # cap pct_change upper 10%
+    mutate(
+      capped = pct_change <= cap,
+      capped_pct_change = pmax(pct_change, cap)
+    ) |> 
+    mutate(shape_lab = ifelse(shape_lab %in% c("PC1","PC2"), shape_lab, ""))
+  p <- plot_df |>
+    ggplot(aes(
+      x = h, y = capped_pct_change,
+      color = family, shape = shape_lab, linetype = variant_type
+    )) +
+      geom_line(linewidth = 0.8) +
+      geom_point(alpha = 0.85, size = 2.6, na.rm = TRUE) +
+      recon_scales +
+      # # label actual values for capped points
+      # geom_text(
+      #   data = subset(plot_df, pct_change <= cap),
+      #   aes(label = round(pct_change, 1)),
+      #   vjust = -0.5, color = "black", size = 3
+      # ) +
+      theme_minimal() +
+      labs(x = "Forecast Horizon", y = "% improvements")
+  MSE_plots[[sim_name]] <- p
+}
+
+MSE_plots[[1]] + labs(title = "6 Groups of 6", subtitle = "T=50") +
+  MSE_plots[[2]] + labs(subtitle = "T=300") +
+  MSE_plots[[3]] + labs(title = "2 Groups of 50", subtitle = "T=50") +
+  MSE_plots[[4]] + labs(subtitle = "T=300") +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "bottom", legend.direction = "vertical", legend.title.position = "left")
+```
+
 
 Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across two structures and time series lengths. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) are in purple. The concrete lines represent the vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residuals versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
 
@@ -524,7 +574,45 @@ The first key observation is that methods with shrinkage slightly outperform tho
 
 When looking into each MCMC replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}$ being selected in the cross-validation step, resulting in a diagonal shrinkage target.
 
-![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-results-2}
+<!-- ![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-results-2} -->
+
+```{r}
+#| label: fig-sim-results-2
+#| fig-cap: "Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base."
+#| fig.height: 10
+#| fig.width: 10
+#| out.width: "100%"
+
+energy_plots <- list()
+
+for (sim_name in names(sim_prob)) {
+
+  p <- sim_prob[[sim_name]] |>
+    filter(rule == "Energy") |>
+    filter(model_label != "Base") |>
+    ggplot(aes(x = model_label, y = pct_change_avg, fill = family, alpha=pc_k)) +
+      geom_col(color = "black") +
+      scale_alpha_manual(values = c("0" = 1, "1" = 0.7, "2" = 0.4), guide = "none") +
+      recon_fill_scale +
+      labs(x = "Model", y = "% improvements") +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 20, hjust = 0.5)
+      )
+
+  energy_plots[[sim_name]] <- p
+}
+
+energy_plots[[1]] + labs(title = "6 Groups of 6", subtitle = "T=50") +
+  energy_plots[[2]] + labs(subtitle = "T=300") +
+  energy_plots[[3]] + labs(title = "2 Groups of 50", subtitle = "T=50") +
+  energy_plots[[4]] + labs(subtitle = "T=300") +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "bottom", legend.title = element_blank())
+
+
+```
+
 
 Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. Figure @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are insignificant, except for the 6 by 6 case with 50 observations, where shrinkage has a slight edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and h-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
 
