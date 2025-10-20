@@ -340,6 +340,8 @@ Similar to the scaled variance approach, if NOVELIST is used, the cross-validati
 
 The covariance estimators explored in this paper are summarised in the table below. The abbreviations will be used in the following sections.
 
+Table: Summary of covariance estimators for MinT reconciliation {#tbl-cov}
+
 | Covariance estimators used              | Abbreviation       | 
 |-----------------------------------------|--------------------|
 | Shrinkage                               | MinT-S             |
@@ -350,6 +352,7 @@ The covariance estimators explored in this paper are summarised in the table bel
 | Scaled Variance NOVELIST                | MinT-N(sv)         |
 | Constructed from h-step-ahead Shrinkage | MinT-S(hcov)       |
 | Constructed from h-step-ahead NOVELIST  | MinT-N(hcov)       |
+
 
 # Evaluation of Point and Probabilistic Forecasts {#sec-scores}
 
@@ -410,21 +413,21 @@ $$
 \boldsymbol{b}_t = \boldsymbol{A} \boldsymbol{b}_{t-1} + \boldsymbol{\epsilon}_t,
 $$
 
-where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_m)$, with each $\boldsymbol{A}_i$ being a $n_{b,i} \times n_{b,i}$ matrix. The block diagonal structure ensures that the time series are grouped into $m$ groups, with each group having its own autoregressive coefficients. This aim to simulate the interdependencies between the time series within each group, where reconciliation will be expected to better performed than the usual base forecasts.
+where $\boldsymbol{A}$ is a $n_b \times n_b$ block diagonal matrix of autoregressive coefficients $\boldsymbol{A} = diag(\boldsymbol{A}_1, \ldots, \boldsymbol{A}_M)$, with each $\boldsymbol{A}_m$ being a $n_{b,m} \times n_{b,m}$ matrix. The block diagonal structure ensures that the time series are grouped into $M$ groups (blocks), with each group having its own autoregressive coefficients. This aims to simulate the interdependencies between the time series within each group, where reconciliation will be expected to better capture these compared to independent base forecasts.
 
-The model is added with a Gaussian innovation process $\boldsymbol{\epsilon}_t$, with covariance matrix $\boldsymbol{\Sigma}$. The covariance matrix $\boldsymbol{\Sigma}$ is generated specifically using the Algorithm 1 in @Hardin2013-wu:
+$\boldsymbol{\epsilon}_t$ is a Gaussian innovation process, with covariance matrix $\boldsymbol{\Sigma}$. The covariance matrix $\boldsymbol{\Sigma}$ is generated specifically using the Algorithm 1 in @Hardin2013-wu:
 
-1.  A compound symmetric correlation matrix is used for each block of size $n_{b,i}$ in $\boldsymbol{A}_i$, where the entries $\rho_i$ for each block $i$ are sampled from a uniform distribution between 0 and 1. They are baseline correlations within group.
+1.  A compound symmetric correlation matrix is used for each block of size $n_{b,m}$ in $\boldsymbol{A}_m$, where the correlation entries $\rho_j$ for each block $m$ are sampled from a uniform distribution between 0 and 1. They are within group baseline correlations.
 
-2.  A constant correlation, which is smaller than $\text{min} \{\rho_1, \rho_2, \dots, \rho_m \}$, is imposed on the entries between different blocks. It serves as baseline correlations between group.
+2.  A constant correlation, which is smaller than $\text{min} \{\rho_1, \rho_2, \dots, \rho_M \}$, is imposed on the entries between different blocks. It serves as between group baseline correlations.
 
-3.  The entry-wise random noise is added on top of the entire correlation matrix.
+3.  We select a constant $\varepsilon$ such that $0 \le \varepsilon < 1 - \text{max} \{\rho_1, \rho_2, \dots, \rho_M \}$ to control the noise intensity. We then generate $n_b$ unit vectors $\boldsymbol{u}_1, \dots, \boldsymbol{u}_{n_b}$ and obtain a entry-wise noise element as $\varepsilon \boldsymbol{u}_i' \boldsymbol{u}_j$ for the $i,j$-th entry. These entry-wise noise elements are added on top of the baseline correlation matrix (except the diagonal entries), creating a noisy positive correlation matrix $\boldsymbol{R}^+$.
 
-4.  The covariance matrix $\boldsymbol{\Sigma}$ is then constructed by uniform sampling of standard deviations, in a range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
+4.  The covariance matrix $\boldsymbol{\Sigma}^+$ is then constructed by $\boldsymbol{\Sigma}^+ = \boldsymbol{D} \boldsymbol{R}^+ \boldsymbol{D}$, where $\boldsymbol{D} = diag(\sigma_1, \dots, \sigma_{n_b})$ is a diagonal matrix of standard deviations. Each $\sigma_i$ is uniformly sampled from the range of $[\sqrt{2}, \sqrt{6}]$, for all $n_b$ series.
 
-We will randomly flip the signs of the covariance elements, which will create a more realistic structure in the innovation process. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$, yielding $\boldsymbol{\Sigma}^* = \boldsymbol{V} \boldsymbol{\Sigma} \boldsymbol{V}$.
+These steps result in a positive covariance matrix $\boldsymbol{\Sigma}^+$ where all the elements are positive. To allow a mixture of positive and negative covariance, we randomly flip the signs of them but need to maintain the positive definiteness. This can be done by pre- and post-multiplying $\boldsymbol{\Sigma}$ by a random diagonal matrix $\boldsymbol{V}$ with diagonal entries sampled from $\{-1, 1\}$ with equal probability. The final covariance matrix is given by $\boldsymbol{\Sigma} = \boldsymbol{V} \boldsymbol{\Sigma}^+ \boldsymbol{V}$.
 
-For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ and $T=304$, reserving the final four observations as an out-of-sample test set. In each Monte Carlo replication ($M=500$), we fit univariate ARIMA models (base models) to the training observations using an automatic AICc minimization algorithm from @Hyndman2008-rf, implemented in the *fabletools* package [@O-Hara-Wild2024-we], generating incoherent 1–4-step base forecasts. We then reconcile these forecasts under different methods, and evaluate their point and probabilistic forecast accuracy on the test set.
+For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ ("short") and $T=304$ ("long"), reserving the final four observations as an out-of-sample test set. We perform 500 Monte Carlo replications for each configuration. In each replication, we fit univariate ARIMA models to the training observations using the automatic AICc minimization algorithm of @Hyndman2008-rf, implemented in the *fabletools* package [@O-Hara-Wild2024-we], generating 1–4-step base forecasts. We then reconcile the base forecasts using different reconciliation methods, and evaluate their point and probabilistic forecast accuracy on the test set.
 
 
 ```{r load results}
@@ -452,9 +455,9 @@ sim_prob <- readRDS(paste0(path_lib, "sim_prob.rds"))
 
 ## Exploring Effects of Hierarchy's Size
 
-In our main experiments, we examine how MinT combined with the different estimators perform as the hierarchy expands. We generate synthetic data from the same VAR(1) framework described earlier, but vary the number of bottom‐level series, $n_b$, across two structures: a small structure with six groups of six bottom series ($n_b = 6$x$6 = 36$), and a much larger configuration with two groups of fifty ($n_b = 2$x$50 = 100$).
+In our main experiments, we examine how MinT combined with the different estimators perform as the hierarchy expands. We generate synthetic data from the VAR(1) framework described earlier, varying the number of bottom‐level series, $n_b$, across two structures: a "small" structure with six groups of six bottom-level series ($n_b = 6$x$6 = 36$), and a "large" configuration with two groups of fifty bottom-level series ($n_b = 2$x$50 = 100$).
 
-In the 36‐series case, each block of six forms a level‐1 aggregate, and those six aggregates form the national total. The 100‐series design employs a deliberately intricate aggregation path to stress‐test reconciliation methods. We first sum the one hundred bottom series into ten intermediate series by grouping them in contiguous blocks of ten. These ten series are then organised into three level-2 aggregates—four, three, and four series, respectively—before finally summing to a single top node. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. The aggregation paths for both structures are illustrated in @fig-sim-structures.
+In the 36‐series case, each block of six forms a level‐1 aggregate, and those six aggregates form the total. The 100‐series design employs a deliberately intricate aggregation path to stress‐test reconciliation methods. We first sum the one hundred bottom series into ten intermediate series by grouping them in contiguous blocks of ten. These ten series are then organised into three level-2 aggregates—four, three, and four series, respectively—before finally summing to a single top node. This asymmetric hierarchy creates overlapping correlation patterns: some level‐2 series share bottom‐level groups, while others draw from both, emulating practical scenarios such as regional sales aggregations that span multiple product categories or overlapping territories. The aggregation paths for both structures are illustrated in @fig-sim-structures.
 
 ![Aggregation structures used in the simulation experiments: 6 groups of 6 (left) and 2 groups of 50 (right)](D:/Github/Recon_Honours_Thesis/figs/sim_structures.png){#fig-sim-structures}
 
@@ -566,13 +569,13 @@ MSE_plots[[1]] + labs(title = "6 Groups of 6", subtitle = "T=50") +
 ```
 
 
-Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across two structures and time series lengths. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) are in purple. The concrete lines represent the vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residuals versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
+Figure @fig-sim-results-1 illustrates the relative improvements in mean squared error (MSE) of reconciled forecasts over the incoherent base forecasts, across the two structures (small and large) and time series lengths (short and long). MinT with shrinkage (*MinT-S*) and its variants (as defined in @tbl-cov) are colored in mint green, while MinT with NOVELIST (*MinT-N*) and its variants (as defined in same table) are in purple. The solid lines represent vanilla *MinT-S* and *MinT-N*; the dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and the dotted or dashed-dotted lines indicate the scaled variance and h-step-ahead residual versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
 
-The first key observation is that methods with shrinkage slightly outperform those with NOVELIST across all scenarios, despite the differences being small. Second, the PC-adjusted variants (using one and two principal components) do not yield improvements over the vanilla versions. This is expected since the synthetic data generating process does not simulate from strong latent factors. Lastly, the scaled variance and h-step-ahead residuals approaches do not enhance performance as the forecast horizon increases, suggesting that the proportionality assumption may not be severely violated in this VAR(1) setup. 
+The first key observation is that methods with shrinkage slightly outperform those with NOVELIST across all scenarios, although the differences are small. Second, the PC-adjusted variants (using one and two principal components) do not yield improvements over the vanilla versions. This is expected since the synthetic data generating process does not simulate from strong latent factors. Lastly, the scaled variance and h-step-ahead residual approaches do not enhance performance as the forecast horizon increases, suggesting that the proportionality assumption may not be severely violated in this VAR(1) setup. 
 
 <!-- Lastly, as the hierarchy expands from 36 to 100 series, forecasts from NOVELIST methods become worse relative to base forecasts when we move to $2$-step-ahead and beyond.  -->
 
-When looking into each MCMC replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}$ being selected in the cross-validation step, resulting in a diagonal shrinkage target.
+When looking into each Monte Carlo replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}$ being selected in the cross-validation step, resulting in a diagonal shrinkage target.
 
 <!-- ![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-results-2} -->
 
@@ -614,14 +617,14 @@ energy_plots[[1]] + labs(title = "6 Groups of 6", subtitle = "T=50") +
 ```
 
 
-Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. Figure @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are insignificant, except for the 6 by 6 case with 50 observations, where shrinkage has a slight edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and h-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
+Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are small, except for the 6 by 6 case with 50 observations, where shrinkage has a pronounced edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and h-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
 
 Other scoring rules, such as the Winkler score and CRPS, yield similar conclusions.
 
 
 ## Other Data Generating Processes
 
-In attempts to differentiate the performance of NOVELIST from the shrinkage estimator, we also simulate from a sparse covariance matrix for a 2 groups of 50 scenario, as illustrated in @fig-Sigma-2x50. The sparse covariance matrix is obtained by randomly choosing 40% of the bottom series and setting their correlations with all other series to zero, resulting in a grid-like sparse structure. The VAR(1) coefficient matrix remains the same as in the dense case. The idea is to allow NOVELIST to exploit the sparsity in the covariance structure, since it can control the sparsity of the shrinkage target via the thresholding parameter $\delta$. However, no profound insights can be drawn from the results.
+In attempts to differentiate the performance of NOVELIST from the shrinkage estimator, we also simulate from a sparse covariance matrix for the previous section's 2 groups of 50 bottom series setting, as illustrated in @fig-Sigma-2x50. The sparse covariance matrix is obtained by randomly choosing 40% of the bottom series and setting their correlations with all other series to zero, resulting in a grid-like sparse structure. The VAR(1) coefficient matrix remains the same as in the dense case. The idea is to allow NOVELIST to exploit the sparsity in the covariance structure, since it can control the sparsity of the shrinkage target via the thresholding parameter $\delta$. However, no profound insights can be drawn from the results.
 
 ```{r}
 #| label: fig-Sigma-2x50
@@ -639,7 +642,7 @@ sim_sparse_50$Sigma |>
 
 Additional designs (varying block sizes, grouped structure, aggregation paths, correlation configurations) also failed to separate NOVELIST from Shrinkage. Their nearly identical performance under these synthetic scenarios suggests that our current simulation may not unveil the full advantages of the thresholding estimators. Nevertheless, we have not explored settings where PC variants or using h-step-ahead residuals approaches would have an edge.
 
-These findings motivates our turn to empirical data in the next section, where latent structural features, regime shifts, and noisy, intermittent series will reveal performance differences. 
+These findings motivates our turn to empirical data in the next section, where latent structural features, regime shifts, and noisy, intermittent series may possibly reveal performance differences. 
 
 # Forecasting Australian Domestics Tourism {#sec-empirical}
 
