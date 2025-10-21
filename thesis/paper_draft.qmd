@@ -6,6 +6,8 @@ author:
   - George Athanasopoulos (supv.)
 format: 
   pdf:
+    fontsize: 11pt
+    linestretch: 1.15
     include-in-header:
       text: |
         <!-- \usepackage{amsmath} -->
@@ -69,12 +71,16 @@ knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
 
+\vspace{2cm}
+
 # Abstract {.unnumbered}
 
 <!-- [This is pasted from the Project Description]{style="color:red;"} -->
 
 A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these series without respecting the hierarchical nature of the data can lead to incoherent forecasts across aggregation levels and, in practice, reduced accuracy. Forecast reconciliation corrects this by adjusting base forecasts to satisfy such constraints. Among modern reconciliation methods, Minimum Trace (MinT) is widely used, however, it requires a good estimate of the forecast error covariance matrix. The current practice is to use the linear shrinkage towards a diagonal target. Furthermore, the covariance estimate is based on 1-step-ahead residuals, then proportionally scale it to approximate the h-step-ahead covariance matrix. This leaves a question of whether this method is appropriate for all real-world applications. We study the shortcomings of current practice and propose alternative covariance estimators, including the NOVELIST estimator (shrinkage towards a soft-thresholded target), PC-adjusted shrinkage (which utilises latent factor structures), and horizon-specific estimators that relax proportional scaling. We evaluate MinT using these covariance estimates for both point and probabilistic reconciliation, and demonstrate their effectiveness and improvements over the shrinkage estimator in a complex, large-hierarchy dataset.
 
+
+\pagebreak
 
 # Introduction
 
@@ -854,7 +860,7 @@ p_c95_lvl <- tourism_coverage95 |>
          title = "Empirical coverage of 95% prediction intervals by level") +
     geom_hline(yintercept = 0.95, linetype = "dashed", color = "black") + # draw line for coverage
     facet_wrap(~ level, ncol=2, scales = "free_y") +
-    recon_fill_scale +
+    recon_fill_scale_w_base +
     theme_minimal() +
     # rotate the x axis labels
     theme(axis.text.x = element_text(angle = 20, hjust = 0.5))
@@ -917,11 +923,11 @@ The summary radar graph in @fig-tourism-radar consolidates these findings. Among
   - h-step-ahead probabilistic forecast evaluation.
 -->
 
-This paper aims to address the limitations of the current Minimum Trace reconciliation method, a method that has garnered significant attention in both academic and practical forecasting contexts. We propose the NOVELIST estimator to address the lack of flexibility in the uniform shrinkage target of the traditional shrinkage estimator. Additionally, we introduce PC-adjusted variants of shrinkage and NOVELIST to take into account dominant latent factors, as well as multi-step covariance variants that relax the proportionality assumption.
+This paper tackles a central bottleneck in Minimum Trace (MinT) reconciliation: obtaining reliable, positive-definite estimates of the base-forecast error covariance. The original practice, following @Wickramasuriya2019-xq, estimates the one-step covariance via diagonal-target shrinkage and obtains multi-step horizons by proportional scaling. We identified three limitations of this approach--uniform shrinkage, lack of factor awareness, and horizon-invariant dependence--and proposed alternatives that address them individually and in combination. Specifically, we adopt NOVELIST to introduce a more flexible shrinkage target; develop PC-adjusted variants of shrinkage and NOVELIST to preserve dominant latent components in the data; and consider multi-step covariance constructions that relax proportional scaling assumption.
 
-Empirical results on Australian domestic tourism data reveal several insights. For point forecasts, shrinkage (and its PC-adjusted version) remains a robust default choice, while NOVELIST demonstrates improved performance for probabilistic forecasts. Adjusting for a single dominant principal component consistently enhances performance across both point and probabilistic forecasts, suggesting its utility when such latent structures are present. More complex adjustments, such as incorporating multiple principal components or horizon-specific covariances, tend to introduce additional estimation noise without notable benefits.
+Empirical evidence from Australian domestic tourism yields several insights. For point reconciliation, shrinkage (and its PC-adjusted version) remains a robust default choice, while NOVELIST demonstrates improved performance for probabilistic forecasts. Across both settings, adjusting for a single dominant principal component consistently enhances performance, indicating its utility when such latent structures are present. More complex adjustments, such as incorporating multiple principal components or horizon-specific covariances, tend to introduce additional idiosyncratic noise without notable benefits.
 
-However, several limitations and avenues for future research remain. More intricate simulation studies are necessary to further highlight the differences between shrinkage and NOVELIST, particularly in scenarios involving factor models. The current implementation does not standardise data for PC-variant methods, which may lead to higher-level series largely influencing the principal components. Future work could also explore alternative methods that leverage cross-series information or eigenvalue/eigenvector structures. Additionally, understanding why MinT with shrinkage underperforms in the Winkler 95% score, especially at higher aggregation levels, needs further investigation. Finally, evaluating h-step-ahead probabilistic forecasts remains an open area for further research.
+Several limitations and directions for future work remain. First, more intricate simulation designs are needed to further highlight the differences between shrinkage and NOVELIST, particularly under explicit factor models and varying sparsity/noise levels. Second, our current PC-adjusted implementations do not standardise series prior to factor extraction, which may lead to higher-level series largely influencing the principal components. Third, we can explore alternative methods that leverage cross-series information or eigenvalue/eigenvector structures. Fourth, the observed inferior performance of MinT with shrinkage under the Winkler 95% score at higher aggregation levels needs detailed investigation. Finally, evaluating genuinely $h$-step probabilistic reconciliation remains an open avenue, including how to best regularise multi-step covariances given limited effective samples.
 
 All data generation, covariance estimation, and reconciliation routines were implemented in the ReconCov R package and is available under an open‐source license on GitHub [@ReconCov].
 

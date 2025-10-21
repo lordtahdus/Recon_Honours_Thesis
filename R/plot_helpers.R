@@ -135,6 +135,14 @@ recon_scales <- list(
 
 recon_fill_scale <- scale_fill_manual(
   name   = "Family",
+  limits = c("OLS","MinT-S","MinT-N"),
+  breaks = c("OLS","MinT-S","MinT-N"),
+  values = c("OLS"="#d1d400", "MinT-S"="#00c086", "MinT-N"="#9500c2"),
+  drop   = FALSE
+)
+
+recon_fill_scale_w_base <- scale_fill_manual(
+  name   = "Family",
   limits = c("Base", "OLS","MinT-S","MinT-N"),
   breaks = c("Base", "OLS","MinT-S","MinT-N"),
   values = c("Base" = "#7A7A7A", "OLS"="#d1d400", "MinT-S"="#00c086", "MinT-N"="#9500c2"),
