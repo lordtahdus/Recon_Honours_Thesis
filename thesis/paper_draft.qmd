@@ -435,20 +435,11 @@ For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ ("
 ```{r load results}
 path_lib <- paste0(path, "/thesis/lib/")
 
-sim1_1 <- readRDS(paste0(path_lib, "S4-2-1_T50_M500.rds"))
-sim1_2 <- readRDS(paste0(path_lib, "S4-2-1_T300_M500.rds"))
-
 sim2_1 <- readRDS(paste0(path_lib, "S36-6-1_T50_M500.rds"))
 sim2_2 <- readRDS(paste0(path_lib, "S36-6-1_T300_M500.rds"))
 
-sim_dense_50 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M200_dense.rds"))
-sim_dense_300 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_dense.rds"))
-
-sim_sparse_50 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M500_sparsebwgrp.rds"))
-sim_sparse_300 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_sparsebwgrp.rds"))
-
-sim3_1 <- sim_dense_50 # using same with next section simulation
-sim3_2 <- sim_dense_300
+sim3_1 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M200_dense.rds"))
+sim3_2 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_dense.rds"))
 
 sim_MSE <- readRDS(paste0(path_lib, "sim_MSE.rds"))
 sim_prob <- readRDS(paste0(path_lib, "sim_prob.rds"))
@@ -465,39 +456,6 @@ In the 36‐series case, each block of six forms a level‐1 aggregate, and thos
 
 The VAR(1) and correlation configurations for the 6 by 6 case and 2 by 50 case are illustrated in @fig-settings-6x6 and @fig-settings-2x50, respectively. The block diagonal structure of the VAR(1) coefficient matrices $\boldsymbol{A}$ reflects the grouping of series, and the correlation matrices- show higher correlations among series within the same group.
 
-```{r generate plots for A and Sigma}
-MSE1_1 <- transform_sim_MSE(sim1_1$MSE, F) |> 
-  filter(.model != "ols")
-MSE1_2 <- transform_sim_MSE(sim1_2$MSE, F) |> 
-  filter(.model != "ols")
-
-MSE2_1 <- transform_sim_MSE(sim2_1$MSE, F) |> 
-  filter(! .model %in% c("mint_n_hstep", "ols"))
-MSE2_2 <- transform_sim_MSE(sim2_2$MSE, F) |> 
-  filter(! .model %in% c("mint_n_hstep", "ols"))
-
-MSE3_1 <- transform_sim_MSE(sim3_1$MSE, F)
-MSE3_2 <- transform_sim_MSE(sim3_2$MSE, F) |> 
-  filter(.model != "ols")
-
-p1_A <- plot_heatmap(sim1_1$A, T) + 
-  ggtitle("2x2 VAR(1) Coefficients Matrix")
-
-p1_Sigma <- plot_heatmap(cov2cor(sim1_1$Sigma), T) + 
-  ggtitle("2x2 Correlation Matrix of Innovation process")
-
-p2_A <- plot_heatmap(sim2_1$A) +
-  ggtitle("VAR(1) Coefficients Matrix") + theme_void()
-
-p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
-  ggtitle("Correlation Matrix of Innovation process") + theme_void()
-
-p3_A <- plot_heatmap(sim3_1$A) +
-  ggtitle("VAR(1) Coefficients Matrix")
-
-p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
-  ggtitle("Correlation Matrix of Innovation process")
-```
 
 ```{r settings 6x6}
 #| label: fig-settings-6x6
@@ -506,6 +464,12 @@ p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
 #| fig.width: 7
 #| out.width: "75%"
 #| fig.align: "center"
+
+p2_A <- plot_heatmap(sim2_1$A) +
+  ggtitle("VAR(1) Coefficients Matrix") + theme_void()
+
+p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
+  ggtitle("Correlation Matrix of Innovation process") + theme_void()
 
 p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
@@ -517,6 +481,12 @@ p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 #| fig.width: 8
 #| out.width: "100%"
 #| fig.align: "center"
+
+p3_A <- plot_heatmap(sim3_1$A) +
+  ggtitle("VAR(1) Coefficients Matrix")
+
+p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
+  ggtitle("Correlation Matrix of Innovation process")
 
 p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 ```
@@ -636,8 +606,8 @@ In attempts to differentiate the performance of NOVELIST from the shrinkage esti
 #| out.width: "80%"
 #| fig.align: "center"
 
-sim_sparse_50 <- readRDS(paste0(path, "/thesis/lib/params_S100_10_3_1_sparse46.rds"))
-sim_sparse_50$Sigma |>
+sim_params_sparse <- readRDS(paste0(path, "/thesis/lib/params_S100_10_3_1_sparse46.rds"))
+sim_params_sparse$Sigma |>
   cov2cor() |> 
   plot_heatmap(T)
 ```
