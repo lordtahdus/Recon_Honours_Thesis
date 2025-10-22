@@ -49,13 +49,13 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!-- Write cover page my own -->
+<!-- COVER PAGE -->
 
 ::: {=latex}
 \begin{titlepage}
 
 \begin{center}
-\includegraphics[height=2cm,keepaspectratio]{D:/Github/Recon_Honours_Thesis/assets/monash-logo.png}
+\includegraphics[height=2cm,keepaspectratio]{D:/Github/Recon_Honours_Thesis/figs/monash-logo.png}
 \end{center}
 
 \centering
@@ -99,10 +99,11 @@ Department of Econometrics and Business Statistics\par}
 
 
 ```{r library}
-library(ggplot2)
-library(patchwork)
 library(dplyr)
 library(tidyr)
+library(tibble)
+library(ggplot2)
+library(patchwork)
 library(fable)
 library(fabletools)
 library(feasts)
@@ -112,7 +113,6 @@ library(knitr)
 library(kableExtra)
 library(stringr)
 library(forcats)
-library(tibble)
 library(fmsb)
 
 library(ReconCov)
@@ -121,10 +121,9 @@ library(ReconCov)
 R_files <- list.files("D:/Github/Recon_Honours_Thesis/R", pattern = "*.R", full.names = TRUE)
 invisible(lapply(R_files, source))
 
-
 path <- here::here()
+path_lib <- paste0(path, "/lib/") # lib folder (sim, empi results)
 knitr::opts_knit$set(root.dir = path)
-# setwd(path)
 ```
 
 
@@ -132,9 +131,7 @@ knitr::opts_knit$set(root.dir = path)
 
 # Abstract {.unnumbered}
 
-<!-- [This is pasted from the Project Description]{style="color:red;"} -->
-
-A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these series without respecting the hierarchical nature of the data can lead to incoherent forecasts across aggregation levels and, in practice, reduced accuracy. Forecast reconciliation corrects this by adjusting base forecasts to satisfy such constraints. Among modern reconciliation methods, Minimum Trace (MinT) is widely used, however, it requires a good estimate of the forecast error covariance matrix. The current practice is to use the linear shrinkage towards a diagonal target. Furthermore, the covariance estimate is based on 1-step-ahead residuals, then proportionally scale it to approximate the h-step-ahead covariance matrix. This leaves a question of whether this method is appropriate for all real-world applications. We study the shortcomings of current practice and propose alternative covariance estimators, including the NOVELIST estimator (shrinkage towards a soft-thresholded target), PC-adjusted shrinkage (which utilises latent factor structures), and horizon-specific estimators that relax proportional scaling. We evaluate MinT using these covariance estimates for both point and probabilistic reconciliation, and demonstrate their effectiveness and improvements over the shrinkage estimator in a complex, large-hierarchy dataset.
+A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these series without respecting the hierarchical nature of the data can lead to incoherent forecasts across aggregation levels and, in practice, reduced accuracy. Forecast reconciliation corrects this by adjusting base forecasts to satisfy such constraints. Among modern reconciliation methods, Minimum Trace (MinT) is widely used, however, it requires a good estimate of the forecast error covariance matrix. The current practice uses linear shrinkage towards a diagonal target. Furthermore, the covariance estimate is based on 1-step-ahead residuals, then proportionally scale it to approximate h-step-ahead covariance matrix. This leaves a question of whether this method is appropriate for all real-world applications. We study the shortcomings of current practice and propose alternative covariance estimators, including the NOVELIST estimator (shrinkage towards a soft-thresholded target), PC-adjusted shrinkage (which utilises latent factor structures), and horizon-specific estimators that relax proportional scaling. We evaluate MinT using these covariance estimates for both point and probabilistic reconciliation, and demonstrate their effectiveness and improvements over the shrinkage estimator in a complex, large-hierarchy dataset.
 
 \vspace{1cm}
 
@@ -502,8 +499,6 @@ For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ ("
 
 
 ```{r load results}
-path_lib <- paste0(path, "/thesis/lib/")
-
 sim_params_S36 <- readRDS(paste0(path_lib, "params_S36_6_1.rds"))
 sim_params_S100 <- readRDS(paste0(path_lib, "params_S100_10_3_1_dense.rds"))
 sim_params_sparse <- readRDS(paste0(path_lib, "params_S100_10_3_1_sparse46.rds"))
@@ -684,9 +679,9 @@ These findings motivates our turn to empirical data in the next section, where l
 
 # Forecasting Australian Domestics Tourism {#sec-empirical}
 
-```{r}
+<!-- ```{r}
 tourism_plots <- readRDS("D:/Github/Recon_Honours_Thesis/thesis/tourism_plots.rds")
-```
+``` -->
 
 <!-- briefly talk about the important of forecasting tourism when describing the data-->
 
@@ -743,7 +738,7 @@ Note that the number of series is larger than the number of observations (560 co
 #| fig.width: 8
 #| fig-cap: "Percentage relative improvement in the mean squared error (MSE) of different reconciled forecasts over the base forecasts for the Australian domestic tourism data, for 1 to 12 steps ahead forecasts. The positive entries indicate an decrease in MSE."
 
-tourism_MSE_results <- readRDS(paste0(path, "/thesis/lib/tourism_MSE_results.rds"))
+tourism_MSE_results <- readRDS(paste0(path_lib, "tourism_MSE_results.rds"))
 
 tourism_MSE_results |> 
   mutate(shape_lab = ifelse(shape_lab %in% c("PC1","PC2"), shape_lab, "")) |>
@@ -819,8 +814,8 @@ Three patterns stand out. First, the vanilla *MinT-S* (solid green) slightly out
 
 # a 2x2 showing 4 plots showing the 1-step-ahead % improv in Winkler score 80, 95, CRPS, and Energy
 
-tourism_uniscores <- readRDS(paste0(path, "./thesis/lib/tourism_uniscore_results.rds"))
-tourism_energy <- readRDS(paste0(path, "./thesis/lib/tourism_energyscore_results.rds"))
+tourism_uniscores <- readRDS(paste0(path_lib, "tourism_uniscore_results.rds"))
+tourism_energy <- readRDS(paste0(path_lib, "tourism_energyscore_results.rds"))
 
 plot_uniscore <- function(score_label, title) {
   tourism_uniscores %>%
@@ -906,8 +901,8 @@ Turning to probabilistic forecasts (1-step-ahead forecasts), @fig-tourism-probsc
 #| fig.width: 9
 #| out.width: "100%"
 
-tourism_coverage95 <- readRDS(paste0(path, "/thesis/lib/tourism_coverage95.rds"))
-tourism_W95_level <- readRDS(paste0(path, "/thesis/lib/tourism_W95_level.rds"))
+tourism_coverage95 <- readRDS(paste0(path_lib, "tourism_coverage95.rds"))
+tourism_W95_level <- readRDS(paste0(path_lib, "tourism_W95_level.rds"))
 
 p_c95_lvl <- tourism_coverage95 |> 
   group_by(level, .model) |> 

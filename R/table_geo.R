@@ -3,6 +3,7 @@ library(tidyr)
 library(stringr)
 
 path <- here::here()
+path_lib <- paste0(path,"/lib/")
 
 # 0) Prepping --------------------------------
 # State 
@@ -97,7 +98,7 @@ region_zone_lookup <- tibble(
   Region = unlist(zone_map)
 )
 
-level_map <- readRDS(paste0(path,"/thesis/lib/level_info.rds"))$map
+level_map <- readRDS(paste0(path_lib, "level_info.rds"))$map
 # only geo
 table_geo <- level_map[str_sub(level_map, -7, -1) != "Purpose"]
 table_geo <- tibble(
