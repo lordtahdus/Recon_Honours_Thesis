@@ -1,13 +1,14 @@
 ---
-title: "Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
-author: 
-  - Vincent Su
-  - Shanika Wickramasuriya (supv.)
-  - George Athanasopoulos (supv.)
-format: 
+# title: "\\LARGE Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators"
+# author: 
+#   - \large Vincent Su
+#   - \large Shanika Wickramasuriya (supv.)
+#   - \large George Athanasopoulos (supv.)
+format:
   pdf:
     fontsize: 11pt
     linestretch: 1.15
+    classoption: [titlepage]
     include-in-header:
       text: |
         <!-- \usepackage{amsmath} -->
@@ -18,6 +19,14 @@ format:
         \usepackage{array}
         \usepackage{float}
         \usepackage{xcolor}
+
+        % Heading font sizes
+        \usepackage{sectsty}
+        \sectionfont{\fontsize{16}{30}\selectfont}
+        \subsectionfont{\fontsize{14}{16}\selectfont}
+        \subsubsectionfont{\fontsize{12}{14}\selectfont}
+
+        \usepackage{graphicx}
     mathspec: true
     number-sections: true
 # crossref:
@@ -39,6 +48,53 @@ csl: D:/Github/Recon_Honours_Thesis/apa.csl
 editor_options: 
   chunk_output_type: console
 ---
+
+<!-- Write cover page my own -->
+
+::: {=latex}
+\begin{titlepage}
+
+\begin{center}
+\includegraphics[height=2cm,keepaspectratio]{D:/Github/Recon_Honours_Thesis/assets/monash-logo.png}
+\end{center}
+
+\centering
+
+{%
+\sffamily
+
+% --- move the whole block down a bit ---
+\vspace*{1.5cm}
+
+{\huge \bfseries Enhancing Forecast Reconciliation:\\
+A Study of\\
+Alternative Covariance Estimators\par}
+
+\vspace{2cm}
+
+{\Large \bfseries Vincent Su\par}
+{\large B.Com. (Hons), Monash University\par}
+
+\vspace{1cm}
+
+{\large Supervised by\par}
+{\Large Shanika Wickramasuriya\\
+and George Athanasopoulos\par}
+
+\vfill
+
+{\large A thesis submitted for the degree of \\
+Bachelor of Commerce (Honours)\\
+at Monash University\\
+Department of Econometrics and Business Statistics\par}
+
+\vspace{0.3cm}
+
+{\large 25 October 2025\par}
+
+}%
+\end{titlepage}
+:::
 
 
 
@@ -71,8 +127,8 @@ knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
 
-\vspace{1cm}
 
+\pagebreak
 
 # Abstract {.unnumbered}
 
@@ -85,6 +141,11 @@ A collection of time series connected via a set of linear constraints is known a
 ***Keywords:** Coherent forecasts, Hierarchical time series, Covariance estimation, Australian tourism, Aggregation.*
 
 \pagebreak
+
+\clearpage
+\tableofcontents
+\clearpage
+
 
 # Introduction
 
