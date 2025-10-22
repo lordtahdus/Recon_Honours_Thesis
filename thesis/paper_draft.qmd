@@ -98,7 +98,8 @@ Department of Econometrics and Business Statistics\par}
 
 
 
-```{r library}
+```{r}
+#| label: setup
 library(dplyr)
 library(tidyr)
 library(tibble)
@@ -161,7 +162,7 @@ A collection of time series connected via a set of linear constraints is known a
 
 In time series forecasting, aggregation occurs in a variety of settings. For example, Starbucks Corporation operates in many countries, and each country has multiple cities where they have outlets. The sales data is structured *hierarchically*: the top level is the company's total sales, which disaggregates into sales by country, then sales by city within each country, and finally down to sales by individual outlet within each city. As a result, there are over 50,000 sales series across all *aggregation levels*, and decision makers need forecasts at each level to manage inventory and plan marketing strategies effectively. The hierarchy can be even more complex if we consider the sales of different categories of products (e.g., beverage, food, etc.) and the sales of product within each category (e.g., latte, cappuccino, etc.) at each aggregation level. In this case, the structure is called a *grouped structure*, where the aggregation paths are not unique. Such structures also arises in many other decision-making contexts, from supply chains [@Seaman2022-bb; @Angam2025-od] and energy planning [@Di-Modica2021-ad], to macroeconomics [@El-Gemayel2022-hx; @Li2019-vv] and tourism analysis [@Athanasopoulos2009-lp]. Stakeholders in these settings need forecasts at several aggregation levels to allocate resources and manage risk. 
 
-In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data (e.g., the sum of all countries' sales forecasts does not equal the total sales forecast). Such forecasts are called *incoherent*. Incoherence undermines downstream decisions that require internal consistency and can degrade forecasting performance. To tackle this problem, forecast reconciliation was introduced. Forecast reconciliation, a post-processing step, utilises the information from the hierarchical structure and data to adjust the initially produced base forecasts, so that the resulting *reconciled forecasts* are *coherent* (i.e., respecting the aggregation constraints). It was first introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, @Wickramasuriya2020-uk, and others that focus point forecast reconciliation. Recognising the important of probabilistic forecasting, probabilistic forecast reconciliation was studied by @Shang2017-ux, @Jeon2019-wm, and @Ben-Taieb2021-bn, and later formally defined by @Panagiotelis2023-fs. @Athanasopoulos2024-as provide a comprehensive review of the literature on forecast reconciliation.
+In practice, when forecasts are produced for all series (often called *base forecasts*), they typically violate the aggregation constraints observed in the data (e.g., the sum of all countries' sales forecasts does not equal the total sales forecast). Such forecasts are called *incoherent*. Incoherence undermines downstream decisions that require internal consistency and can degrade forecasting performance. To tackle this problem, forecast reconciliation was introduced. Forecast reconciliation, a post-processing step, utilises the information from the hierarchical structure and data to adjust the initially produced base forecasts, so that the resulting *reconciled forecasts* are *coherent* (i.e., respecting the aggregation constraints). It was first introduced by @Hyndman2011-jv, and later developed by @Van_Erven2015-nx, @Hyndman2016-ic, @Ben-Taieb2019-yx, @Wickramasuriya2019-xq, @Wickramasuriya2020-uk, and others that focus point forecast reconciliation (more accurately, reconciling the means of predictive distributions). Recognising the important of probabilistic forecasting, probabilistic forecast reconciliation was studied by @Shang2017-ux, @Jeon2019-wm, and @Ben-Taieb2021-bn, and later formally defined by @Panagiotelis2023-fs. @Athanasopoulos2024-as provide a comprehensive review of the literature on forecast reconciliation.
 
 Among the modern methods, the Min Trace (MinT) approach developed by @Wickramasuriya2019-xq is is widely used due to its strong theoretical properties for minimising total reconciled forecast error variance, computational efficiency, and robust empirical performance. MinT is later extended to probabilistic reconciliation by @Wickramasuriya2024-mb, showing that it also minimises the negative log score of the reconciled distribution under Gaussian assumptions. @Wickramasuriya2019-xq also argued that modelling spatial autocorrelations directly from the start would be challenging as in this case of a large collection of time series. Post-processing reconciliation has the advantage to implicitly model this spatial autocorrelation structure, especially true for MinT. MinT is implemented in popular R and Python software ecosystems [@O-Hara-Wild2024-we; @Nixtla].
 
@@ -177,9 +178,9 @@ The remainder of the paper is organised as follows. @sec-pre-theory sets out the
 
 # Theoretical Framework {#sec-pre-theory}
 
-## Hierarchical Time Series {#sec-hierarchy}
+## Hierarchical Time Series and Reconciliation {#sec-hierarchy}
 
-*Hierarchical time series* are multivariate time series $\boldsymbol{y}_t \in \mathbb{R}^n$ organised in a structure where the series adheres to some constraints. @fig-hierarchy illustrates a simple two-level hierarchical structure with one top-level series $y_{Tot,t}$, disaggregating down to two level-1 series $(y_{A,t}, y_{B,t})'$, and to four bottom-level series $(y_{A1,t}, y_{A2,t}, y_{B1,t}, y_{B2,t})'$. Here, the *aggregation constraints* imply that $y_{Tot,t} = y_{A,t} + y_{B,t}$, $y_{A,t} = y_{A1,t} + y_{A2,t}$, and $y_{B,t} = y_{B1,t} + y_{B2,t}$.
+*Hierarchical time series* are multivariate time series $\boldsymbol{y}_t \in \mathbb{R}^n$ organised in a structure where the series adheres to linear constraints. @fig-hierarchy illustrates a simple two-level hierarchical structure with one top-level series $y_{Tot,t}$, disaggregating down to two level-1 series $(y_{A,t}, y_{B,t})'$, and to four bottom-level series $(y_{A1,t}, y_{A2,t}, y_{B1,t}, y_{B2,t})'$. Here, the *aggregation constraints* imply that $y_{Tot,t} = y_{A,t} + y_{B,t}$, $y_{A,t} = y_{A1,t} + y_{A2,t}$, and $y_{B,t} = y_{B1,t} + y_{B2,t}$, for all time points $t$.
 
 ![A 2-level hierarchical tree structure](../figs/hierarchical_structure.png){#fig-hierarchy width="40%"}
 
@@ -200,40 +201,52 @@ $$
 0 & 0 & 1 & 1 \\
 \multicolumn{4}{c}{\boldsymbol{I_4}}
 \end{array}
-\right].
+\right],
 $$
 
-The matrix $\boldsymbol{S}$ encodes the aggregation constraints implied by the structure. Hence, the columns of $\boldsymbol{S}$ span a linear subspace. Any observation $\boldsymbol{y}_t$ that lies inside this subspace is called *coherent*, while those outside are *incoherent*. We refer to the subspace spanned by $\boldsymbol{S}$ as the *coherent subspace* $\mathfrak{s} \in \mathbb{R}^{n_b}$.
-
-![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](../figs/grouped_structure.png){#fig-grouped width="90%"}
+where $\boldsymbol{I_4}$ is the $4 \times 4$ identity matrix. The matrix $\boldsymbol{S}$ encodes the aggregation constraints implied by the structure. Hence, the columns of $\boldsymbol{S}$ span a linear subspace. Any observation $\boldsymbol{y}_t$ that lies inside this subspace is called *coherent*, while those outside are *incoherent*. We refer to the subspace spanned by $\boldsymbol{S}$ as the *coherent subspace* $\mathfrak{s} \in \mathbb{R}^{n_b}$.
 
 This representation extends beyond hierarchical (nested) structures. When attributes of interest are crossed, such as the company sales at any aggregation level (company-wise, city-wise, or outlet-wise) is also considered by kinds of products, the structure is described as a *grouped structure*. In grouped systems, as illustrated in @fig-grouped, aggregation and disaggregation paths are not unique, but the linear constraints can still be written compactly through a summing matrix $\boldsymbol{S}$. For simplicity, we refer to both structures as hierarchical structure and distinguish between them when needed.
 
+![A 2-level grouped structure, which can be considered as the union of two hierarchical trees with common top and bottom level series](../figs/grouped_structure.png){#fig-grouped width="90%"}
+
 <!-- There are other forms of structures, such as temporal hierarchies or non-linear constraints, but they are beyond the scope of this paper.  -->
 
-In practice, when we produce forecasts for each individual series, referred to as *base forecasts* $\hat{\boldsymbol{y}}_{t+h|t}$, they generally violate the aggregation constraints, and thus are incoherent. Coherency can be restored by linearly projecting the base forecasts onto the coherent subspace $\mathfrak{s}$ using a projection matrix $\boldsymbol{P}$: $\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{P} \hat{\boldsymbol{y}}_{t+h|t}$, where $\tilde{\boldsymbol{y}}_{t+h|t}$ are the *reconciled forecasts*.
+In practice, when we produce $h$-step-ahead forecasts for each individual series, referred to as *base forecasts* $\hat{\boldsymbol{y}}_{t+h|t}$, they generally violate the aggregation constraints, and thus are incoherent. Coherency can be restored by linearly projecting the base forecasts onto the coherent subspace $\mathfrak{s}$ using a projection matrix $\boldsymbol{P}$: $\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{P} \hat{\boldsymbol{y}}_{t+h|t}$, where $\tilde{\boldsymbol{y}}_{t+h|t}$ are $h$-step-ahead *reconciled forecasts*.
 
-![Geometry of probabilistic forecast reconciliation. The base forecast distribution is projected orthogonally onto the coherent subspace (purple line), resulting in the reconciled forecast distribution (red). The projection is defined by the projection matrix $\boldsymbol{P}$. Note that this figure is schematic since most applications are high-dimensional.](../figs/geometry_orthogonal.png){#fig-geometry width="60%"}
+Many existing reconciliation methods including the OLS from @Hyndman2011-jv, WLS from @Hyndman2016-ic, and MinT from @Wickramasuriya2019-xq express the projection matrix as $\boldsymbol{P} = \boldsymbol{S} \boldsymbol{G}$, for a suitable $n_b \times n$ mapping matrix $\boldsymbol{G}$. The role of this matrix is to map the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by premultiplying with $\boldsymbol{S}$. Since the projection matrix $\boldsymbol{P}$ is idempotent, $\boldsymbol{G}$ must satisfy the condition $\boldsymbol{S} \boldsymbol{G} \boldsymbol{S} = \boldsymbol{S}$. Within this class, a broad family of mapping matrices is given by: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{M}^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{M}^{-1}$, for some positive definite matrix $\boldsymbol{M} \in \mathbb{R}^{n \times n}$ [@Gamakumara2020-ml].
 
-Many existing reconciliation methods including the OLS [@Hyndman2011-jv], WLS [@Hyndman2016-ic], and MinT [@Wickramasuriya2019-xq] express the projection matrix as $\boldsymbol{P} = \boldsymbol{S} \boldsymbol{G}$, for a suitable $n_b \times n$ mapping matrix $\boldsymbol{G}$. The idea is to map the base forecasts of all levels $\hat{\boldsymbol{y}}_{t+h|t}$ down into the bottom level, which is then aggregated to the higher levels by $\boldsymbol{S}$. Since the projection matrix $\boldsymbol{P}$ is idempotent, $\boldsymbol{G}$ must satisfy the condition $\boldsymbol{S} \boldsymbol{G} \boldsymbol{S} = \boldsymbol{S}$. Within this class, a broad family of mapping matrix is given by: $\boldsymbol{G} = (\boldsymbol{S}' \boldsymbol{M}^{-1} \boldsymbol{S})^{-1} \boldsymbol{S}' \boldsymbol{M}^{-1}$, for some positive definite matrix $\boldsymbol{M} \in \mathbb{R}^{n \times n}$ [@Gamakumara2020-ml].
+When setting $\boldsymbol{M} = \boldsymbol{I}_n$, the identity matrix, the $\boldsymbol{P}$ matrix reduces to the OLS reconciliation, which corresponds to an orthogonal projection onto $\mathfrak{s}$. For a general positive definite matrix $\boldsymbol{M}$, $\boldsymbol{P}$ is idempotent but not necessarily symmetric, resulting in an oblique projection. Thus, the choice of $\boldsymbol{M}$ determines the projection direction and, in turn, how disagreements among levels are resolved.
 
-When setting $\boldsymbol{M} = \boldsymbol{I}_n$, the identity matrix, this reduces to the OLS reconciliation, which corresponds to an orthogonal projection onto the coherent subspace (similar to @fig-geometry). A schematic illustration of this projection is depicted in @fig-geometry. Reconciliation takes the (possibly elliptical) base forecast distribution and projects it onto the coherent subspace, resulting in the reconciled forecast distribution. The choice of $\boldsymbol{M}$ determines the direction of the projection, which can yield oblique projection to deliver better-performing forecasts.
+![Geometry of probabilistic forecast reconciliation. The base forecast distribution is projected orthogonally onto the coherent subspace (purple line), resulting in the reconciled forecast distribution (red). The projection is defined by the projection matrix $\boldsymbol{P}$. Note that this figure is a schematic since most applications are high-dimensional.](../figs/geometry_orthogonal.png){#fig-geometry width="60%"}
+
+<!-- connect point to probabilistic, at some point mention we refer point forecasts as forecasts of means -->
+
+This projection view extends seamlessly from point to probabilistic forecast reconciliation. Let $\hat{\boldsymbol{Y}}_{t+h|t}$ denote the random vector representing the $h$-step-ahead base forecasts. The random reconciled forecast vector is obtained similarly via projection: $\tilde{\boldsymbol{Y}}_{t+h|t} = \boldsymbol{P} \hat{\boldsymbol{Y}}_{t+h|t}$. Consequently, point forecasts (which we refer to as means of the predictive distributions) reconcile as $\mathbb{E}(\tilde{\boldsymbol{Y}}_{t+h|t}) = \mathbb{E}(\boldsymbol{P} \hat{\boldsymbol{Y}}_{t+h|t}) = \boldsymbol{P} \hat{\boldsymbol{y}}_{t+h|t} = \tilde{\boldsymbol{y}}_{t+h|t}$, and the covariance of the predictive distribution transforms linearly as $\text{Var}(\tilde{\boldsymbol{Y}}_{t+h|t}) = \text{Var}(\boldsymbol{P} \hat{\boldsymbol{Y}}_{t+h|t}) = \boldsymbol{P} \boldsymbol{W}_h \boldsymbol{P}'$, where $\boldsymbol{W}_h = \text{Var}(\hat{\boldsymbol{Y}}_{t+h|t})$.
+
+@fig-geometry schematically illustrates this projection. Reconciliation takes the (possibly elliptical) base forecast distribution and "pushes" the entire mass linearly onto the coherent subspace, resulting in the reconciled forecast distribution. 
 
 
-## The Minimum Trace (MinT) Reconciliation
+<!-- If the base forecast distribution has mean $\mathbb{E}(\hat{\boldsymbol{Y}}_{t+h|t}) = \hat{\boldsymbol{y}}_{t+h|t}$ and covariance $\text{Var}(\hat{\boldsymbol{Y}}_{t+h|t}) = \boldsymbol{W}_h$, then the reconciled forecast distribution has mean $\mathbb{E}(\tilde{\boldsymbol{Y}}_{t+h|t}) = \mathbb{E}(\boldsymbol{P} \hat{\boldsymbol{Y}}_{t+h|t}) = \boldsymbol{P} \hat{\boldsymbol{y}}_{t+h|t} = \tilde{\boldsymbol{y}}_{t+h|t}$ and covariance $\text{Var}(\tilde{\boldsymbol{Y}}_{t+h|t}) = \text{Var}(\boldsymbol{P} \hat{\boldsymbol{Y}}_{t+h|t}) = \boldsymbol{P} \boldsymbol{W}_h \boldsymbol{P}'$. -->
 
-@Wickramasuriya2019-xq showed that by setting $\boldsymbol{M} = \boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$, the covariance matrix of the $h$-step-ahead base forecast errors $\hat{\boldsymbol{e}}_{t+h|t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h|t}$, we essentially minimise the total variance of the reconciled forecast errors across all series. Equivalently, MinT is the unique linear-unbiased reconciler that minimises the trace of $\text{Var}[y_{t+h} - \tilde{y}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}'$. This method is thus called Minimum Trace (MinT) reconciliation. The matrix $\boldsymbol{G}_h$ is thus given by:
+<!-- A schematic illustration of this projection is depicted in @fig-geometry. Reconciliation takes the (possibly elliptical) base forecast distribution and projects it onto the coherent subspace, resulting in the reconciled forecast distribution.  -->
+
+## The Minimum Trace Reconciliation
+
+@Wickramasuriya2019-xq showed that by setting $\boldsymbol{M} = \boldsymbol{W}_h = \mathbb{E}( \hat{\boldsymbol{e}}_{t+h|t} \; \hat{\boldsymbol{e}}_{t+h|t}' )$, the covariance matrix of the $h$-step-ahead base forecast errors $\hat{\boldsymbol{e}}_{t+h|t} = \boldsymbol{y}_{t+h} - \hat{\boldsymbol{y}}_{t+h|t}$, we essentially minimise the total variance of the reconciled forecast errors across all series. Equivalently, MinT is the unique linear-unbiased reconciler that minimises the trace of $\text{Var}[\boldsymbol{y}_{t+h} - \tilde{\boldsymbol{y}}_{t+h|t}] = \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}'$. This method is thus called Minimum Trace (MinT) reconciliation. The matrix $\boldsymbol{G}_h$ is thus given by:
 
 $$
 \boldsymbol{G}_h = (\boldsymbol{S}' \boldsymbol{W}_h^{-1} \boldsymbol{S})^{-1}
 \boldsymbol{S}' \boldsymbol{W}_h^{-1},
 $$
 
-provided that $\boldsymbol{W}_h$ is positive definite. Intuitively, $\boldsymbol{W}_h^{-1}$ down-weights the base forecasts of series with high uncertainty, and up-weights those with low uncertainty, when mapping to the bottom level.
+provided that $\boldsymbol{W}_h$ is positive definite. 
 
-Although originally developed for point reconciliation, @Wickramasuriya2024-mb showed that MinT extends naturally to the probabilistic setting when base predictive distributions are Gaussian. If $h$-step-ahead base forecast distribution be $\hat{\boldsymbol{y}}_{t+h|t} \sim \mathcal{N}(\hat{\boldsymbol{y}}_{t+h|t}, \boldsymbol{W}_h)$, then reconciliation gives $\tilde{\boldsymbol{y}}_{t+h|t} = \boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{y}}_{t+h|t} \sim \mathcal{N}(\tilde{\boldsymbol{y}}_{t+h|t}, \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}')$. Within the class of linear-unbiased reconcilers, MinT also minimises the negative log score (equivalently, the Gaussian log predictive score) of the reconciled distribution.
+<!-- Intuitively, $\boldsymbol{W}_h^{-1}$ down-weights the base forecasts of series with high uncertainty, and up-weights those with low uncertainty, when mapping to the bottom level. -->
 
-In this paper we adopt this Gaussian framework to compare covariance estimators for MinT in both point and probabilistic reconciliation. It is also worth to mention that the methods can be extended to non-Gaussian settings by bootstrapping [@Gamakumara2020-ml; @Panagiotelis2023-fs], which is beyond the scope of this paper.
+Although originally developed for point reconciliation, @Wickramasuriya2024-mb showed that MinT extends naturally to the probabilistic setting when base predictive distributions are Gaussian. If $h$-step-ahead base forecast distribution is $\mathcal{N}(\hat{\boldsymbol{y}}_{t+h|t}, \boldsymbol{W}_h)$, then reconciliation gives $\tilde{\boldsymbol{Y}}_{t+h|t} = \boldsymbol{S} \boldsymbol{G}_h \hat{\boldsymbol{Y}}_{t+h|t} \sim \mathcal{N}(\tilde{\boldsymbol{y}}_{t+h|t}, \boldsymbol{S} \boldsymbol{G}_h \boldsymbol{W}_h \boldsymbol{G}_h' \boldsymbol{S}')$. Within the class of linear-unbiased reconcilers, MinT also minimises the negative log score (equivalently, the Gaussian log predictive score) of the reconciled distribution.
+
+In this paper we adopt the Gaussian framework to compare the impacts of different covariance estimators for MinT in both point and probabilistic reconciliation. It is also worth to mention that the methods can be extended to non-Gaussian settings by bootstrapping [@Gamakumara2020-ml; @Panagiotelis2023-fs], which is beyond the scope of this paper.
 
 
 ## Shrinkage Estimator for MinT
@@ -498,7 +511,8 @@ These steps result in a positive covariance matrix $\boldsymbol{\Sigma}^+$ where
 For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ ("short") and $T=304$ ("long"), reserving the final four observations as an out-of-sample test set. We perform 500 Monte Carlo replications for each configuration. In each replication, we fit univariate ARIMA models to the training observations using the automatic AICc minimization algorithm of @Hyndman2008-rf, implemented in the *fabletools* package [@O-Hara-Wild2024-we], generating 1–4-step base forecasts. We then reconcile the base forecasts using different reconciliation methods, and evaluate their point and probabilistic forecast accuracy on the test set.
 
 
-```{r load results}
+```{r}
+#| label: load sim results
 sim_params_S36 <- readRDS(paste0(path_lib, "params_S36_6_1.rds"))
 sim_params_S100 <- readRDS(paste0(path_lib, "params_S100_10_3_1_dense.rds"))
 sim_params_sparse <- readRDS(paste0(path_lib, "params_S100_10_3_1_sparse46.rds"))
@@ -519,7 +533,7 @@ In the 36‐series case, each block of six forms a level‐1 aggregate, and thos
 The VAR(1) and correlation configurations for the 6 by 6 case and 2 by 50 case are illustrated in @fig-settings-6x6 and @fig-settings-2x50, respectively. The block diagonal structure of the VAR(1) coefficient matrices $\boldsymbol{A}$ reflects the grouping of series, and the correlation matrices- show higher correlations among series within the same group.
 
 
-```{r settings 6x6}
+```{r}
 #| label: fig-settings-6x6
 #| fig-cap: "The VAR(1) coefficients matrix (left) and correlation matrix of the innovation process (right) for the 6 groups of 6 structure."
 #| fig.height: 5
@@ -536,7 +550,7 @@ p36_Sigma <- plot_heatmap(cov2cor(sim_params_S36$Sigma), T) +
 p36_A + p36_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
 
-```{r settings 2x50}
+```{r}
 #| label: fig-settings-2x50
 #| fig-cap: "The VAR(1) coefficients matrix (top) and correlation matrix of the innovation process (bottom) for the 2 groups of 50 structure."
 #| fig.height: 12
