@@ -71,7 +71,8 @@ knitr::opts_knit$set(root.dir = path)
 # setwd(path)
 ```
 
-\vspace{2cm}
+\vspace{1cm}
+
 
 # Abstract {.unnumbered}
 
@@ -79,6 +80,9 @@ knitr::opts_knit$set(root.dir = path)
 
 A collection of time series connected via a set of linear constraints is known as hierarchical time series. Forecasting these series without respecting the hierarchical nature of the data can lead to incoherent forecasts across aggregation levels and, in practice, reduced accuracy. Forecast reconciliation corrects this by adjusting base forecasts to satisfy such constraints. Among modern reconciliation methods, Minimum Trace (MinT) is widely used, however, it requires a good estimate of the forecast error covariance matrix. The current practice is to use the linear shrinkage towards a diagonal target. Furthermore, the covariance estimate is based on 1-step-ahead residuals, then proportionally scale it to approximate the h-step-ahead covariance matrix. This leaves a question of whether this method is appropriate for all real-world applications. We study the shortcomings of current practice and propose alternative covariance estimators, including the NOVELIST estimator (shrinkage towards a soft-thresholded target), PC-adjusted shrinkage (which utilises latent factor structures), and horizon-specific estimators that relax proportional scaling. We evaluate MinT using these covariance estimates for both point and probabilistic reconciliation, and demonstrate their effectiveness and improvements over the shrinkage estimator in a complex, large-hierarchy dataset.
 
+\vspace{1cm}
+
+***Keywords:** Coherent forecasts, Hierarchical time series, Covariance estimation, Australian tourism, Aggregation.*
 
 \pagebreak
 
@@ -439,11 +443,9 @@ For all hierarchies in our experiments, we simulate two panel lengths, $T=54$ ("
 ```{r load results}
 path_lib <- paste0(path, "/thesis/lib/")
 
-sim2_1 <- readRDS(paste0(path_lib, "S36-6-1_T50_M500.rds"))
-sim2_2 <- readRDS(paste0(path_lib, "S36-6-1_T300_M500.rds"))
-
-sim3_1 <- readRDS(paste0(path_lib, "S100-10-3-1_T50_M200_dense.rds"))
-sim3_2 <- readRDS(paste0(path_lib, "S100-10-3-1_T300_M200_dense.rds"))
+sim_params_S36 <- readRDS(paste0(path_lib, "params_S36_6_1.rds"))
+sim_params_S100 <- readRDS(paste0(path_lib, "params_S100_10_3_1_dense.rds"))
+sim_params_sparse <- readRDS(paste0(path_lib, "params_S100_10_3_1_sparse46.rds"))
 
 sim_MSE <- readRDS(paste0(path_lib, "sim_MSE.rds"))
 sim_prob <- readRDS(paste0(path_lib, "sim_prob.rds"))
@@ -469,13 +471,13 @@ The VAR(1) and correlation configurations for the 6 by 6 case and 2 by 50 case a
 #| out.width: "75%"
 #| fig.align: "center"
 
-p2_A <- plot_heatmap(sim2_1$A) +
+p36_A <- plot_heatmap(sim_params_S36$A) +
   ggtitle("VAR(1) Coefficients Matrix") + theme_void()
 
-p2_Sigma <- plot_heatmap(cov2cor(sim2_1$Sigma), T) +
+p36_Sigma <- plot_heatmap(cov2cor(sim_params_S36$Sigma), T) +
   ggtitle("Correlation Matrix of Innovation process") + theme_void()
 
-p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
+p36_A + p36_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 ```
 
 ```{r settings 2x50}
@@ -486,13 +488,13 @@ p2_A + p2_Sigma + plot_layout(ncol = 2) & theme(legend.position = "bottom")
 #| out.width: "100%"
 #| fig.align: "center"
 
-p3_A <- plot_heatmap(sim3_1$A) +
+p100_A <- plot_heatmap(sim_params_S100$A) +
   ggtitle("VAR(1) Coefficients Matrix")
 
-p3_Sigma <- plot_heatmap(cov2cor(sim3_1$Sigma), T) +
+p100_Sigma <- plot_heatmap(cov2cor(sim_params_S100$Sigma), T) +
   ggtitle("Correlation Matrix of Innovation process")
 
-p3_A + p3_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
+p100_A + p100_Sigma + plot_layout(ncol = 1) & theme(legend.position = "right")
 ```
 
 
@@ -610,7 +612,6 @@ In attempts to differentiate the performance of NOVELIST from the shrinkage esti
 #| out.width: "80%"
 #| fig.align: "center"
 
-sim_params_sparse <- readRDS(paste0(path, "/thesis/lib/params_S100_10_3_1_sparse46.rds"))
 sim_params_sparse$Sigma |>
   cov2cor() |> 
   plot_heatmap(T)
