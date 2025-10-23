@@ -804,7 +804,7 @@ Note that the number of series is larger than the number of observations (560 co
 -->
 
 
-```{r tourism-MSE-line}
+```{r}
 #| label: fig-tourism-MSE-line
 #| fig.height: 6
 #| fig.width: 8
@@ -829,11 +829,26 @@ tourism_MSE_results |>
   scale_x_continuous(breaks = c(1:12), minor_breaks = NULL)
 ```
 
+
+<!-- @fig-tourism-MSE-line and @fig-tourism-MSE-heat show that reconciliation is beneficial for point forecasts: across horizons $h=1,2,\dots,12$, all reconciled methods improve MSE over incoherent base ARIMA on average. Among vanilla MinT variants, the shrinkage estimator (*MinT-S*) marginally outperforms NOVELIST (*MinT-N*) at most horizons, though the gap is small. Adjusting for a single dominant factor via PC decomposition tightens performance further: both *MinT-S(PC1)* and *MinT-N(PC1)* beat their unadjusted counterparts, with *MinT-N(PC1)* narrowly ahead. Adding more than one PC brings no additional benefit, likely due to injecting estimation noise from weaker components. Variants that modify the multi-step covariance, either via scaled-variance or direct $h$-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this setting. -->
+
+
+<!--
+- describe the fig
+- say models in @tbl-cov
+- encoded by color, linetype, shape similar to simulation plot
+- quickly refresh the memory of what each means
+-->
+
+@fig-tourism-MSE-line reports percentage relative improvements in MSE of reconciled forecasts over the incoherent base ARIMA forecasts, across horizons from 1 to 12 months. We evaluate ten MinT variants (as defined in @tbl-cov), similar to the simulation's @fig-sim-results-1. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) and its variants are in purple. Solid lines represent "vanilla" *MinT-S* and *MinT-N*; dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and dotted or dashed-dotted lines indicate the scaled variance and $h$-step-ahead residual versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
+
+Three patterns stand out. First, the vanilla *MinT-S* (solid green) slightly outperform *MinT-N* (solid purple) at most horizons, although the gap is small. Second, variants that alter the multi-step covariance, either via scaled variance or direct $h$-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this empirical analysis. Most importantly, incorporating a single dominant factor via PC-adjustment (dashed line with round points) delivers best performance among all methods. Both *MinT-S(PC1)* and *MinT-N(PC1)* consistently beat their unadjusted counterparts across horizons. However, adding more than one PC brings no additional benefit and can erode performance, likely due to injecting idiosyncratic noise from weaker components.
+
 ```{r}
 #| label: fig-tourism-MSE-heat
 #| fig.height: 5
 #| fig.width: 7
-#| out.width: "90%"
+#| out.width: "85%"
 #| fig-cap: "Heatmap of relative improvement in the mean squared error (MSE) of different reconciled forecasts over the base forecasts for the Australian domestic tourism data, for 1 to 12 steps ahead forecasts. The values are scaled to the range of 0 to 100 for better visualisation, with darker colors indicating greater improvement and best performance is noted by a star. This re-scaling does not affect relative rankings among methods."
 
 tourism_MSE_results |> 
@@ -859,20 +874,6 @@ tourism_MSE_results |>
     theme(legend.title = element_blank(), legend.position = "bottom") + 
     scale_x_continuous(breaks = c(1:12), minor_breaks = NULL)
 ```
-
-<!-- @fig-tourism-MSE-line and @fig-tourism-MSE-heat show that reconciliation is beneficial for point forecasts: across horizons $h=1,2,\dots,12$, all reconciled methods improve MSE over incoherent base ARIMA on average. Among vanilla MinT variants, the shrinkage estimator (*MinT-S*) marginally outperforms NOVELIST (*MinT-N*) at most horizons, though the gap is small. Adjusting for a single dominant factor via PC decomposition tightens performance further: both *MinT-S(PC1)* and *MinT-N(PC1)* beat their unadjusted counterparts, with *MinT-N(PC1)* narrowly ahead. Adding more than one PC brings no additional benefit, likely due to injecting estimation noise from weaker components. Variants that modify the multi-step covariance, either via scaled-variance or direct $h$-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this setting. -->
-
-
-<!--
-- describe the fig
-- say models in @tbl-cov
-- encoded by color, linetype, shape similar to simulation plot
-- quickly refresh the memory of what each means
--->
-
-@fig-tourism-MSE-line reports percentage relative improvements in MSE of reconciled forecasts over the incoherent base ARIMA forecasts, across horizons from 1 to 12 months. We evaluate ten MinT variants (as defined in @tbl-cov), similar to the simulation's @fig-sim-results-1. The MinT with shrinkage (*MinT-S*) and its variants are colored in mint green, while MinT with NOVELIST (*MinT-N*) and its variants are in purple. Solid lines represent "vanilla" *MinT-S* and *MinT-N*; dashed lines with dot points denote the PC-adjusted variants (e.g. *MinT-S(PC1)*, *MinT-N(PC2)*); and dotted or dashed-dotted lines indicate the scaled variance and $h$-step-ahead residual versions (e.g. *MinT-S(SV)*, *MinT-N(hcov)*).
-
-Three patterns stand out. First, the vanilla *MinT-S* (solid green) slightly outperform *MinT-N* (solid purple) at most horizons, although the gap is small. Second, variants that alter the multi-step covariance, either via scaled variance or direct $h$-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this empirical analysis. Most importantly, incorporating a single dominant factor via PC-adjustment (dashed line with round points) delivers best performance among all methods. Both *MinT-S(PC1)* and *MinT-N(PC1)* consistently beat their unadjusted counterparts across horizons. However, adding more than one PC brings no additional benefit and can erode performance, likely due to injecting idiosyncratic noise from weaker components.
 
 <!-- @fig-tourism-MSE-line shows a main difference compared to the one of simulation results. Adjusting for a single dominant factor via PC decomposition (dashed line with dot points) tightens performance further: both *MinT-S(PC1)* and *MinT-N(PC1)* beat their unadjusted counterparts. Other than that, similar patterns are observed: among vanilla MinT variants, the shrinkage estimator (*MinT-S*) slightly outperforms NOVELIST (*MinT-N*) at most horizons; adding more than one PC brings no additional benefit, likely due to injecting estimation noise from weaker components; variants that modify the multi-step covariance, either via scaled-variance or direct $h$-step residual covariances, underperform standard MinT, suggesting that extra estimation at horizon $h>1$ is not rewarded in this empirical analysis.  -->
 
@@ -1031,6 +1032,8 @@ The summary radar graph in @fig-tourism-radar consolidates these findings. Among
 <!-- Taken together, the evidence supports the use of reconciliation for both point and probabilistic forecasts in this high-dimensional setting. For point forecasts, MinT with shrinkage is a solid default; for probabilistic forecasts, NOVELIST performs more reliably. PC adjustment with a single dominant factor consistently enhances performance in both point and probabilistic forecast and should be considered when a dominant latent factor is evident. More complex adjustments, such as multiple PCs or horizon-specific covariances, add estimation noise without clear benefits and can be omitted for parsimony. -->
 
 <!-- # Supplementary -->
+
+\pagebreak
 
 # Conclusions and Future Work {#sec-conclusion}
 
