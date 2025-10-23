@@ -485,9 +485,9 @@ Table: Summary of covariance estimators for MinT reconciliation {#tbl-cov}
 
 # Evaluation of Point and Probabilistic Forecasts {#sec-scores}
 
-This section briefly introduces the scoring rules used to evaluate the point and probabilistic forecast accuracy in @sec-simulation and @sec-empirical.
+This section summarises the scoring rules used to evaluate the point and probabilistic forecast accuracy in @sec-simulation and @sec-empirical.
 
-For point forecasts, we use the mean squared error (MSE) to evaluate the accuracy of different reconciliation methods: $MSE = \frac{1}{n} \sum_{i=1}^n (y_{i, t+h} - \tilde{y}_{i,t+h|t})^2$, where $y_{i, t+h}$ is the realised value of series $i$ at time $t+h$, and $\tilde{y}_{i,t+h|t}$ is the reconciled point forecast.
+For point forecasts, we use the mean squared error to evaluate the accuracy of different reconciliation methods: $MSE = \frac{1}{n} \sum_{i=1}^n (y_{i, t+h} - \tilde{y}_{i,t+h|t})^2$, where $y_{i, t+h}$ is the realised value of series $i$ at time $t+h$, and $\tilde{y}_{i,t+h|t}$ is the reconciled point forecast.
 
 Meanwhile, to assess the quality of the probabilistic forecasts, it is common to use proper scoring rules. A scoring rule is a function $S(., .)$ taking a predictive distribution as its first argument and a realisation as its second argument, then returns a numerical score. We follow a convention that lower scores are better. A scoring rule is said to be *proper* if $\mathbb{E}_Q[S(Q, y)] \leq \mathbb{E}_Q[S(F, y)]$ for all $F$, where $F$ is a predictive distribution produced by forecasting model, $Q$ is the true distribution of the realisation $y$, and $\mathbb{E}_Q$ is the expectation with respect to $Q$. Hence, the expected score is minimised when the forecast distribution matches the true distribution.
 
@@ -499,7 +499,7 @@ $$
 WS_{\alpha}(l_i, u_i; y_i) = (u_i - l_i) + \frac{2}{\alpha} (l_i - y_i) \boldsymbol{1}(y_i < l_i) + \frac{2}{\alpha} (y_i - u_i) \boldsymbol{1}(y_i > u_i),
 $$
 
-where $y_i$ is the observed value of $i$-th series, and $\boldsymbol{1}(.)$ is the indicator function. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
+where $y_i$ is the observed value of $i$-th series. The Winkler score rewards narrow intervals that contain the observation, and penalises intervals that do not contain the observation.
 
 \textcolor{blue}{\textit{Continuous ranked probability score (CRPS).}} The CRPS is defined as the squared difference between the predictive cumulative distribution function (CDF) $F_i$ and the empirical CDF of the observation $y_i$ of series $i$:
 
@@ -513,7 +513,7 @@ $$
 CRPS(F_i, y_i) = \sigma_i \left[ z_i \left( 2 \Phi(z_i) -1 \right) + 2 \phi(z_i) - \frac{1}{\sqrt{\pi}} \right],
 $$
 
-where $z_i = \frac{y_i - \mu_i}{\sigma_i}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and probability density function (PDF) of a standard normal distribution, respectively.
+where $z_i = \frac{y_i - \mu_i}{\sigma_i}$, and $\Phi(.)$ and $\phi(.)$ are the CDF and PDF (probability density function) of a standard normal distribution, respectively.
 
 \textcolor{blue}{\textit{Energy score (ES).}} The energy score is a multivariate generalisation of the CRPS. It is defined as:
 
@@ -521,9 +521,9 @@ $$
 ES(F, \boldsymbol{y}) = \mathbb{E}_F ||\boldsymbol{X} - \boldsymbol{y}||^{\beta} - \frac{1}{2} \mathbb{E}_F ||\boldsymbol{X} - \boldsymbol{X}'||^{\beta},
 $$
 
-where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors with multivariate distribution $F$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
+where $\boldsymbol{X}$ and $\boldsymbol{X}'$ are independent random vectors having multivariate distribution $F$, $\boldsymbol{y}$ is the observed vector, $||.||$ is the Euclidean norm, and $\beta \in (0, 2]$. We set $\beta = 1$ following common convention.
 
-Since the closed-form expression of the ES may not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $P$:
+Since the closed-form expression of the ES is not available, we approximate it using Monte Carlo samples $\{\boldsymbol{x}_1, \ldots, \boldsymbol{x}_M\}$ drawn from $F$:
 
 $$
 \widehat{ES}(F, \boldsymbol{y}) = \frac{1}{M} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{y}|| - \frac{1}{2M(M-1)} \sum_{m=1}^M ||\boldsymbol{x}_m - \boldsymbol{x}^*_m||,
