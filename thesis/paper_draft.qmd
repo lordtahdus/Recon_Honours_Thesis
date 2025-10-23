@@ -683,10 +683,10 @@ The first key observation is that methods with shrinkage slightly outperform tho
 
 When looking into each Monte Carlo replication, we find that there are instances where the NOVELIST estimator collapses to the shrinkage estimator due to a large optimal threshold $\hat{\delta}$ being selected in the cross-validation step, resulting in a diagonal shrinkage target.
 
-<!-- ![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-results-2} -->
+<!-- ![Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base.](D:/Github/Recon_Honours_Thesis/figs/sim_energy.png){#fig-sim-energy} -->
 
 ```{r}
-#| label: fig-sim-results-2
+#| label: fig-sim-energy
 #| fig-cap: "Percentage relative improvement in Energy score in both hierarchies and time dimensions, for 1-step-ahead forecasts. The positive entries indicate a decrease in Energy score relative to base."
 #| fig.height: 10
 #| fig.width: 10
@@ -718,19 +718,17 @@ energy_plots[[1]] + labs(title = "6 Groups of 6", subtitle = "T=50") +
   energy_plots[[4]] + labs(subtitle = "T=300") +
   plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
   theme(legend.position = "bottom", legend.title = element_blank())
-
-
 ```
 
 
-Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. @fig-sim-results-2 presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are small, except for the 6 by 6 case with 50 observations, where shrinkage has a pronounced edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and $h$-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
+Moving on to probabilistic forecasts, we evaluate the performance of reconciliation methods using the energy score, a proper scoring rule for multivariate predictive distributions. @fig-sim-energy presents the percentage relative improvement in energy score for 1-step-ahead forecasts. Across both hierarchies and time dimensions, the MinT methods consistently outperform the base forecasts. Meanwhile, the differences among *MinT-S* and *MinT-N* variants are small, except for the 6 by 6 case with 50 observations, where shrinkage has a pronounced edge. The PC-adjusted variants again degrade performance as we add more principal components. The scaled variance and $h$-step-ahead residuals approaches are not available since we only evaluate 1-step-ahead covariance estimates.
 
-Other scoring rules, such as the Winkler score and CRPS, yield similar conclusions.
+Other scoring rules, such as the Winkler score and CRPS, yield similar conclusions. More detailed results are provided in Appendix @sec-sim-supplement.
 
 
-## Other Data Generating Processes
+## Other Data Generating Processes {#sec-sim-other}
 
-In attempts to differentiate the performance of NOVELIST from the shrinkage estimator, we also simulate from a sparse covariance matrix for the previous section's 2 groups of 50 bottom series setting, as illustrated in @fig-Sigma-2x50. The sparse covariance matrix is obtained by randomly choosing 40% of the bottom series and setting their correlations with all other series to zero, resulting in a grid-like sparse structure. The VAR(1) coefficient matrix remains the same as in the dense case. The idea is to allow NOVELIST to exploit the sparsity in the covariance structure, since it can control the sparsity of the shrinkage target via the thresholding parameter $\delta$. However, no profound insights can be drawn from the results.
+In attempts to differentiate the performance of NOVELIST from the shrinkage estimator, we also simulate from a sparse covariance matrix for the previous section's 2 groups of 50 bottom series setting, as illustrated in @fig-Sigma-2x50. The sparse covariance matrix is obtained by randomly choosing 40% of the bottom series and setting their correlations with all other series to zero, resulting in a grid-like sparse structure. The VAR(1) coefficient matrix remains the same as in the dense case. The idea is to allow NOVELIST to exploit the sparsity in the covariance structure, since it can control the sparsity of the shrinkage target via the thresholding parameter $\delta$. However, no profound insights can be drawn from the results (provided in Appendix @sec-sim-supplement).
 
 ```{r}
 #| label: fig-Sigma-2x50
@@ -759,9 +757,9 @@ tourism_plots <- readRDS("D:/Github/Recon_Honours_Thesis/thesis/tourism_plots.rd
 
 Forecasting domestic tourism flows is of great economic and policy significance, as policymakers and stakeholders rely on accurate forecasts to make informed decisions regarding resource allocation, infrastructure development, and marketing strategies. The domestic tourism flows in Australia exhibit a natural hierarchical and grouped structure, driven both by geography and by purpose of travel. At the top of this hierarchy lies the national total, which splits into the seven states and territories. Each state is further sub-divided into tourism zones, which in turn break down into 77 regions. A complete illustration of this geographic hierarchy appears in Appendix @sec-tourism-supplement. Intersecting this geographic hierarchy is a second dimension: policymakers are also interested in travel motives. This partitions tourism flows into four categories: holiday, business, visiting friends and relatives, and other. Altogether, this yields a grouped structure of 560 series, from the most disaggregated regional-purpose cells up to the full national aggregate. @tbl-tourism-structure depicts this structure.
 
-```{r summary structure tourism}
-#| tbl-cap: "Hierarchical and grouped structure of Australian domestic tourism flows"
+```{r}
 #| label: tbl-tourism-structure
+#| tbl-cap: "Hierarchical and grouped structure of Australian domestic tourism flows"
 
 num_series_geo <- c(1, 7, 27, 77)
 table_structure <- tibble(
@@ -783,6 +781,7 @@ table_structure |>
     booktabs = TRUE
   )
 ```
+
 
 We quantify tourism demand via "visitor nights", the total number of nights spent by Australians away from home. The data is collected via the National Visitor Survey, managed by Tourism Research Australia, using computer assisted telephone interviews from nearly 120,000 Australian residents aged 15 years and over [@tourism-au].
 
@@ -1059,16 +1058,142 @@ Empirical evidence from Australian domestic tourism yields several insights. For
 
 Several limitations and directions for future work remain. First, more intricate simulation designs are needed to further highlight the differences between shrinkage and NOVELIST, particularly under explicit factor models and varying sparsity/noise levels. Second, our current PC-adjusted implementations do not standardise series prior to factor extraction, which may lead to higher-level series largely influencing the principal components. Third, we can explore alternative methods that leverage cross-series information or eigenvalue/eigenvector structures. Fourth, the observed inferior performance of MinT with shrinkage under the Winkler 95% score at higher aggregation levels needs detailed investigation. Finally, evaluating genuinely $h$-step probabilistic reconciliation remains an open avenue, including how to best regularise multi-step covariances given limited effective samples.
 
-All data generation, covariance estimation, and reconciliation routines were implemented in the ReconCov R package and is available under an open‐source license on GitHub [@ReconCov].
+All data generation, covariance estimation, and reconciliation routines were implemented in the ReconCov R package and is available under an open‐source license on GitHub [@ReconCov]. Regarding reproducibility, see Appendix @sec-reproducibility.
 
 \pagebreak
 
 # Appendix {#sec-appendix}
 
+\vspace{-0.5em}
+
 ## Appendix: Simulation Supplementary {#sec-sim-supplement}
 
+\vspace{-0.5em}
 
-## Appendix: Australian Domestic Tourism Geographical Hierarchy {#sec-tourism-supplement}
+**Supplementary figures for simulation study in @sec-sim-hierarchy-size.**
+
+```{r}
+#| label: fig-appendix-sim-winkler
+#| fig-cap: "Percentage relative improvement in the Winkler score at 80% (left column) and 95% (right column) nominal coverage of different 1-step-ahead reconciled forecasts over the base forecasts for both hierarchical structures and time series lengths. The positive entries indicate a decrease in Winkler score relative to base."
+#| fig.height: 10
+#| fig.width: 8.5
+#| out.width: "83%"
+#| fig-pos: "H"
+sim_plots <- list()
+
+for (sim_name in names(sim_prob)) {
+  for (rule_name in c("W80", "W95")) {
+    p <- sim_prob[[sim_name]] |>
+      filter(rule == rule_name) |>
+      filter(model_label != "Base") |>
+      ggplot(aes(x = model_label, y = pct_change_avg, fill = family, alpha=pc_k)) +
+        geom_col(color = "black") +
+        scale_alpha_manual(values = c("0" = 1, "1" = 0.7, "2" = 0.4), guide = "none") +
+        recon_fill_scale +
+        labs(x = NULL, y = "% improvements") +
+        theme_minimal() +
+        theme(
+          axis.text.x = element_text(angle = 20, hjust = 0.5)
+        )
+    # remove x axis labels for all but last row
+    if (sim_name != "S100_T300") p <- p + theme(axis.text.x = element_blank())
+    name <- paste0(sim_name, "_", rule_name)
+    sim_plots[[name]] <- p
+  }
+}
+
+sim_plots[[1]] + labs(title = "Winkler score 80%", subtitle = "6 Groups of 6, T=50") +
+  sim_plots[[2]] + labs(title = "Winkler score 95%", subtitle = "6 Groups of 6, T=50") +
+  sim_plots[[3]] + labs(subtitle = "6 Groups of 6, T=300") +
+  sim_plots[[4]] + labs(subtitle = "6 Groups of 6, T=300") +
+  sim_plots[[5]] + labs(subtitle = "2 Groups of 50, T=50") +
+  sim_plots[[6]] + labs(subtitle = "2 Groups of 50, T=50") +
+  sim_plots[[7]] + labs(subtitle = "2 Groups of 50, T=300") +
+  sim_plots[[8]] + labs(subtitle = "2 Groups of 50, T=300") +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "right", legend.title = element_blank())
+```
+
+To complement the main simulation probabilistic forecast results (using Energy score) in @sec-sim-hierarchy-size, @fig-appendix-sim-winkler presents percentage relative improvements in Winkler scores at 80% and 95% nominal coverage for 1-step-ahead forecasts across both hierarchical structures (small and large) and time series lengths (short and long). The patterns largely mirror those observed with the Energy score in @fig-sim-energy.
+
+\vspace{3em}
+
+**Supplementary figure for simulation study with sparse covariance structure in @sec-sim-other.**
+
+```{r}
+#| label: fig-appendix-sim-sparse-MSE
+#| fig-cap: "Percentage relative improvement in MSE of 1-to-12-step reconciled forecasts for sparse covariance (of the innovation process) setting, for the large 2-groups-of-50 hierarchy and both time series lengths. The positive entries indicate a decrease in MSE."
+#| fig.height: 6
+#| fig.width: 10
+#| out.width: "100%"
+#| fig-pos: "H"
+sim_sparse_MSE <- readRDS(paste0(path_lib, "sim_sparse_MSE.rds"))
+
+sparse_MSE_plots <- list()
+
+cap <- -6
+for (sim_name in names(sim_sparse_MSE)) {
+  plot_df <- sim_sparse_MSE[[sim_name]] |> 
+    mutate(
+      capped = pct_change <= cap,
+      capped_pct_change = pmax(pct_change, cap)
+    ) |> 
+    mutate(shape_lab = ifelse(shape_lab %in% c("PC1","PC2"), shape_lab, ""))
+  p <- plot_df |>
+    ggplot(aes(
+      x = h, y = capped_pct_change,
+      color = family, shape = shape_lab, linetype = variant_type
+    )) +
+      geom_line(linewidth = 0.8) +
+      geom_point(alpha = 0.85, size = 2.6, na.rm = TRUE) +
+      recon_scales +
+      theme_minimal() +
+      labs(x = "Forecast Horizon", y = "% improvements")
+  sparse_MSE_plots[[sim_name]] <- p
+}
+
+sparse_MSE_plots[[1]] + labs(subtitle = "T=50") +
+  sparse_MSE_plots[[2]] + labs(subtitle = "T=300") +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "bottom", legend.direction = "vertical", legend.title.position = "left")
+```
+
+
+```{r}
+#| label: fig-appendix-sim-sparse-energy
+#| fig-cap: "Percentage relative improvement in Energy score of 1-step reconciled forecasts for sparse covariance (of the innovation process) setting, for the large 2-groups-of-50 hierarchy and both time series lengths. The positive entries indicate a decrease in Energy score."
+#| fig.height: 6
+#| fig.width: 10
+#| out.width: "90%"
+#| fig-pos: "H"
+sim_sparse_prob <- readRDS(paste0(path_lib, "sim_sparse_prob.rds"))
+sparse_energy_plots <- list()
+
+for (sim_name in names(sim_sparse_prob)) {
+  p <- sim_sparse_prob[[sim_name]] |>
+    filter(rule == "Energy") |>
+    filter(model_label != "Base") |>
+    ggplot(aes(x = model_label, y = pct_change_avg, fill = family, alpha=pc_k)) +
+      geom_col(color = "black") +
+      scale_alpha_manual(values = c("0" = 1, "1" = 0.7, "2" = 0.4), guide = "none") +
+      recon_fill_scale +
+      labs(x = "Model", y = "% improvements") +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 20, hjust = 0.5)
+      )
+  sparse_energy_plots[[sim_name]] <- p
+}
+
+sparse_energy_plots[[1]] + labs(subtitle = "T=50") +
+  sparse_energy_plots[[2]] + labs(subtitle = "T=300") +
+  plot_layout(ncol = 2, guides = "collect", axis_titles = "collect") & 
+  theme(legend.position = "bottom", legend.title = element_blank())
+```
+
+\vspace{1em}
+
+## Appendix: Description of Australian Geographical Hierarchy {#sec-tourism-supplement}
 
 ```{r}
 #| tbl-cap: "Geographical divisions of Australia."
@@ -1104,6 +1229,18 @@ kable(
 ) |> 
   kable_styling(latex_options = "hold_position", font_size = 8)
 ```
+
+## Appendix: Reproducibility {#sec-reproducibility}
+
+This research project has 3 Github repositories:
+
+1. **ReconCov**: The main *R package* implements the studied covariance estimators, MinT reconciliation, general data generating process functions. Refer to [@ReconCov] for installation and documentation.
+
+2. **Recon_Honours_Analysis**: This repository contains all R codes to produce the simulation studies and empirical analysis in this thesis (including scripts to run on a high-performance cluster), along with wrangling, processing, and analysing the results data. It depends on the *ReconCov* package. The access is upon request.
+
+3. **Recon_Honours_Thesis**: This repository contains the thesis manuscript in Quarto format, along with all figures and tables. The access is upon request.
+
+Please contact the author via email `Vincent.Su@monash.edu` for access to the analysis and thesis repositories.
 
 \pagebreak
 
