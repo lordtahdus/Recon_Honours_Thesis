@@ -29,14 +29,6 @@ format:
         \usepackage{graphicx}
     mathspec: true
     number-sections: true
-# crossref:
-#   custom:
-#     - kind: float
-#       key: alg
-#       reference-prefix: Algorithm
-#       caption-prefix: Algorithm
-#       # for PDF output only, tell LaTeX to use the `algorithm` env:
-#       latex-env: algorithm
 link-citations: true
 execute:
   cache: true
@@ -274,7 +266,7 @@ where $\hat{r}_{ij}$ is the $i,j$-th element of $\hat{\boldsymbol{R}}_1$, the 1-
 
 Despite its simplicity and guaranteed positive-definiteness, MinT coupled with diagonal-target shrinkage presents three important limitations.
 
-### Problem 1: Uniform shrinkage {.unnumbered}
+### Problem 1: Uniform shrinkage {#prob1 .unnumbered}
 
 Linear shrinkage shrinks all off-diagonal elements of $\hat{\boldsymbol{W}}_1$ towards zeros with equal weights $1 - \lambda_S$. The resulting penalty is global and non-adaptive: strong, genuinely systematic correlations are shrunk at the same rate as weak, noisy ones. In hierarchical and grouped systems, this can be problematic. Aggregation naturally induces stronger dependence among related nodes (for example, a region and a neighbouring region, or a region and its parent state), while many unrelated pairs exhibit near-zero correlations. A uniform penalty may over-shrink informative co-movements or under-shrink idiosyncratic noise, reducing reconciliation efficiency.
 
@@ -316,7 +308,7 @@ In the next sections, we introduce alternative covariance estimators that addres
 
 ## NOVELIST Estimator
 
-To tackle the first limitation of uniform shrinkage, we consider the NOVELIST estimator from @Huang2019-ua. The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator introduces extra parameter, the threshold $\delta$, to control the sparsity level in the target toward which the sample covariance matrix is shrunk. By soft-thresholding small correlations before shrinkage, NOVELIST preserves strong signals while attenuating weak, noisy ones, addressing the uniform, non-adaptive nature of diagonal-target shrinkage.
+To tackle the Problem [1](#prob1) of uniform shrinkage, we consider the NOVELIST estimator from @Huang2019-ua. The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator introduces extra parameter, the threshold $\delta$, to control the sparsity level in the target toward which the sample covariance matrix is shrunk. By soft-thresholding small correlations before shrinkage, NOVELIST preserves strong signals while attenuating weak, noisy ones, addressing the uniform, non-adaptive nature of diagonal-target shrinkage.
 
 The construction proceeds in two steps. First, apply elementwise soft-thresholding to the sample correlation matrix; second, shrink the sample correlation toward this thresholded target. The NOVELIST estimator for covariance matrix is given by:
 
@@ -355,12 +347,12 @@ On the other hand, the optimal threshold $\hat \delta$ does not have a closed-fo
 
 Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix. An additional concern is that the estimator is not guaranteed to be positive definite, but we can use @Higham2002-te algorithm to compute the nearest positive definite matrix if needed.
 
-```{=latex}
+<!-- ```{=latex}
 \begin{algorithm}[H]
 \caption{Cross-validation procedure}\label{alg:novelist_cv}
 \begin{algorithmic}[1]
 
-\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$\footnotemark, set of threshold candidates $\Delta$, window size $v$.
+\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$ \footnotemark, set of threshold candidates $\Delta$, window size $v$.
 
 \State $\hat{\boldsymbol{e}}_t = \boldsymbol{y}_t - \hat{\boldsymbol{y}}_t$ for $t = 1,\dots,T$
 
@@ -387,7 +379,42 @@ Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \b
 
 \end{algorithmic}
 \end{algorithm}
+``` -->
+
+```{=latex}
+\begin{algorithm}[H]
+\caption{Cross-validation procedure}\label{alg:novelist_cv}
+\begin{algorithmic}[1]
+
+\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$ \footnotemark, set of threshold candidates $\Delta$, window size $v$.
+
+\State $\hat{\boldsymbol{e}}_t = \boldsymbol{y}_t - \hat{\boldsymbol{y}}_t$ for $t = 1,\dots,T$
+
+\For{$i = v:T-1$}
+    \State $j = i - v +1$
+    \State $\hat{\boldsymbol{W}}_1 = \frac{1}{v} \sum_{t=j}^{i} \hat{\boldsymbol{e}}_{t} \hat{\boldsymbol{e}}_{t}'$
+    \State $\hat{\boldsymbol{D}} = \text{diag}(\hat{\boldsymbol{W}}_1)$
+    \State $\hat{\boldsymbol{R}}_1 = \hat{\boldsymbol{D}}^{-1/2} \hat{\boldsymbol{W}}_1 \hat{\boldsymbol{D}}^{-1/2}$
+    \For{$\delta \in \Delta$}
+        \State Compute thresholded correlation $\hat{\boldsymbol{R}}_{1,\delta}$ using Equation 2
+        \State Compute shrinkage parameter $\hat{\lambda}_{\delta}$ using Equation 3
+        \State Compute $\hat{\boldsymbol{R}}^{N}_{1,\delta}$ using Equation 1
+        \State $\hat{\boldsymbol{W}}^{N}_{1,\delta} = \hat{\boldsymbol{D}}^{1/2} \hat{\boldsymbol{R}}^{N}_{1,\delta} \hat{\boldsymbol{D}}^{1/2}$
+        \State $\boldsymbol{G} = (\boldsymbol{S}' \hat{\boldsymbol{W}}^{N^{-1}}_{1,\delta} \boldsymbol{S})^{-1} \boldsymbol{S}' \hat{\boldsymbol{W}}^{N^{-1}}_{1,\delta}$
+        \State Reconciled forecasts $\tilde{\boldsymbol{y}}_{i+1} = \boldsymbol{S} \boldsymbol{G} \hat{\boldsymbol{y}}_{i+1}$
+        \State $\tilde{\boldsymbol{e}}_{i+1, \delta} = \boldsymbol{y}_{i+1} - \tilde{\boldsymbol{y}}_{i+1}$
+    \EndFor
+\EndFor
+
+\State $\text{MSE}_{\delta} = \frac{1}{T-v} \sum_{i=v}^{T-1} (\tilde{\boldsymbol{e}}_{i+1, \delta})^2$ for each $\delta \in \Delta$
+\State $\hat{\delta} = \arg\min_{\delta \in \Delta} \text{MSE}_{\delta}$
+
+\State \textbf{Output:} Estimate of optimal threshold parameter $\hat{\delta}$
+
+\end{algorithmic}
+\end{algorithm}
 ```
+
 
 \footnotetext{It is only required to fit the base models once on the whole training data $\{\boldsymbol{y}_t\}_{t=1}^T$, and obtain the in-sample fitted values $\{\hat{\boldsymbol{y}}_t\}_{t=1}^T$.}
 
