@@ -272,13 +272,13 @@ Linear shrinkage shrinks all off-diagonal elements of $\hat{\boldsymbol{W}}_1$ t
 
 ### Problem 2: Latent factors {.unnumbered}
 
-Many real-world hierarchical data sets may exhibit a prominent low-rank (factor) structure. A clear example is the Australian domestic overnight trips [@tourism-au], where the national trips are disaggregated into states and territories, and further into regions. The tourism activities might be driven by a few common factors, such as economic conditions, fuel prices, or major events, which might be left in the forecast errors after fitting the base models. @fig-eigen illustrates the largest eigenvalues from the one-step forecast error correlation matrix $\hat{\boldsymbol{R}}_1$, typically showing a marked elbow after a handful principal components (largest eigenvalues), indicating strong latent structure. Diagonal-target shrinkage is factor-unaware: it neither preserves the low-rank common subspace nor differentially shrinks the idiosyncratic remainder, and so can be inefficient when common factors dominate.
+Many real-world hierarchical data sets may exhibit a prominent low-rank (factor) structure. A clear example is the Australian domestic overnight trips [@tourism-au], where the national trips are disaggregated into states and territories, and further into regions. The tourism activities might be driven by a few common factors, such as economic conditions, fuel prices, or major events, which might be left in the forecast errors after fitting the base models. @fig-eigen illustrates the largest eigenvalues from the one-step forecast error correlation matrix $\hat{\boldsymbol{R}}_1$, typically showing a marked elbow after a few principal components (largest eigenvalues), indicating strong latent structure. Diagonal-target shrinkage is factor-unaware: it neither preserves the low-rank common subspace nor differentially shrinks the idiosyncratic remainder, and so can be inefficient when common factors dominate.
 
 <!-- ![Scree plot of the eigenvalues of the 1-step-ahead forecast error covariance matrix from the Australian domestic tourism dataset. The point of inflection occurs around the fifth largest eigenvalue.](D:/Github/Recon_Honours_Thesis/figs/eigen_tourism.png){#fig-eigen width="70%"} -->
 
 ```{r}
 #| label: fig-eigen
-#| fig.cap: "Scree plot of the eigenvalues of the 1-step-ahead forecast error covariance matrix from the Australian domestic tourism dataset. The point of inflection occurs around the fourth largest eigenvalue."
+#| fig.cap: "Scree plot of the eigenvalues of the 1-step-ahead forecast error covariance matrix from the Australian domestic tourism dataset. The point of inflection occurs around the second largest eigenvalue."
 #| fig.width: 7
 #| fig.height: 4
 #| out.width: "70%"
@@ -286,13 +286,13 @@ tourism_resid <- readRDS(paste0(path_lib, "tourism_resid.rds"))
 
 par(mfrow = c(1,1), mar = c(4,4,1,1))
 
-(eigen(cor(tourism_resid))$values[1:20]/1e6) %>%
+(eigen(cov(tourism_resid))$values[1:20]/1e6) %>%
   plot(type = "b",
        xlab = "Component",
        ylab = "Eigenvalue ('000,000)"
   )
 # add a vertical line at 5
-abline(v = 4, col = "purple", lty = 2, lwd = 2)
+abline(v = 2, col = "purple", lty = 2, lwd = 2)
 ```
 
 
