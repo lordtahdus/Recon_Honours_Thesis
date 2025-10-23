@@ -59,8 +59,7 @@ editor_options:
 \vspace*{1.5cm}
 
 {\huge \bfseries Enhancing Forecast Reconciliation:\\
-A Study of\\
-Alternative Covariance Estimators\par}
+A Study of Alternative Covariance Estimators\par}
 
 \vspace{2cm}
 
@@ -878,7 +877,7 @@ tourism_MSE_results |>
 
 @fig-tourism-MSE-heat complements the line plot with a heatmap that standardises each method’s MSE improvement to a 0–100 scale to enhance visual discrimination across horizons. Darker shades indicate larger improvements. The heatmap highlights the pattern from the line plot: *MinT-N(PC1)* and *MinT-S(PC1)* exhibit the highest concentration of dark cells and are repeatedly marked as the best method across horizons (star markers). Overall, the results underscores the consistent gains from PC adjustment and highlights the diminishing returns from more complex covariance treatments (lighter cells for scaled variance and $h$-step residuals).
 
-```{r tourism-probscores}
+```{r}
 #| label: fig-tourism-probscores
 #| fig.height: 10
 #| fig.width: 10
