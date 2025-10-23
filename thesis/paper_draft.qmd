@@ -316,15 +316,15 @@ In the next sections, we introduce alternative covariance estimators that addres
 
 ## NOVELIST Estimator
 
-NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator, proposed by @Huang2019-ua, introduces a parameter to control the sparsity level in the target toward which the sample matrix is shrunk. By soft-thresholding small correlations before shrinkage, NOVELIST preserves strong signals while attenuating weak, noisy ones, addressing the uniform, non-adaptive nature of diagonal-target shrinkage.
+To tackle the first limitation of uniform shrinkage, we consider the NOVELIST estimator from @Huang2019-ua. The NOVELIST (NOVEL Integration of the Sample and Thresholded Covariance) estimator introduces extra parameter, the threshold $\delta$, to control the sparsity level in the target toward which the sample covariance matrix is shrunk. By soft-thresholding small correlations before shrinkage, NOVELIST preserves strong signals while attenuating weak, noisy ones, addressing the uniform, non-adaptive nature of diagonal-target shrinkage.
 
-The construction proceeds in two steps. First, apply elementwise soft-thresholding to the sample correlation matrix; second, shrink the sample correlation toward this thresholded target. Working in correlation space avoids rescaling issues and keeps diagonal entries at one. The method introduces an extra parameter, the threshold $\delta$, which is used to control the amount of soft-thresholding. The NOVELIST estimator for covariance matrix is given by:
+The construction proceeds in two steps. First, apply elementwise soft-thresholding to the sample correlation matrix; second, shrink the sample correlation toward this thresholded target. The NOVELIST estimator for covariance matrix is given by:
 
 $$
 \hat{\boldsymbol{W}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{W}}_{1, \delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{W}}_1,
 $$
 
-where $\hat{\boldsymbol{W}}_{1, \delta}$ is the thresholded version of $\hat{\boldsymbol{W}}_{1}$. By convenient setting as discussed above, we rewrite it in terms of correlation:
+where $\hat{\boldsymbol{W}}_{1, \delta}$ is the thresholded covariance matrix of $\hat{\boldsymbol{W}}_{1}$. As working with correlations avoids rescaling issues and keeps diagonal entries at one, we rewrite it in terms of correlations:
 
 $$
 \hat{\boldsymbol{R}}^{N}_{1} = \lambda_{\delta} \hat{\boldsymbol{R}}_{1,\delta} + (1 - \lambda_{\delta}) \hat{\boldsymbol{R}}_1,
@@ -337,7 +337,7 @@ $$
 \text{max}(|\hat{r}_{1,ij}| - \delta, \; 0),
 $$ {#eq-soft-thr}
 
-where $\delta \in [0,1]$ is the threshold parameter. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$, following similar logic to @Schafer2005-yw. It can be computed as:
+where $\delta \in [0,1]$. For a given threshold $\delta$, @Huang2019-ua derived an analytical expression for the optimal shrinkage intensity parameter $\lambda(\delta)$, following similar logic to @Schafer2005-yw. It can be computed as:
 
 <!-- - \textcolor{red}{@Huang2019-ua mentioned Ledoit-Wolf's lemma} -->
 
@@ -351,20 +351,16 @@ $$ {#eq-lambda-thr}
 
 where $\boldsymbol{1}(.)$ is the indicator function.
 
-On the other hand, the optimal threshold $\hat \delta$ does not have a closed-form solution, and is typically obtained by rolling-window cross-validation procedure. The idea is to find the threshold $\delta^*$, with the corresponding $\lambda^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\delta^*, \lambda^*)$, that minimises the average out-of-sample 1-step-ahead reconciled forecast mean squared error over all windows. The formal algorithm is given in @sec-novelist_cv.
+On the other hand, the optimal threshold $\hat \delta$ does not have a closed-form solution, and is obtained by rolling-window cross-validation procedure. The idea is to find the threshold $\delta^*$, with the corresponding $\lambda^*$ and $\hat{\boldsymbol{R}}^{N}_{1}(\delta^*, \lambda^*)$, that minimises the average out-of-sample 1-step-ahead mean squared reconciled forecast errors over all windows. The formal algorithm is given in Algorithm \ref{alg:novelist_cv}.
 
-Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix. An additional concern is that the estimator does not guarantee to be positive definite, but we can use @Higham2002-te algorithm to compute the nearest positive definite matrix if needed.
-
-### NOVELIST cross-validation algorithm {#sec-novelist_cv}
-
-It is only required to fit the base models once on the whole training data $\{\boldsymbol{y}_t\}_{t=1}^T$, and obtain the in-sample fitted values $\{\hat{\boldsymbol{y}}_t\}_{t=1}^T$.
+Note that when $\delta \in \bigl[ \text{max}_{i \neq j}|\hat{r}_{1,ij}|, \; 1 \bigr]$, the NOVELIST estimator collapses to the shrinkage estimator, and when $\delta = 0$, it becomes the sample covariance matrix. An additional concern is that the estimator is not guaranteed to be positive definite, but we can use @Higham2002-te algorithm to compute the nearest positive definite matrix if needed.
 
 ```{=latex}
 \begin{algorithm}[H]
-\caption{Cross-validation procedure}
+\caption{Cross-validation procedure}\label{alg:novelist_cv}
 \begin{algorithmic}[1]
 
-\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$, set of threshold candidates $\Delta$, window size $v$.
+\State \textbf{Input:} Observations and fitted values $\boldsymbol{y}_t, \hat{\boldsymbol{y}}_t \in \mathbb{R}^n$ for $t = 1,\dots,T$\footnotemark, set of threshold candidates $\Delta$, window size $v$.
 
 \State $\hat{\boldsymbol{e}}_t = \boldsymbol{y}_t - \hat{\boldsymbol{y}}_t$ for $t = 1,\dots,T$
 
@@ -393,9 +389,14 @@ It is only required to fit the base models once on the whole training data $\{\b
 \end{algorithm}
 ```
 
+\footnotetext{It is only required to fit the base models once on the whole training data $\{\boldsymbol{y}_t\}_{t=1}^T$, and obtain the in-sample fitted values $\{\hat{\boldsymbol{y}}_t\}_{t=1}^T$.}
+
+\vspace{-1em}
+
 *Remark.* Minimising a multi-step-ahead forecast error metric in the cross-validation procedure oftern yields a $\hat{\delta}$ that is close to the 1-step-ahead case.
 
 <!-- The cross-validation algorithm for NOVELIST is available in the ReconCov package [@ReconCov]. -->
+
 
 ## PC-adjusted Estimator
 
@@ -752,7 +753,7 @@ The data are monthly time series spanning from January 1998 to December 2016, re
 
 ![Rolling-window cross-validation scheme for evaluating forecasting performance in Australia tourism data](D:/Github/Recon_Honours_Thesis/figs/tourism_cv.png){#fig-tourism-cv width="50%"}
 
-To assess forecasting performance between models, we adopt a rolling-window cross-validation scheme. Beginning with the first 120 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm by minimising AICc from @Hyndman2008-rf, implemented in the *fabletools* package [@O-Hara-Wild2024-we]. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models, and then reconciled using multiple approaches. To estimate the NOVELIST and its variants, we implement an extra cross-validation prodecure within this training window, as described in @sec-novelist_cv. We then roll the training window forward by one month and refit all models, re-estimate reconciliation variants, and produce another batch of 1- to 12-step-ahead forecasts, repeating until the training set reaches December 2015. In total, this results in 97 out-of-sample windows. The entire procedure is illustrated in @fig-tourism-cv.
+To assess forecasting performance between models, we adopt a rolling-window cross-validation scheme. Beginning with the first 120 monthly observations (January 1998-December 2005) as the initial training set, we obtain the best-fitted ARIMA model for each of the 560 series via the automatic algorithm by minimising AICc from @Hyndman2008-rf, implemented in the *fabletools* package [@O-Hara-Wild2024-we]. The 1- to 12-step-ahead base forecasts are then generated by these ARIMA models, and then reconciled using multiple approaches. To estimate the NOVELIST and its variants, we implement an extra cross-validation prodecure within this training window, as described in Algorithm \ref{alg:novelist_cv}. We then roll the training window forward by one month and refit all models, re-estimate reconciliation variants, and produce another batch of 1- to 12-step-ahead forecasts, repeating until the training set reaches December 2015. In total, this results in 97 out-of-sample windows. The entire procedure is illustrated in @fig-tourism-cv.
 
 
 <!-- 
