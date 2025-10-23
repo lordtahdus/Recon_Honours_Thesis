@@ -444,12 +444,11 @@ Similar to the NOVELIST estimator, its PC-adjusted variant $\hat{\boldsymbol{W}}
 To address the potential issue of Problem [3](#prob3) of proportionality relationship $\hat{\boldsymbol{W}}^g_h = k_h g( \hat{\boldsymbol{W}}_1 )$ not holding in practice. A simple relaxation retains the $1$-step-ahead correlation structure but allows the variances to scale differently with horizon. The scaled variance estimator is given by:
 
 $$
-\hat{\boldsymbol{W}}^{g, sv}_{h} = \boldsymbol{D}^{1/2}_h \hat{\boldsymbol{R}}^g_1 \boldsymbol{D}^{1/2}_h, \quad
-
-\hat{\boldsymbol{R}}^g_1 = D^{-1/2}_1 \, g(\hat{\boldsymbol{W}}_1) \, D^{-1/2}_1,
+\hat{\boldsymbol{W}}^{g, sv}_{h} = \boldsymbol{D}^{1/2}_h \hat{\boldsymbol{R}}^{g}_1 \boldsymbol{D}^{1/2}_h, \quad
+\hat{\boldsymbol{R}}^{g}_1 = D^{-1/2}_1 \, g(\hat{\boldsymbol{W}}_1) \, D^{-1/2}_1,
 $$
 
-where $\boldsymbol{D}_h$ is a diagonal matrix comprising $\hat{\sigma}^2_{1,h} , \ldots, \hat{\sigma}^2_{n,h}$ on its diagonal, and $\hat{\sigma}^2_{i,h}$ is $h$-step-ahead base forecast error variance of the $i$-th series. $\hat{\boldsymbol{R}}^g_1$ is the estimated one-step correlation matrix using either shrinkage or NOVELIST estimator.
+where $\boldsymbol{D}_h$ is a diagonal matrix comprising $\hat{\sigma}^2_{1,h} , \ldots, \hat{\sigma}^2_{n,h}$ on its diagonal, and $\hat{\sigma}^2_{i,h}$ is $h$-step-ahead base forecast error variance of the $i$-th series. $\hat{\boldsymbol{R}}^{g}_1$ is the estimated one-step correlation matrix, obtained from either shrinkage or NOVELIST covariance estimate.
 
 When NOVELIST is used to produce $h$-step-ahead reconciled forecasts, the cross-validation procedure is modified to evaluate the out-of-sample $h$-step-ahead reconciled forecasts for each window and estimate optimal threshold parameter (instead of evaluating $1$-step-ahead reconciled forecasts). The reconciled forecasts are obtained using MinT with $\hat{\boldsymbol{W}}^{N, sv}_{h}$. 
 
