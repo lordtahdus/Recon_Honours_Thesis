@@ -70,8 +70,8 @@ Alternative Covariance Estimators\par}
 \vspace{1cm}
 
 {\large Supervised by\par}
-{\Large Shanika Wickramasuriya\\
-and George Athanasopoulos\par}
+{\Large Dr. Shanika Wickramasuriya\\
+and Prof. George Athanasopoulos\par}
 
 \vfill
 
@@ -129,6 +129,16 @@ A collection of time series connected via a set of linear constraints is known a
 \vspace{1cm}
 
 ***Keywords:** Coherent forecasts, Hierarchical time series, Covariance estimation, Australian tourism, Aggregation.*
+
+\pagebreak
+
+# Acknowledgements {-}
+
+I would like to express my sincere gratitude to my supervisors, Prof. George Athanasopoulos and Dr. Shanika Wickramasuriya, for their invaluable guidance, support, and encouragement throughout my Honours research journey. Their directions and insights have been instrumental not only in shaping this thesis but also in my personal and academic growth, letting me understand what it means to be a researcher. Despite being busy with their own work, they always made time to assist me whenever I knocked on their doors. I also thank for the laughs and light-hearted moments during our weekly meetings, which made the process enjoyable.
+
+I wish to thank Assoc. Prof. Natalia Bailey for being a wonderful Honours coordinator, always ready to help and provide constructive comments after each milestone, and for organising the Honours seminar series throughout the year. She also provided great advice when I was considering pursuing Honours initially, and I would say I made the right choice. My gratitude should also go to Prof. Jiti Gao for his advice on my decision to pursue Honours.
+
+I am grateful to my friends and peers, and to the professors and lecturers for their insightful classes throughout my Honours studies. I would also like to thank the Monash University Department of Econometrics and Business Statistics for providing a supportive and stimulating academic environment.
 
 \pagebreak
 
