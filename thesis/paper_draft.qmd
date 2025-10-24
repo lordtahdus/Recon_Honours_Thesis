@@ -1237,11 +1237,11 @@ This research project has 3 Github repositories:
 
 1. **ReconCov**: The main *R package* implements the studied covariance estimators, MinT reconciliation, general data-generating process functions. Refer to [@ReconCov] for installation and documentation.
 
-2. **Recon_Honours_Analysis**: This repository contains all R codes to produce the simulation studies and empirical analysis in this thesis (including scripts to run on a high-performance cluster), along with wrangling, processing, and analysing the results data. It depends on the *ReconCov* package. The access is upon request.
+2. **Recon_Honours_Analysis**: This repository contains all R codes to produce the simulation studies and empirical analysis in this thesis (including scripts to run on a high-performance cluster), along with wrangling, processing, and analysing the results data. It depends on the *ReconCov* package. It is available at [https://github.com/lordtahdus/Recon_Honours_Analysis](https://github.com/lordtahdus/Recon_Honours_Analysis)
 
-3. **Recon_Honours_Thesis**: This repository contains the thesis manuscript in Quarto format, along with all figures and tables. The access is upon request.
+3. **Recon_Honours_Thesis**: This repository contains the thesis manuscript in Quarto format, along with all figures and tables. The access is upon request. [https://github.com/lordtahdus/Recon_Honours_Thesis](https://github.com/lordtahdus/Recon_Honours_Thesis)
 
-Please contact the author via email `Vincent.Su@monash.edu` for access to the analysis and thesis repositories.
+Please contact the author via email `Vincent.Su@monash.edu` for specific navigation or questions regarding the code repositories.
 
 \pagebreak
 
