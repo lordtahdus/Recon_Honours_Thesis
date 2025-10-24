@@ -81,7 +81,7 @@ Department of Econometrics and Business Statistics\par}
 
 \vspace{0.3cm}
 
-{\large 25 October 2025\par}
+{\large 24 October 2025\par}
 
 }%
 \end{titlepage}
