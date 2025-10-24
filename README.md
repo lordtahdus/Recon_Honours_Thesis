@@ -13,3 +13,4 @@ Navigation:
 
 Detailed functions for simulation/empirical analysis and results processing can be found in this Github repository: [Recon_Honours_Analysis](https://github.com/lordtahdus/Recon_Honours_Analysis)
 
+R package developed for this research can be found here: [ReconCov](https://github.com/lordtahdus/ReconCov)
