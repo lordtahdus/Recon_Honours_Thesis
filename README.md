@@ -1,10 +1,15 @@
-## Alternative Covariance Estimation for MinT Reconciliation
+# Enhancing Forecast Reconciliation: A Study of Alternative Covariance Estimators
 
-*Note: Working Space for Writing Thesis*
+*Note: Working space for writing the thesis for Honours Research*
 
-For package codespace, visit [here](https://github.com/lordtahdus/ReconCov).
+The thesis PDF can be found here: [Honours_thesis_25_VincentSu.pdf](Honours_thesis_25_VincentSu.pdf)
 
 Navigation:
-- Literature folder: contains rmarkdown files for Draft paper.
-- Research Proposal folder: contains quarto for research proposal
-- Recon_Honours_Thesis quarto: will be the production of main paper
+
+- `thesis/`: Contains the Quarto file for the thesis draft, found [here](thesis/paper_draft.qmd).
+- `lib/`: Contains simulation and empirical results.
+- `figs/`: Contains PNG images used in the thesis.
+- `R/`: Contains R helper functions for plotting and data manipulation for this thesis.
+
+Detailed functions for simulation/empirical analysis and results processing can be found in this Github repository: [Recon_Honours_Analysis](https://github.com/lordtahdus/Recon_Honours_Analysis)
+
